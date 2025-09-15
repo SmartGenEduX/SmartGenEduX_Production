@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timesubbehave AI Premium - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-md p-6 mb-6 text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/Timesubbehave AI_20250621_132022_0000_1751087241308.png" alt="Timesubbehave AI" class="w-12 h-12 mr-4 bg-white rounded-lg p-2">
+                    <div>
+                        <h1 class="text-2xl font-bold">Timesubbehave AI Premium</h1>
+                        <p class="text-blue-100">Advanced AI analytics for timetable optimization and behavior prediction</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold">PREMIUM</span>
+                    <button onclick="window.close()" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded hover:bg-opacity-30">
+                        <i class="fas fa-times mr-2"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-brain text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">97.3%</div>
+                        <div class="text-blue-100">AI Prediction Accuracy</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">23%</div>
+                        <div class="text-green-100">Time Optimization</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">89%</div>
+                        <div class="text-purple-100">Behavior Prediction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Modules Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Smart Timetable AI -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Smart Timetable AI</h2>
+                        <p class="text-gray-600">AI-powered schedule optimization</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-blue-900 mb-2">AI Recommendations</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span>Optimal class scheduling</span>
+                                <span class="text-green-600"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Teacher workload balancing</span>
+                                <span class="text-green-600"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Room utilization optimization</span>
+                                <span class="text-orange-600"><i class="fas fa-exclamation-triangle"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="optimizeTimetable()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            <i class="fas fa-magic mr-2"></i>AI Optimize
+                        </button>
+                        <button onclick="viewAnalytics()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            <i class="fas fa-chart-bar mr-2"></i>Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intelligent Substitution -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-user-friends text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Intelligent Substitution</h2>
+                        <p class="text-gray-600">AI teacher replacement system</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-green-900 mb-2">Smart Matching</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span>Subject expertise matching</span>
+                                <span class="text-green-600">95%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Availability prediction</span>
+                                <span class="text-green-600">92%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Workload optimization</span>
+                                <span class="text-blue-600">87%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-orange-50 rounded-lg p-4 mb-4">
+                        <h3 class="font-semibold text-orange-900 mb-2">Leave Request Management</h3>
+                        <p class="text-sm text-orange-700 mb-3">Submit and manage teacher leave requests</p>
+                        <div class="space-y-2">
+                            <input type="date" class="w-full border rounded px-3 py-2 text-sm" placeholder="Leave Date">
+                            <select class="w-full border rounded px-3 py-2 text-sm">
+                                <option value="">Leave Type</option>
+                                <option value="sick">Sick Leave</option>
+                                <option value="personal">Personal Leave</option>
+                                <option value="emergency">Emergency Leave</option>
+                            </select>
+                            <textarea placeholder="Reason for leave..." class="w-full border rounded px-3 py-2 text-sm" rows="2"></textarea>
+                            <button onclick="submitLeaveRequest()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 text-sm w-full">
+                                <i class="fas fa-calendar-alt mr-2"></i>Submit Leave Request
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="smartSubstitution()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            <i class="fas fa-robot mr-2"></i>Auto Assign
+                        </button>
+                        <button onclick="predictLeaves()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                            <i class="fas fa-crystal-ball mr-2"></i>Predict
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Behavior Analytics AI -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-user-graduate text-purple-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Behavior Analytics AI</h2>
+                        <p class="text-gray-600">Student behavior prediction and intervention</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-purple-900 mb-2">Risk Assessment</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-sm">
+                                <span>High-risk students</span>
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded">7 students</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span>Improving students</span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded">23 students</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span>Early intervention needed</span>
+                                <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded">12 students</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="behaviorAnalysis()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                            <i class="fas fa-search mr-2"></i>Analyze
+                        </button>
+                        <button onclick="generateReports()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+                            <i class="fas fa-file-alt mr-2"></i>Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Request AI -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-calendar-times text-orange-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Smart Leave Management</h2>
+                        <p class="text-gray-600">AI-powered leave request processing</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-orange-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-orange-900 mb-2">Leave Request Portal</h3>
+                        <p class="text-sm text-orange-700 mb-3">Submit and manage leave requests with AI approval workflow</p>
+                        <button onclick="openLeaveForm()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 text-sm">
+                            <i class="fas fa-external-link-alt mr-2"></i>Open Leave Form
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span>Pending requests</span>
+                            <span class="font-bold">8</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Auto-approved today</span>
+                            <span class="font-bold text-green-600">5</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Requires review</span>
+                            <span class="font-bold text-orange-600">3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights Dashboard -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">AI Insights & Predictions</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-clock text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Schedule Efficiency</h3>
+                    <div class="text-2xl font-bold text-blue-600">87%</div>
+                    <div class="text-sm text-gray-600">↑ 12% from last month</div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-users text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Teacher Satisfaction</h3>
+                    <div class="text-2xl font-bold text-green-600">92%</div>
+                    <div class="text-sm text-gray-600">↑ 5% from last month</div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-chart-line text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Behavior Improvement</h3>
+                    <div class="text-2xl font-bold text-purple-600">76%</div>
+                    <div class="text-sm text-gray-600">↑ 23% from last month</div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-calendar-check text-2xl text-orange-600"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Leave Management</h3>
+                    <div class="text-2xl font-bold text-orange-600">94%</div>
+                    <div class="text-sm text-gray-600">Auto-approval rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent AI Actions -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Recent AI Actions</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-magic text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold">Timetable optimized for Class 9</div>
+                        <div class="text-sm text-gray-600">AI reduced scheduling conflicts by 34%</div>
+                    </div>
+                    <div class="text-sm text-gray-500">2 minutes ago</div>
+                </div>
+                
+                <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-user-check text-green-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold">Smart substitution assigned</div>
+                        <div class="text-sm text-gray-600">Mrs. Sharma automatically assigned to Math class</div>
+                    </div>
+                    <div class="text-sm text-gray-500">15 minutes ago</div>
+                </div>
+                
+                <div class="flex items-center p-3 bg-purple-50 rounded-lg">
+                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-exclamation-triangle text-purple-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold">Behavior alert triggered</div>
+                        <div class="text-sm text-gray-600">Early intervention recommended for 3 students</div>
+                    </div>
+                    <div class="text-sm text-gray-500">1 hour ago</div>
+                </div>
+                
+                <div class="flex items-center p-3 bg-orange-50 rounded-lg">
+                    <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                        <i class="fas fa-calendar-check text-orange-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold">Leave request auto-approved</div>
+                        <div class="text-sm text-gray-600">Mr. Kumar's medical leave approved with cover arranged</div>
+                    </div>
+                    <div class="text-sm text-gray-500">3 hours ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function optimizeTimetable() {
+            showMessage('AI is analyzing current timetable and optimizing schedules...', 'info');
+            setTimeout(() => {
+                showMessage('Timetable optimized! Efficiency improved by 23%.', 'success');
+            }, 3000);
+        }
+
+        function viewAnalytics() {
+            showMessage('Opening detailed timetable analytics dashboard...', 'info');
+        }
+
+        function smartSubstitution() {
+            showMessage('AI is finding the best substitute teacher based on subject expertise and availability...', 'info');
+            setTimeout(() => {
+                showMessage('Perfect match found! Mrs. Priya Sharma assigned to Math class.', 'success');
+            }, 2000);
+        }
+
+        function predictLeaves() {
+            showMessage('AI analyzing patterns to predict upcoming leave requests...', 'info');
+            setTimeout(() => {
+                showMessage('Prediction complete: 3 teachers likely to request leave next week.', 'success');
+            }, 2500);
+        }
+
+        function behaviorAnalysis() {
+            showMessage('Running AI behavior analysis on student data...', 'info');
+            setTimeout(() => {
+                showMessage('Analysis complete: 7 students require attention, 23 showing improvement.', 'success');
+            }, 4000);
+        }
+
+        function generateReports() {
+            showMessage('Generating AI-powered behavior reports...', 'info');
+            setTimeout(() => {
+                showMessage('Comprehensive behavior reports generated and ready for download.', 'success');
+            }, 3000);
+        }
+
+        function openLeaveForm() {
+            showMessage('Opening smart leave request portal...', 'info');
+            // In real implementation, this would open: https://forms.gle/F9edY9SqSzkm2JKW8
+            setTimeout(() => {
+                window.open('https://forms.gle/F9edY9SqSzkm2JKW8', '_blank');
+            }, 1000);
+        }
+
+        function showMessage(message, type) {
+            const colors = {
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
+                'info': 'bg-blue-600'
+            };
+            
+            const icons = {
+                'success': 'fas fa-check',
+                'error': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+        
+        function submitLeaveRequest() {
+            showMessage('Leave request submitted successfully! It will be processed by AI and assigned a substitute teacher.', 'success');
+        }
+        
+        function smartSubstitution() {
+            showMessage('AI is finding the best substitute teacher match...', 'info');
+            setTimeout(() => {
+                showMessage('Substitute teacher assigned automatically! Ms. Priya will cover Math class.', 'success');
+            }, 2000);
+        }
+        
+        function predictLeaves() {
+            showMessage('Analyzing patterns to predict future leaves...', 'info');
+            setTimeout(() => {
+                showMessage('Prediction complete! 3 teachers likely to request leave next week.', 'success');
+            }, 3000);
+        }
+        
+        function behaviorAnalysis() {
+            showMessage('Running AI behavior analysis on student data...', 'info');
+            setTimeout(() => {
+                showMessage('Analysis complete! 7 students need early intervention support.', 'success');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

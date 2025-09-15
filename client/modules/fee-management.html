@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Management - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .payment-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-paid { background: #dcfce7; color: #166534; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-overdue { background: #fecaca; color: #991b1b; }
+        .status-partial { background: #dbeafe; color: #1e40af; }
+        .payment-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        .receipt-print {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-green-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <img src="../assets/SmartGenEduX_Logo_1751034755324.png" alt="SmartGenEduX" class="h-12 w-auto">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Fee Management</h1>
+                        <p class="text-sm text-gray-600">Complete fee collection, tracking and financial reporting</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showPaymentModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Collect Payment</span>
+                    </button>
+                    <button onclick="generateReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Generate Report</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Financial Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-rupee-sign text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Collected</p>
+                        <p class="text-2xl font-bold text-gray-900">₹18,45,000</p>
+                        <p class="text-xs text-green-600">+12% from last month</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-clock text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Pending</p>
+                        <p class="text-2xl font-bold text-gray-900">₹2,15,000</p>
+                        <p class="text-xs text-yellow-600">45 students</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Overdue</p>
+                        <p class="text-2xl font-bold text-gray-900">₹75,000</p>
+                        <p class="text-xs text-red-600">12 students</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-percentage text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Collection Rate</p>
+                        <p class="text-2xl font-bold text-gray-900">89.6%</p>
+                        <p class="text-xs text-blue-600">Above target</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Processing Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="lg:col-span-1">
+                <div class="payment-card">
+                    <div class="text-center mb-6">
+                        <i class="fas fa-credit-card text-4xl mb-3"></i>
+                        <h3 class="text-xl font-bold mb-2">Quick Payment</h3>
+                        <p class="text-sm opacity-90">Process fees with multiple payment options</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Student ID/Name</label>
+                            <input type="text" placeholder="Enter student ID or name" class="w-full px-3 py-2 rounded-lg text-gray-900">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Amount</label>
+                            <input type="number" placeholder="₹ 0.00" class="w-full px-3 py-2 rounded-lg text-gray-900">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Payment Method</label>
+                            <select class="w-full px-3 py-2 rounded-lg text-gray-900">
+                                <option>Cash</option>
+                                <option>Online Transfer</option>
+                                <option>Card Payment</option>
+                                <option>Cheque</option>
+                            </select>
+                        </div>
+                        
+                        <button onclick="processPayment()" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-3 px-4 rounded-lg transition-all">
+                            <i class="fas fa-check mr-2"></i>
+                            Process Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Transactions</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                    ₹
+                                </div>
+                                <div>
+                                    <p class="font-medium">Aarav Sharma</p>
+                                    <p class="text-sm text-gray-600">Class 1-A • Tuition Fee</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-green-600">₹15,000</p>
+                                <p class="text-xs text-gray-500">2 min ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                                    ₹
+                                </div>
+                                <div>
+                                    <p class="font-medium">Priya Patel</p>
+                                    <p class="text-sm text-gray-600">Class 1-A • Transport Fee</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-blue-600">₹3,500</p>
+                                <p class="text-xs text-gray-500">15 min ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                    ₹
+                                </div>
+                                <div>
+                                    <p class="font-medium">Ravi Gupta</p>
+                                    <p class="text-sm text-gray-600">Class 2-A • Annual Fee</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-purple-600">₹25,000</p>
+                                <p class="text-xs text-gray-500">1 hour ago</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-600">Today's Total</span>
+                            <span class="text-lg font-bold text-gray-900">₹43,500</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fee Structure & Student List -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Fee Structure</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">Tuition Fee</span>
+                            <span class="font-bold text-blue-600">₹15,000</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">Transport Fee</span>
+                            <span class="font-bold text-blue-600">₹3,500</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">Hostel Fee</span>
+                            <span class="font-bold text-blue-600">₹8,000</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">Activity Fee</span>
+                            <span class="font-bold text-blue-600">₹2,000</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <span class="font-medium">Lab Fee</span>
+                            <span class="font-bold text-blue-600">₹1,500</span>
+                        </div>
+                        <div class="border-t pt-3">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-gray-900">Total Annual</span>
+                                <span class="font-bold text-lg text-green-600">₹30,000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold text-gray-900">Student Fee Status</h3>
+                            <div class="flex items-center space-x-3">
+                                <select class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                    <option>All Classes</option>
+                                    <option>Class 1-A</option>
+                                    <option>Class 1-B</option>
+                                    <option>Class 2-A</option>
+                                </select>
+                                <select class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                    <option>All Status</option>
+                                    <option>Paid</option>
+                                    <option>Pending</option>
+                                    <option>Overdue</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Fee</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                AS
+                                            </div>
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-gray-900">Aarav Sharma</div>
+                                                <div class="text-sm text-gray-500">Roll: 001</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Class 1-A</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹30,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">₹30,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹0</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="payment-status status-paid">
+                                            <i class="fas fa-check mr-1"></i>
+                                            Paid
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <button onclick="viewReceipt('student_001')" class="text-blue-600 hover:text-blue-900">
+                                            <i class="fas fa-receipt"></i>
+                                        </button>
+                                        <button onclick="sendReminder('student_001')" class="text-yellow-600 hover:text-yellow-900">
+                                            <i class="fas fa-bell"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                PP
+                                            </div>
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-gray-900">Priya Patel</div>
+                                                <div class="text-sm text-gray-500">Roll: 002</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Class 1-A</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹30,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">₹18,500</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">₹11,500</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="payment-status status-partial">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Partial
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <button onclick="collectPayment('student_002')" class="text-green-600 hover:text-green-900">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <button onclick="viewReceipt('student_002')" class="text-blue-600 hover:text-blue-900">
+                                            <i class="fas fa-receipt"></i>
+                                        </button>
+                                        <button onclick="sendReminder('student_002')" class="text-yellow-600 hover:text-yellow-900">
+                                            <i class="fas fa-bell"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                RG
+                                            </div>
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-gray-900">Ravi Gupta</div>
+                                                <div class="text-sm text-gray-500">Roll: 003</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Class 1-A</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹30,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹0</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">₹30,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="payment-status status-overdue">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                            Overdue
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <button onclick="collectPayment('student_003')" class="text-green-600 hover:text-green-900">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <button onclick="sendReminder('student_003')" class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-bell"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                SK
+                                            </div>
+                                            <div class="ml-3">
+                                                <div class="text-sm font-medium text-gray-900">Simran Kaur</div>
+                                                <div class="text-sm text-gray-500">Roll: 004</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Class 1-A</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">₹30,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹0</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600 font-medium">₹30,000</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="payment-status status-pending">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Pending
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <button onclick="collectPayment('student_004')" class="text-green-600 hover:text-green-900">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <button onclick="sendReminder('student_004')" class="text-yellow-600 hover:text-yellow-900">
+                                            <i class="fas fa-bell"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Process Payment</h3>
+                </div>
+                <form class="px-6 py-4 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Student Name</label>
+                            <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="Priya Patel" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Class</label>
+                            <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="Class 1-A" readonly>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Total Fee</label>
+                            <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="₹30,000" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Already Paid</label>
+                            <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" value="₹18,500" readonly>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Payment Amount</label>
+                        <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="₹11,500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Payment Method</label>
+                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                            <option>Cash</option>
+                            <option>Online Transfer (UPI/NEFT)</option>
+                            <option>Card Payment</option>
+                            <option>Cheque</option>
+                            <option>Demand Draft</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Transaction Reference</label>
+                        <input type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="Reference number (for online payments)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Notes</label>
+                        <textarea rows="2" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" placeholder="Additional notes..."></textarea>
+                    </div>
+                </form>
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button onclick="closePaymentModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md">
+                        Cancel
+                    </button>
+                    <button onclick="confirmPayment()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                        Process Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Payment Receipt</h3>
+                </div>
+                <div class="p-6">
+                    <div class="receipt-print">
+                        <div class="text-center mb-4">
+                            <h4 class="font-bold text-lg">DELHI PUBLIC SCHOOL</h4>
+                            <p class="text-sm">Green Park, New Delhi - 110016</p>
+                            <p class="text-sm">Phone: +91-11-2656-7890</p>
+                        </div>
+                        <div class="border-b border-dashed border-gray-400 mb-4 pb-4">
+                            <h5 class="font-bold text-center mb-2">FEE RECEIPT</h5>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>Receipt No:</div>
+                                <div class="font-bold">#FEE2024-001234</div>
+                                <div>Date:</div>
+                                <div>29-Dec-2024</div>
+                                <div>Student:</div>
+                                <div class="font-bold">Aarav Sharma</div>
+                                <div>Class:</div>
+                                <div>Class 1-A</div>
+                                <div>Roll No:</div>
+                                <div>001</div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div>Tuition Fee:</div>
+                                <div class="text-right">₹15,000</div>
+                                <div>Transport Fee:</div>
+                                <div class="text-right">₹3,500</div>
+                                <div>Activity Fee:</div>
+                                <div class="text-right">₹2,000</div>
+                                <div class="border-t pt-2 font-bold">Total Paid:</div>
+                                <div class="border-t pt-2 font-bold text-right">₹20,500</div>
+                            </div>
+                        </div>
+                        <div class="text-center text-xs">
+                            <p>Payment Method: Online Transfer</p>
+                            <p>Ref: TXN123456789</p>
+                            <p class="mt-2">Thank you for your payment!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button onclick="closeReceiptModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md">
+                        Close
+                    </button>
+                    <button onclick="printReceipt()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                        <i class="fas fa-print mr-2"></i>
+                        Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPaymentModal() {
+            document.getElementById('paymentModal').classList.remove('hidden');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.add('hidden');
+        }
+
+        function confirmPayment() {
+            closePaymentModal();
+            showToast('Payment processed successfully! Receipt generated.', 'success');
+        }
+
+        function viewReceipt(studentId) {
+            document.getElementById('receiptModal').classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').classList.add('hidden');
+        }
+
+        function printReceipt() {
+            window.print();
+        }
+
+        function collectPayment(studentId) {
+            showPaymentModal();
+        }
+
+        function sendReminder(studentId) {
+            showToast('Payment reminder sent to parent via SMS and email', 'success');
+        }
+
+        function processPayment() {
+            showToast('Payment processed successfully!', 'success');
+        }
+
+        function generateReport() {
+            showToast('Financial report generated and downloaded', 'success');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 
+                           type === 'warning' ? 'bg-yellow-500' : 
+                           type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            
+            toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Real-time updates simulation
+        setInterval(() => {
+            const collected = document.querySelector('.bg-green-100').parentElement.querySelector('.text-2xl');
+            const current = parseInt(collected.textContent.replace(/[₹,]/g, ''));
+            if (Math.random() > 0.9) {
+                collected.textContent = `₹${(current + Math.floor(Math.random() * 5000)).toLocaleString()}`;
+                showToast('New payment received!', 'success');
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

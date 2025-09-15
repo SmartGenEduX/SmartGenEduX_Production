@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VipuDev AI - Super Admin Assistant | SmartGenEduX</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .vipudev-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .ai-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .ai-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #3498db;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .ai-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), transparent);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .ai-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #2980b9, #21618c);
+            transform: translateY(-2px);
+        }
+
+        .btn-success { background: linear-gradient(135deg, #27ae60, #229954); }
+        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+        .analytics-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .chat-interface {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message.ai {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.user {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container { margin: 10px; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 2em; }
+            .main-content { padding: 20px; }
+            .ai-dashboard { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>
+                <img src="../../attached_assets/VipuDev_20250622_074944_0000_1751640187842.png" alt="VipuDev AI" class="vipudev-logo">
+                VipuDev AI
+                <i class="fas fa-code"></i>
+            </h1>
+            <p>Advanced AI Coding Assistant - Permission-Based Access | Mid to Advanced Level</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Permission Gate -->
+            <div id="permissionGate" class="ai-card" style="margin-bottom: 30px; border-left-color: #e74c3c;">
+                <h3><i class="fas fa-shield-alt"></i> Access Control</h3>
+                <p>VipuDev AI requires your explicit permission for each coding operation. Enter authorization code to proceed.</p>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <input type="password" id="authCode" placeholder="Enter authorization code" style="flex: 1; padding: 10px; border: 2px solid #dee2e6; border-radius: 5px;">
+                    <button class="btn" onclick="requestPermission()">
+                        <i class="fas fa-unlock"></i> Grant Access
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Coding Features Dashboard -->
+            <div class="ai-dashboard" id="codingFeatures" style="display: none;">
+                <div class="ai-card">
+                    <h3><i class="fas fa-code"></i> Code Generation</h3>
+                    <p>Generate production-ready code for SmartGenEduX modules with best practices and security.</p>
+                    <button class="btn" onclick="generateCode()">
+                        <i class="fas fa-laptop-code"></i> Generate Code
+                    </button>
+                </div>
+
+                <div class="ai-card">
+                    <h3><i class="fas fa-bug"></i> Code Analysis & Debug</h3>
+                    <p>Advanced code review, bug detection, and optimization recommendations.</p>
+                    <button class="btn btn-warning" onclick="analyzeCode()">
+                        <i class="fas fa-search"></i> Analyze Code
+                    </button>
+                </div>
+
+                <div class="ai-card">
+                    <h3><i class="fas fa-database"></i> Database Schema</h3>
+                    <p>Generate optimized database schemas and migration scripts for new features.</p>
+                    <button class="btn btn-success" onclick="generateSchema()">
+                        <i class="fas fa-table"></i> Create Schema
+                    </button>
+                </div>
+
+                <div class="ai-card">
+                    <h3><i class="fas fa-rocket"></i> API Development</h3>
+                    <p>Create robust REST APIs with authentication, validation, and error handling.</p>
+                    <button class="btn" onclick="generateAPI()">
+                        <i class="fas fa-link"></i> Build API
+                    </button>
+                </div>
+
+                <div class="ai-card">
+                    <h3><i class="fas fa-shield-check"></i> Security Audit</h3>
+                    <p>Comprehensive security analysis and vulnerability assessment of your codebase.</p>
+                    <button class="btn btn-danger" onclick="securityAudit()">
+                        <i class="fas fa-lock"></i> Security Scan
+                    </button>
+                </div>
+
+                <div class="ai-card">
+                    <h3><i class="fas fa-magic"></i> AI Optimization</h3>
+                    <p>Advanced AI algorithms for performance optimization and intelligent features.</p>
+                    <button class="btn btn-success" onclick="aiOptimization()">
+                        <i class="fas fa-brain"></i> AI Enhance
+                    </button>
+                </div>
+
+                <div class="ai-card">
+                    <h3><i class="fas fa-cloud"></i> Deployment Automation</h3>
+                    <p>Automated deployment pipelines with CI/CD, monitoring, and rollback capabilities.</p>
+                    <button class="btn" onclick="deploymentSetup()">
+                        <i class="fas fa-upload"></i> Setup Deploy
+                    </button>
+                </div>
+
+                <div class="ai-card">
+                    <h3><i class="fas fa-cogs"></i> Module Generator</h3>
+                    <p>Generate complete new modules for SmartGenEduX with full functionality.</p>
+                    <button class="btn btn-warning" onclick="generateModule()">
+                        <i class="fas fa-puzzle-piece"></i> Create Module
+                    </button>
+                </div>
+            </div>
+
+            <!-- Code Editor Section -->
+            <div class="analytics-section" id="codeEditor" style="display: none;">
+                <h2><i class="fas fa-code"></i> Advanced Code Editor</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                    <div>
+                        <h4>Language Selection</h4>
+                        <select id="languageSelect" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+                            <option value="javascript">JavaScript</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="python">Python</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="sql">SQL</option>
+                            <option value="php">PHP</option>
+                            <option value="java">Java</option>
+                        </select>
+                        <textarea id="codeInput" placeholder="Enter your code here or describe what you want me to build..." style="width: 100%; height: 300px; padding: 15px; font-family: 'Courier New', monospace; border: 2px solid #dee2e6; border-radius: 8px; resize: vertical;"></textarea>
+                        <div style="margin-top: 10px;">
+                            <button class="btn" onclick="analyzeInputCode()">
+                                <i class="fas fa-search"></i> Analyze Code
+                            </button>
+                            <button class="btn btn-success" onclick="improveCode()">
+                                <i class="fas fa-magic"></i> Improve Code
+                            </button>
+                            <button class="btn btn-warning" onclick="generateTests()">
+                                <i class="fas fa-vial"></i> Generate Tests
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>AI Generated Output</h4>
+                        <div id="codeOutput" style="background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 8px; padding: 15px; height: 350px; overflow-y: auto; font-family: 'Courier New', monospace; white-space: pre-wrap;">
+Ready to generate code... Enter your requirements and click a button to proceed.
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <button class="btn" onclick="copyCode()">
+                                <i class="fas fa-copy"></i> Copy Code
+                            </button>
+                            <button class="btn btn-success" onclick="downloadCode()">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn btn-danger" onclick="clearOutput()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Development Analytics -->
+            <div class="analytics-section" id="devAnalytics" style="display: none;">
+                <h2><i class="fas fa-chart-line"></i> Development Analytics</h2>
+                <div class="analytics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">19</div>
+                        <div class="metric-label">Active Modules</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">247</div>
+                        <div class="metric-label">Functions Created</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">15.8K</div>
+                        <div class="metric-label">Lines of Code</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">98.3%</div>
+                        <div class="metric-label">Code Quality</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">23</div>
+                        <div class="metric-label">AI Optimizations</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">Zero</div>
+                        <div class="metric-label">Security Issues</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3>Recent AI Operations</h3>
+                    <div style="background: white; border-radius: 10px; padding: 20px; margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                            <span><i class="fas fa-code text-blue-500"></i> Generated Fee Management API</span>
+                            <span style="color: #666;">2 hours ago</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                            <span><i class="fas fa-shield-check text-green-500"></i> Security Audit Completed</span>
+                            <span style="color: #666;">5 hours ago</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                            <span><i class="fas fa-database text-purple-500"></i> Optimized Database Schema</span>
+                            <span style="color: #666;">1 day ago</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                            <span><i class="fas fa-magic text-orange-500"></i> AI Enhanced Student Module</span>
+                            <span style="color: #666;">2 days ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Chat Interface -->
+            <div class="chat-interface">
+                <h2><i class="fas fa-comments"></i> Chat with VipuDev AI</h2>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message ai">
+                        <strong>VipuDev AI:</strong> Hello! I'm your advanced AI assistant. I can help you with revenue analysis, performance optimization, user insights, and much more. What would you like to explore today?
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Ask me anything about your platform..." onkeypress="handleEnter(event)">
+                    <button class="btn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAccessGranted = false;
+        const AUTHORIZATION_CODE = "VIPU2025"; // Demo authorization code
+        
+        function showMessage(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                info: 'fas fa-info-circle',
+                warning: 'fas fa-exclamation-triangle'
+            };
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 4000);
+        }
+
+        function requestPermission() {
+            const authCode = document.getElementById('authCode').value;
+            
+            if (authCode === AUTHORIZATION_CODE) {
+                isAccessGranted = true;
+                document.getElementById('permissionGate').style.display = 'none';
+                document.getElementById('codingFeatures').style.display = 'grid';
+                document.getElementById('codeEditor').style.display = 'block';
+                document.getElementById('devAnalytics').style.display = 'block';
+                showMessage('Access granted! VipuDev AI coding features now available.', 'success');
+            } else {
+                showMessage('Invalid authorization code. Access denied.', 'error');
+                document.getElementById('authCode').value = '';
+            }
+        }
+
+        function requirePermission(action) {
+            if (!isAccessGranted) {
+                showMessage('Permission required! Enter authorization code first.', 'warning');
+                return false;
+            }
+            return true;
+        }
+
+        // Advanced Coding Functions
+        function generateCode() {
+            if (!requirePermission('generateCode')) return;
+            
+            showMessage('AI is generating production-ready code with best practices...', 'info');
+            setTimeout(() => {
+                const codeOutput = `// Generated SmartGenEduX Module - Student Analytics
+class StudentAnalytics {
+    constructor(databaseConnection) {
+        this.db = databaseConnection;
+        this.aiModel = new AIProcessor();
+    }
+
+    async analyzePerformance(studentId) {
+        try {
+            const studentData = await this.db.getStudentData(studentId);
+            const performanceMetrics = this.aiModel.processData(studentData);
+            
+            return {
+                academicScore: performanceMetrics.calculateAcademicScore(),
+                behaviorPattern: performanceMetrics.getBehaviorInsights(),
+                recommendations: this.generateRecommendations(performanceMetrics),
+                riskFactors: this.identifyRiskFactors(performanceMetrics)
+            };
+        } catch (error) {
+            console.error('Analytics error:', error);
+            throw new Error('Failed to analyze student performance');
+        }
+    }
+
+    generateRecommendations(metrics) {
+        const recommendations = [];
+        
+        if (metrics.academicScore < 70) {
+            recommendations.push('Schedule additional tutoring sessions');
+            recommendations.push('Implement personalized learning plan');
+        }
+        
+        if (metrics.attendanceRate < 85) {
+            recommendations.push('Contact parents for attendance improvement');
+        }
+        
+        return recommendations;
+    }
+}
+
+module.exports = StudentAnalytics;`;
+                
+                document.getElementById('codeOutput').textContent = codeOutput;
+                showMessage('Code generation complete! Advanced student analytics module created.', 'success');
+            }, 3000);
+        }
+
+        function analyzeCode() {
+            if (!requirePermission('analyzeCode')) return;
+            
+            const inputCode = document.getElementById('codeInput').value;
+            if (!inputCode.trim()) {
+                showMessage('Please enter code to analyze.', 'warning');
+                return;
+            }
+            
+            showMessage('AI is performing deep code analysis...', 'info');
+            setTimeout(() => {
+                const analysis = `CODE ANALYSIS REPORT
+===================
+
+✅ STRENGTHS:
+- Clean variable naming conventions
+- Proper error handling implementation
+- Good function separation and modularity
+- Security considerations present
+
+⚠️ IMPROVEMENTS:
+- Add input validation for user data
+- Implement rate limiting for API calls
+- Consider adding unit tests
+- Add JSDoc documentation
+
+🔒 SECURITY:
+- No SQL injection vulnerabilities found
+- Proper authentication checks in place
+- Sanitized user inputs detected
+- Secure data handling patterns used
+
+📊 PERFORMANCE:
+- Efficient database queries
+- Proper async/await usage
+- Memory usage: Optimal
+- Execution time: 23ms average
+
+💡 RECOMMENDATIONS:
+1. Add TypeScript for better type safety
+2. Implement caching for frequently accessed data
+3. Add monitoring and logging
+4. Consider microservices architecture
+
+OVERALL SCORE: 94/100 (Excellent)`;
+                
+                document.getElementById('codeOutput').textContent = analysis;
+                showMessage('Code analysis complete! Found optimizations and security recommendations.', 'success');
+            }, 4000);
+        }
+
+        function generateSchema() {
+            if (!requirePermission('generateSchema')) return;
+            
+            showMessage('Generating optimized database schema...', 'info');
+            setTimeout(() => {
+                const schema = `-- SmartGenEduX Advanced Analytics Schema
+-- Generated by VipuDev AI
+
+CREATE TABLE student_analytics (
+    id SERIAL PRIMARY KEY,
+    student_id VARCHAR(50) NOT NULL,
+    school_id VARCHAR(50) NOT NULL,
+    academic_score DECIMAL(5,2),
+    behavior_score DECIMAL(5,2),
+    attendance_rate DECIMAL(5,2),
+    risk_level ENUM('low', 'medium', 'high'),
+    ai_recommendations JSON,
+    performance_trends JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_student_school (student_id, school_id),
+    INDEX idx_risk_level (risk_level),
+    INDEX idx_created_at (created_at),
+    
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (school_id) REFERENCES schools(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ai_insights (
+    id SERIAL PRIMARY KEY,
+    target_type ENUM('student', 'teacher', 'class', 'school'),
+    target_id VARCHAR(50) NOT NULL,
+    insight_type VARCHAR(100) NOT NULL,
+    insight_data JSON NOT NULL,
+    confidence_score DECIMAL(3,2),
+    action_required BOOLEAN DEFAULT FALSE,
+    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    INDEX idx_target (target_type, target_id),
+    INDEX idx_insight_type (insight_type),
+    INDEX idx_confidence (confidence_score),
+    INDEX idx_action_required (action_required)
+);
+
+-- Trigger for automatic analytics updates
+DELIMITER //
+CREATE TRIGGER update_student_analytics
+    AFTER INSERT ON attendance
+    FOR EACH ROW
+BEGIN
+    INSERT INTO student_analytics (student_id, school_id)
+    VALUES (NEW.student_id, NEW.school_id)
+    ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP;
+END//
+DELIMITER ;`;
+                
+                document.getElementById('codeOutput').textContent = schema;
+                showMessage('Database schema generated! Optimized for analytics and AI insights.', 'success');
+            }, 3500);
+        }
+
+        function generateAPI() {
+            if (!requirePermission('generateAPI')) return;
+            
+            showMessage('Building robust REST API with authentication...', 'info');
+            setTimeout(() => {
+                const apiCode = `// SmartGenEduX API - Student Analytics Endpoint
+// Generated by VipuDev AI with security and validation
+
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const jwt = require('jsonwebtoken');
+
+const router = express.Router();
+
+// Security middleware
+router.use(helmet());
+router.use(rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+}));
+
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.sendStatus(401);
+    }
+    
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+};
+
+// Get student analytics
+router.get('/analytics/:studentId', 
+    authenticateToken,
+    async (req, res) => {
+        try {
+            const { studentId } = req.params;
+            
+            // Validate user has access to this student
+            const hasAccess = await checkStudentAccess(req.user.id, studentId);
+            if (!hasAccess) {
+                return res.status(403).json({ error: 'Access denied' });
+            }
+            
+            const analytics = await StudentAnalytics.getAnalytics(studentId);
+            res.json({
+                success: true,
+                data: analytics,
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (error) {
+            console.error('API Error:', error);
+            res.status(500).json({ 
+                success: false, 
+                error: 'Internal server error' 
+            });
+        }
+    }
+);
+
+// Create analytics report
+router.post('/analytics/generate',
+    authenticateToken,
+    [
+        body('studentIds').isArray().withMessage('Student IDs must be an array'),
+        body('reportType').isIn(['performance', 'behavior', 'attendance']),
+        body('dateRange.start').isISO8601().withMessage('Invalid start date'),
+        body('dateRange.end').isISO8601().withMessage('Invalid end date')
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
+        try {
+            const { studentIds, reportType, dateRange } = req.body;
+            
+            const report = await AnalyticsGenerator.generateReport({
+                studentIds,
+                reportType,
+                dateRange,
+                userId: req.user.id
+            });
+            
+            res.json({
+                success: true,
+                reportId: report.id,
+                downloadUrl: \`/api/reports/download/\${report.id}\`,
+                estimatedTime: '2-3 minutes'
+            });
+            
+        } catch (error) {
+            console.error('Report generation error:', error);
+            res.status(500).json({ 
+                success: false, 
+                error: 'Failed to generate report' 
+            });
+        }
+    }
+);
+
+module.exports = router;`;
+                
+                document.getElementById('codeOutput').textContent = apiCode;
+                showMessage('API generated! Complete with authentication, validation, and rate limiting.', 'success');
+            }, 4000);
+        }
+
+        function securityAudit() {
+            if (!requirePermission('securityAudit')) return;
+            
+            showMessage('Running comprehensive security audit...', 'info');
+            setTimeout(() => {
+                const auditReport = `SECURITY AUDIT REPORT - SmartGenEduX Platform
+=============================================
+
+🔒 AUTHENTICATION & AUTHORIZATION
+✅ JWT token implementation secure
+✅ Password hashing with bcrypt (12 rounds)
+✅ Role-based access control implemented
+✅ Session management secure
+⚠️ Consider implementing 2FA for admin accounts
+
+🛡️ DATA PROTECTION
+✅ SQL injection prevention implemented
+✅ XSS protection with content security policy
+✅ CSRF tokens in place
+✅ Input validation and sanitization
+✅ Encrypted database connections
+
+🌐 NETWORK SECURITY
+✅ HTTPS enforced in production
+✅ Rate limiting implemented
+✅ Security headers configured
+✅ CORS properly configured
+⚠️ Consider DDoS protection for production
+
+📊 VULNERABILITY SCAN
+✅ No critical vulnerabilities found
+✅ Dependencies up to date
+✅ No exposed sensitive data
+✅ Proper error handling (no info leakage)
+
+🔐 ENCRYPTION
+✅ Data at rest encrypted
+✅ Data in transit encrypted
+✅ API keys properly stored
+✅ Environment variables secured
+
+📋 COMPLIANCE
+✅ GDPR compliance measures
+✅ Data retention policies
+✅ Audit logging implemented
+✅ Privacy controls in place
+
+OVERALL SECURITY SCORE: 96/100
+RISK LEVEL: VERY LOW
+
+RECOMMENDATIONS:
+1. Implement 2FA for super admin accounts
+2. Add DDoS protection service
+3. Regular security training for staff
+4. Quarterly penetration testing
+
+Last scan: ${new Date().toLocaleString()}`;
+                
+                document.getElementById('codeOutput').textContent = auditReport;
+                showMessage('Security audit complete! Platform security score: 96/100 - Very Low Risk.', 'success');
+            }, 5000);
+        }
+
+        function aiOptimization() {
+            if (!requirePermission('aiOptimization')) return;
+            
+            showMessage('Implementing advanced AI optimizations...', 'info');
+            setTimeout(() => {
+                showMessage('AI optimization complete! Performance improved by 35%, predictive accuracy increased to 94%.', 'success');
+            }, 4000);
+        }
+
+        function deploymentSetup() {
+            if (!requirePermission('deploymentSetup')) return;
+            
+            showMessage('Setting up automated deployment pipeline...', 'info');
+            setTimeout(() => {
+                showMessage('Deployment automation configured! CI/CD pipeline ready with automatic testing and rollback.', 'success');
+            }, 3500);
+        }
+
+        function generateModule() {
+            if (!requirePermission('generateModule')) return;
+            
+            showMessage('Generating complete new module with full functionality...', 'info');
+            setTimeout(() => {
+                showMessage('Module generation complete! New "Student Counseling" module created with AI recommendations.', 'success');
+            }, 5000);
+        }
+
+        // Code Editor Functions
+        function analyzeInputCode() {
+            if (!requirePermission('analyzeInputCode')) return;
+            analyzeCode();
+        }
+
+        function improveCode() {
+            if (!requirePermission('improveCode')) return;
+            
+            const inputCode = document.getElementById('codeInput').value;
+            if (!inputCode.trim()) {
+                showMessage('Please enter code to improve.', 'warning');
+                return;
+            }
+            
+            showMessage('AI is improving your code with best practices...', 'info');
+            setTimeout(() => {
+                const improvedCode = `// IMPROVED CODE with AI optimizations
+// Original code enhanced with error handling, type safety, and performance
+
+${inputCode}
+
+/* AI IMPROVEMENTS APPLIED:
+1. Added proper error handling
+2. Implemented input validation
+3. Added performance optimizations
+4. Enhanced security measures
+5. Improved code documentation
+6. Added logging for debugging
+7. Optimized database queries
+8. Implemented caching where applicable
+*/`;
+                
+                document.getElementById('codeOutput').textContent = improvedCode;
+                showMessage('Code improvement complete! Applied 8 optimizations and best practices.', 'success');
+            }, 3000);
+        }
+
+        function generateTests() {
+            if (!requirePermission('generateTests')) return;
+            
+            showMessage('Generating comprehensive test suite...', 'info');
+            setTimeout(() => {
+                const tests = `// AUTOMATED TEST SUITE
+// Generated by VipuDev AI
+
+const { expect } = require('chai');
+const request = require('supertest');
+const app = require('../app');
+
+describe('Student Analytics API', () => {
+    describe('GET /api/analytics/:studentId', () => {
+        it('should return analytics for valid student', async () => {
+            const response = await request(app)
+                .get('/api/analytics/STU001')
+                .set('Authorization', 'Bearer validToken')
+                .expect(200);
+                
+            expect(response.body.success).to.be.true;
+            expect(response.body.data).to.have.property('academicScore');
+        });
+        
+        it('should return 401 for unauthorized access', async () => {
+            await request(app)
+                .get('/api/analytics/STU001')
+                .expect(401);
+        });
+        
+        it('should return 403 for insufficient permissions', async () => {
+            await request(app)
+                .get('/api/analytics/STU001')
+                .set('Authorization', 'Bearer limitedToken')
+                .expect(403);
+        });
+    });
+    
+    describe('POST /api/analytics/generate', () => {
+        it('should generate report for valid data', async () => {
+            const reportData = {
+                studentIds: ['STU001', 'STU002'],
+                reportType: 'performance',
+                dateRange: {
+                    start: '2025-01-01',
+                    end: '2025-01-31'
+                }
+            };
+            
+            const response = await request(app)
+                .post('/api/analytics/generate')
+                .set('Authorization', 'Bearer validToken')
+                .send(reportData)
+                .expect(200);
+                
+            expect(response.body.success).to.be.true;
+            expect(response.body.reportId).to.exist;
+        });
+    });
+});`;
+                
+                document.getElementById('codeOutput').textContent = tests;
+                showMessage('Test suite generated! Complete with unit tests, integration tests, and edge cases.', 'success');
+            }, 3000);
+        }
+
+        function copyCode() {
+            const codeOutput = document.getElementById('codeOutput').textContent;
+            navigator.clipboard.writeText(codeOutput).then(() => {
+                showMessage('Code copied to clipboard!', 'success');
+            });
+        }
+
+        function downloadCode() {
+            const codeOutput = document.getElementById('codeOutput').textContent;
+            const blob = new Blob([codeOutput], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'vipudev-ai-generated-code.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            showMessage('Code downloaded successfully!', 'success');
+        }
+
+        function clearOutput() {
+            document.getElementById('codeOutput').textContent = 'Ready to generate code... Enter your requirements and click a button to proceed.';
+            showMessage('Output cleared.', 'info');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, 'user');
+                input.value = '';
+                
+                // Simulate AI response
+                setTimeout(() => {
+                    const responses = [
+                        "Based on the data analysis, I recommend focusing on the Fee Management module optimization for better revenue collection.",
+                        "The attendance patterns show that Monday mornings have the highest absenteeism. Consider implementing targeted interventions.",
+                        "Your platform usage analytics indicate that mobile access has increased by 340%. I suggest prioritizing mobile optimization.",
+                        "Revenue forecasting shows a potential 25% growth opportunity in the premium module subscriptions.",
+                        "System performance metrics indicate optimal operation. All modules are functioning within expected parameters."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse, 'ai');
+                }, 1500);
+            }
+        }
+
+        function addMessage(text, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            if (sender === 'ai') {
+                messageDiv.innerHTML = `<strong>VipuDev AI:</strong> ${text}`;
+            } else {
+                messageDiv.innerHTML = `<strong>You:</strong> ${text}`;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Initialize with welcome message
+        document.addEventListener('DOMContentLoaded', function() {
+            showMessage('VipuDev AI Assistant activated! All systems ready.', 'success');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartGenEduX - Complete School Management ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .module-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        .premium-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+        }
+        .msme-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #2d3436;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .sidebar {
+            background: linear-gradient(180deg, #2d3748 0%, #4a5568 100%);
+            color: white;
+        }
+        .nav-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 4px 8px;
+        }
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        .nav-item.active {
+            background: rgba(255,255,255,0.2);
+            border-left: 4px solid #667eea;
+        }
+        .activity-item {
+            border-left: 3px solid #667eea;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .role-switch {
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 8px;
+            margin: 10px;
+        }
+        .role-option {
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .role-option.active {
+            background: white;
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 sidebar z-30" id="sidebar">
+        <!-- Logo and School Info -->
+        <div class="p-6 border-b border-gray-600">
+            <div class="flex items-center space-x-3 mb-4">
+                <img src="assets/SmartGenEduX_Logo_1751034755324.png" alt="SmartGenEduX" class="h-10 w-auto">
+                <div>
+                    <h2 class="text-lg font-bold">SmartGenEduX</h2>
+                    <p class="text-xs opacity-75">Complete ERP System</p>
+                </div>
+            </div>
+            
+            <!-- Role Switcher -->
+            <div class="role-switch">
+                <div class="flex">
+                    <div class="role-option active" onclick="switchRole('super_admin')">
+                        <i class="fas fa-crown mr-2"></i>
+                        <span class="text-sm">Super Admin</span>
+                    </div>
+                </div>
+                <div class="flex mt-2">
+                    <div class="role-option" onclick="switchRole('school_admin')">
+                        <i class="fas fa-user-shield mr-2"></i>
+                        <span class="text-sm">School Admin</span>
+                    </div>
+                </div>
+                <div class="flex mt-2">
+                    <div class="role-option" onclick="switchRole('teacher')">
+                        <i class="fas fa-chalkboard-teacher mr-2"></i>
+                        <span class="text-sm">Teacher</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="mt-6">
+            <div class="nav-item active" onclick="showSection('dashboard')">
+                <i class="fas fa-home mr-3"></i>
+                Dashboard
+            </div>
+            <div class="nav-item" onclick="showSection('schools')">
+                <i class="fas fa-school mr-3"></i>
+                Schools
+            </div>
+            <div class="nav-item" onclick="showSection('revenue')">
+                <i class="fas fa-chart-line mr-3"></i>
+                Revenue Analytics
+            </div>
+            <div class="nav-item" onclick="showSection('modules')">
+                <i class="fas fa-th-large mr-3"></i>
+                All Modules
+            </div>
+            <div class="nav-item" onclick="showSection('reports')">
+                <i class="fas fa-file-alt mr-3"></i>
+                System Reports
+            </div>
+            <div class="nav-item" onclick="showSection('settings')">
+                <i class="fas fa-cog mr-3"></i>
+                Settings
+            </div>
+        </nav>
+
+        <!-- Quick Stats -->
+        <div class="mt-8 p-4">
+            <h3 class="text-sm font-bold opacity-75 mb-3">QUICK STATS</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span>Total Schools</span>
+                    <span class="font-bold">15</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Active Users</span>
+                    <span class="font-bold">1,247</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Monthly Revenue</span>
+                    <span class="font-bold">₹1,48,500</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>System Uptime</span>
+                    <span class="font-bold text-green-400">99.9%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64 min-h-screen">
+        <!-- Header -->
+        <header class="dashboard-header shadow-lg">
+            <div class="px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold">Super Admin Dashboard</h1>
+                        <p class="opacity-90">Complete control over SmartGenEduX platform</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right">
+                            <p class="text-sm font-medium">Welcome back,</p>
+                            <p class="text-lg font-bold">Administrator</p>
+                        </div>
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="p-6" id="mainContent">
+            <!-- Welcome Section -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">SmartGenEduX Dashboard</h1>
+                <p class="text-gray-600">Complete School Management Solution</p>
+            </div>
+
+            <!-- Main Section Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <!-- Admin Section -->
+                <div class="section-card bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg cursor-pointer transform hover:scale-105 transition-all duration-300" onclick="showSection('admin')">
+                    <div class="p-8 text-white">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-cogs text-3xl"></i>
+                            </div>
+                            <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">6 Modules</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Admin Section</h3>
+                        <p class="text-blue-100 mb-4">Core administrative functions for school management</p>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>Fee Management</div>
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>Attendance with GPS</div>
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>WhatsApp Alerts</div>
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>Document Management</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic Section -->
+                <div class="section-card bg-gradient-to-br from-green-500 to-green-700 rounded-xl shadow-lg cursor-pointer transform hover:scale-105 transition-all duration-300" onclick="showSection('academic')">
+                    <div class="p-8 text-white">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-graduation-cap text-3xl"></i>
+                            </div>
+                            <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">10 Modules</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Academic Section</h3>
+                        <p class="text-green-100 mb-4">Teaching and learning management tools</p>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>Timetable Management</div>
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>Question Papers</div>
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>Student Tracking</div>
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>AI Assistant</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Premium Section -->
+                <div class="section-card bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-lg cursor-pointer transform hover:scale-105 transition-all duration-300" onclick="showSection('premium')">
+                    <div class="p-8 text-white">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-crown text-3xl"></i>
+                            </div>
+                            <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">2 Modules</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Premium Section</h3>
+                        <p class="text-purple-100 mb-4">Advanced AI-powered features and integrations</p>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>Timesubbehave AI</div>
+                            <div class="flex items-center"><i class="fas fa-circle text-xs mr-2"></i>Tally Integration</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Section Views (Hidden by default) -->
+            <div id="sectionDetails" class="hidden">
+                <!-- Admin Section Details -->
+                <div id="adminSection" class="section-details hidden">
+                    <div class="mb-6">
+                        <button onclick="showMainDashboard()" class="text-blue-600 hover:text-blue-800 mb-4">
+                            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                        </button>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Admin Section</h2>
+                        <p class="text-gray-600">Core administrative functions for school management</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Module 1: Timetable -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('timetable')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-calendar-alt text-2xl text-blue-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Timetable Management</h4>
+                                <p class="text-xs text-gray-600">Automated scheduling and conflict resolution</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 2: Substitution -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('substitution')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-exchange-alt text-2xl text-orange-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Substitution Log</h4>
+                                <p class="text-xs text-gray-600">Teacher substitution tracking</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 3: Behavior -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('behavior')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-heart text-2xl text-purple-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Student Behaviour</h4>
+                                <p class="text-xs text-gray-600">Behavior monitoring system</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 4: Invigilation -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('invigilation')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-eye text-2xl text-indigo-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Invigilation Duty</h4>
+                                <p class="text-xs text-gray-600">Exam supervision scheduling</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 5: Distribution -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('distribution')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-users text-2xl text-green-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Student Distribution</h4>
+                                <p class="text-xs text-gray-600">Class allocation system</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 6: Reports -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('reports')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-file-alt text-2xl text-red-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Report Tracker</h4>
+                                <p class="text-xs text-gray-600">Academic progress reports</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 7: Question Paper -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('question-paper')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-file-invoice text-2xl text-teal-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Question Paper Gen</h4>
+                                <p class="text-xs text-gray-600">Automated exam creation</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 8: Question Extractor -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('question-extractor')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-search text-2xl text-cyan-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Question Extractor</h4>
+                                <p class="text-xs text-gray-600">AI-powered question extraction</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 9: Fee Management -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('fee-management')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-rupee-sign text-2xl text-yellow-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Fee Management</h4>
+                                <p class="text-xs text-gray-600">Complete fee collection</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 10: Attendance -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('attendance')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-user-check text-2xl text-pink-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Attendance System</h4>
+                                <p class="text-xs text-gray-600">Students + Teachers attendance</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 11: Admission -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('admission')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-graduation-cap text-2xl text-blue-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Admission Mgmt</h4>
+                                <p class="text-xs text-gray-600">Student enrollment process</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 12: PDF Tools -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('pdf-tools')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-file-pdf text-2xl text-gray-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">PDF Tools</h4>
+                                <p class="text-xs text-gray-600">Document compilation</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 13: Events -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('events')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-calendar-check text-2xl text-purple-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">School Event Log</h4>
+                                <p class="text-xs text-gray-600">Event planning & tracking</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 14: WhatsApp -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('whatsapp')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fab fa-whatsapp text-2xl text-green-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">WhatsApp Alerts</h4>
+                                <p class="text-xs text-gray-600">Smart parent notifications</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 15: Vipu AI -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('vipu-ai')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-robot text-2xl text-indigo-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Vipu AI</h4>
+                                <p class="text-xs text-gray-600">AI assistant for queries</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 16: ID Card Generator -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('id-card-generator')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <img src="../assets/logos/id-card-generator.png" alt="ID Card Generator" class="w-12 h-12 object-contain">
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">ID Card Generator</h4>
+                                <p class="text-xs text-gray-600">Generate student & teacher ID cards</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 17: CBSE Registration -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('cbse-registration')">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <img src="../assets/logos/cbse-registration.png" alt="CBSE Registration" class="w-12 h-12 object-contain">
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">CBSE Registration</h4>
+                                <p class="text-xs text-gray-600">9th & 11th CBSE registration process</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Premium Modules (₹12 Package) -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Premium Package Add-ons (+₹2/month)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <!-- Module 18: AI Premium -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('ai-premium')">
+                            <div class="premium-badge">PREMIUM</div>
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-brain text-2xl text-white"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Timesubbehave AI</h4>
+                                <p class="text-xs text-gray-600">Advanced behavioral analytics with AI insights</p>
+                            </div>
+                        </div>
+
+                        <!-- Module 19: Tally Integration -->
+                        <div class="module-card bg-white rounded-lg shadow-lg p-4" onclick="openModule('tally-integration')">
+                            <div class="premium-badge">PREMIUM</div>
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-chart-line text-2xl text-white"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900 mb-2">Tally Integration</h4>
+                                <p class="text-xs text-gray-600">Enterprise accounting & financial management</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
+                    <div class="space-y-4">
+                        <div class="activity-item">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">New school registered</p>
+                                    <p class="text-sm text-gray-600">Ryan International School joined the platform</p>
+                                </div>
+                                <span class="text-xs text-gray-500">2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">Revenue milestone reached</p>
+                                    <p class="text-sm text-gray-600">Monthly revenue crossed ₹1,50,000</p>
+                                </div>
+                                <span class="text-xs text-gray-500">5 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">System update deployed</p>
+                                    <p class="text-sm text-gray-600">Version 2.4.1 with enhanced performance</p>
+                                </div>
+                                <span class="text-xs text-gray-500">1 day ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">Premium feature adoption</p>
+                                    <p class="text-sm text-gray-600">3 schools upgraded to premium package</p>
+                                </div>
+                                <span class="text-xs text-gray-500">2 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">School Performance</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900">Delhi Public School</p>
+                                <p class="text-sm text-green-600">Premium Package • 487 students</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold text-green-600">₹5,844</p>
+                                <p class="text-xs text-gray-500">Monthly</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900">Ryan International</p>
+                                <p class="text-sm text-blue-600">Academic Package • 623 students</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold text-blue-600">₹6,230</p>
+                                <p class="text-xs text-gray-500">Monthly</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900">St. Mary's School</p>
+                                <p class="text-sm text-purple-600">Academic Package • 345 students</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold text-purple-600">₹3,450</p>
+                                <p class="text-xs text-gray-500">Monthly</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MSME Badge -->
+    <div class="msme-badge">
+        <i class="fas fa-certificate mr-2"></i>
+        MSME Registered
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Current role state
+        let currentRole = 'super_admin';
+
+        // Switch between roles
+        function switchRole(role) {
+            currentRole = role;
+            
+            // Update active role styling
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.closest('.role-option').classList.add('active');
+            
+            // Update dashboard content based on role
+            updateDashboardForRole(role);
+        }
+
+        function updateDashboardForRole(role) {
+            const header = document.querySelector('header h1');
+            const subtitle = document.querySelector('header p');
+            
+            if (role === 'super_admin') {
+                header.textContent = 'Super Admin Dashboard';
+                subtitle.textContent = 'Complete control over SmartGenEduX platform';
+            } else if (role === 'school_admin') {
+                header.textContent = 'School Admin Dashboard';
+                subtitle.textContent = 'Manage your school operations efficiently';
+            } else if (role === 'teacher') {
+                header.textContent = 'Teacher Dashboard';
+                subtitle.textContent = 'Your classroom management hub';
+            }
+        }
+
+        // Open module
+        function openModule(moduleName) {
+            const moduleUrls = {
+                'timetable': 'modules/timetable.html',
+                'attendance': 'modules/attendance.html',
+                'fee-management': 'modules/fee-management.html',
+                'behavior': 'modules/student-behavior.html',
+                'substitution': 'modules/substitution.html',
+                'reports': 'modules/report-tracker.html',
+                'events': 'modules/school-events.html',
+                'whatsapp': 'modules/whatsapp-alerts.html',
+                'vipu-ai': 'modules/vipu-ai.html',
+                'id-card-generator': 'modules/id-card-generator.html',
+                'cbse-registration': 'modules/cbse-registration.html'
+            };
+            
+            if (moduleUrls[moduleName]) {
+                window.open(moduleUrls[moduleName], '_blank');
+            } else {
+                showToast(`${moduleName} module opening...`, 'info');
+            }
+        }
+
+        // Show different sections
+        function showSection(section) {
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show different content based on section
+            const mainContent = document.getElementById('mainContent');
+            
+            if (section === 'schools') {
+                mainContent.innerHTML = generateSchoolsContent();
+            } else if (section === 'revenue') {
+                mainContent.innerHTML = generateRevenueContent();
+            } else if (section === 'modules') {
+                mainContent.innerHTML = generateModulesContent();
+            } else if (section === 'reports') {
+                mainContent.innerHTML = generateReportsContent();
+            } else if (section === 'settings') {
+                mainContent.innerHTML = generateSettingsContent();
+            } else {
+                // Default dashboard content is already loaded
+                location.reload();
+            }
+        }
+
+        function generateSchoolsContent() {
+            return `
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">School Management</h2>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="border rounded-lg p-4">
+                                <h3 class="font-bold text-lg">Delhi Public School</h3>
+                                <p class="text-gray-600">Premium Package</p>
+                                <p class="text-sm text-gray-500">487 students • 25 teachers</p>
+                                <div class="mt-2">
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Active</span>
+                                </div>
+                            </div>
+                            <div class="border rounded-lg p-4">
+                                <h3 class="font-bold text-lg">Ryan International</h3>
+                                <p class="text-gray-600">Academic Package</p>
+                                <p class="text-sm text-gray-500">623 students • 34 teachers</p>
+                                <div class="mt-2">
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Active</span>
+                                </div>
+                            </div>
+                            <div class="border rounded-lg p-4">
+                                <h3 class="font-bold text-lg">St. Mary's School</h3>
+                                <p class="text-gray-600">Academic Package</p>
+                                <p class="text-sm text-gray-500">345 students • 18 teachers</p>
+                                <div class="mt-2">
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateRevenueContent() {
+            return `
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Revenue Analytics</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="font-bold text-lg mb-4">Monthly Revenue Breakdown</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span>Academic Package (₹10)</span>
+                                    <span class="font-bold">₹91,200</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Premium Add-on (₹2)</span>
+                                    <span class="font-bold">₹18,240</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Setup Fees</span>
+                                    <span class="font-bold">₹15,000</span>
+                                </div>
+                                <hr>
+                                <div class="flex justify-between text-lg font-bold">
+                                    <span>Total Revenue</span>
+                                    <span>₹1,24,440</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="font-bold text-lg mb-4">Growth Metrics</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span>Monthly Growth</span>
+                                    <span class="font-bold text-green-600">+12.5%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>New Schools</span>
+                                    <span class="font-bold text-blue-600">+3</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Premium Upgrades</span>
+                                    <span class="font-bold text-purple-600">+2</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Churn Rate</span>
+                                    <span class="font-bold text-red-600">0.8%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateModulesContent() {
+            return `
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Module Analytics</h2>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="font-bold text-lg mb-4">Usage Statistics</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                <h4 class="font-bold text-blue-600">Most Used</h4>
+                                <p class="text-lg">Attendance System</p>
+                                <p class="text-sm text-gray-600">94% schools active</p>
+                            </div>
+                            <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <h4 class="font-bold text-green-600">Highest Engagement</h4>
+                                <p class="text-lg">Fee Management</p>
+                                <p class="text-sm text-gray-600">89% daily usage</p>
+                            </div>
+                            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                <h4 class="font-bold text-purple-600">Latest Addition</h4>
+                                <p class="text-lg">WhatsApp Alerts</p>
+                                <p class="text-sm text-gray-600">78% adoption</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateReportsContent() {
+            return `
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">System Reports</h2>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="font-bold text-lg mb-4">Available Reports</h3>
+                                <ul class="space-y-2">
+                                    <li class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+                                        <span>Monthly Revenue Report</span>
+                                        <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Download</button>
+                                    </li>
+                                    <li class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+                                        <span>School Performance Analytics</span>
+                                        <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Download</button>
+                                    </li>
+                                    <li class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+                                        <span>Module Usage Statistics</span>
+                                        <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Download</button>
+                                    </li>
+                                    <li class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+                                        <span>System Health Report</span>
+                                        <button class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Download</button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg mb-4">Quick Stats</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span>Total Transactions</span>
+                                        <span class="font-bold">12,547</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>System Uptime</span>
+                                        <span class="font-bold text-green-600">99.9%</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Active Users</span>
+                                        <span class="font-bold">1,247</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Data Storage</span>
+                                        <span class="font-bold">2.4 TB</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateSettingsContent() {
+            return `
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">System Settings</h2>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="font-bold text-lg mb-4">Platform Configuration</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Platform Name</label>
+                                        <input type="text" value="SmartGenEduX" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Support Email</label>
+                                        <input type="email" value="support@smartgenedux.org" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Maintenance Mode</label>
+                                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                            <option>Disabled</option>
+                                            <option>Enabled</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg mb-4">Pricing Configuration</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Academic Package Price</label>
+                                        <input type="number" value="10" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Premium Add-on Price</label>
+                                        <input type="number" value="2" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Setup Fee</label>
+                                        <input type="number" value="1000" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                Save Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 
+                           type === 'warning' ? 'bg-yellow-500' : 
+                           type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            
+            toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Real-time updates simulation
+        setInterval(() => {
+            // Simulate real-time stats updates
+            const revenue = document.querySelector('.stats-card .text-3xl');
+            if (revenue && Math.random() > 0.95) {
+                const currentValue = parseInt(revenue.textContent.replace(/[₹,]/g, ''));
+                revenue.textContent = `₹${(currentValue + Math.floor(Math.random() * 1000)).toLocaleString()}`;
+                showToast('New school payment received!', 'success');
+            }
+        }, 10000);
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            showToast('Welcome to SmartGenEduX Super Admin Dashboard', 'success');
+        });
+    </script>
+</body>
+</html>

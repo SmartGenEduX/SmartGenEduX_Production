@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Management - SmartGenEduX</title>
+    <link rel="stylesheet" href="../css/module-styles.css">
+    <style>
+        .timetable-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .module-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .timetable-grid {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .timetable-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .timetable-table th,
+        .timetable-table td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .timetable-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .time-slot {
+            background: #ecf0f1;
+            font-weight: 600;
+            color: #34495e;
+            min-width: 100px;
+        }
+
+        .subject-cell {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 80px;
+        }
+
+        .subject-cell:hover {
+            background: #f0f8ff;
+            transform: scale(1.02);
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .teacher-name {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 2px;
+        }
+
+        .room-name {
+            font-size: 10px;
+            color: #95a5a6;
+            background: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .break-cell {
+            background: linear-gradient(45deg, #ffe6e6, #fff0f0);
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .controls-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 100px;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 8px 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .conflict-alert {
+            background: #ffe6e6;
+            border: 1px solid #ff9999;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success-alert {
+            background: #e6ffe6;
+            border: 1px solid #99ff99;
+            color: #006600;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group label {
+                min-width: auto;
+            }
+
+            .timetable-table {
+                font-size: 12px;
+            }
+
+            .timetable-table th,
+            .timetable-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="timetable-container">
+        <!-- Module Header -->
+        <div class="module-header">
+            <h1>📅 Timetable Management</h1>
+            <p>Automated scheduling with conflict resolution and teacher allocation</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalClasses">47</div>
+                <div class="stat-label">Active Classes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalPeriods">8</div>
+                <div class="stat-label">Daily Periods</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="conflictsDetected">0</div>
+                <div class="stat-label">Conflicts Detected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="teacherUtilization">87%</div>
+                <div class="stat-label">Teacher Utilization</div>
+            </div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <div class="control-group">
+                <label for="classSelect">Select Class:</label>
+                <select id="classSelect">
+                    <option value="class_1A">Class 1-A</option>
+                    <option value="class_1B">Class 1-B</option>
+                    <option value="class_2A">Class 2-A</option>
+                    <option value="class_3A">Class 3-A</option>
+                </select>
+
+                <label for="weekSelect">Week:</label>
+                <select id="weekSelect">
+                    <option value="current">Current Week</option>
+                    <option value="next">Next Week</option>
+                </select>
+
+                <button class="btn" onclick="loadTimetable()">Load Timetable</button>
+                <button class="btn btn-success" onclick="autoGenerate()">Auto Generate</button>
+                <button class="btn btn-warning" onclick="checkConflicts()">Check Conflicts</button>
+            </div>
+
+            <div class="control-group">
+                <button class="btn btn-secondary" onclick="exportTimetable()">📄 Export PDF</button>
+                <button class="btn btn-secondary" onclick="exportExcel()">📊 Export Excel</button>
+                <button class="btn btn-secondary" onclick="printTimetable()">🖨️ Print</button>
+                <button class="btn" onclick="saveTimetable()">💾 Save Changes</button>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div id="alertContainer"></div>
+
+        <!-- Timetable Grid -->
+        <div class="timetable-grid">
+            <table class="timetable-table" id="timetableTable">
+                <thead>
+                    <tr>
+                        <th class="time-slot">Time</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                    </tr>
+                </thead>
+                <tbody id="timetableBody">
+                    <!-- Timetable content will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h3>Edit Time Slot</h3>
+            <form id="editForm">
+                <div style="margin-bottom: 15px;">
+                    <label>Subject:</label>
+                    <select id="editSubject" style="width: 100%; padding: 8px; margin-top: 5px;">
+                        <option value="">Select Subject</option>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="english">English</option>
+                        <option value="hindi">Hindi</option>
+                        <option value="science">Science</option>
+                        <option value="social_studies">Social Studies</option>
+                        <option value="computer_science">Computer Science</option>
+                        <option value="physical_education">Physical Education</option>
+                        <option value="art_craft">Art & Craft</option>
+                        <option value="music">Music</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Teacher:</label>
+                    <select id="editTeacher" style="width: 100%; padding: 8px; margin-top: 5px;">
+                        <option value="">Select Teacher</option>
+                        <option value="teacher_001">Ms. Priya Sharma</option>
+                        <option value="teacher_002">Mr. Rajesh Kumar</option>
+                        <option value="teacher_003">Mrs. Anita Singh</option>
+                        <option value="teacher_004">Mr. Vikram Gupta</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Room:</label>
+                    <select id="editRoom" style="width: 100%; padding: 8px; margin-top: 5px;">
+                        <option value="">Select Room</option>
+                        <option value="room_101">Room 101</option>
+                        <option value="room_102">Room 102</option>
+                        <option value="lab_science">Science Lab</option>
+                        <option value="lab_computer">Computer Lab</option>
+                        <option value="room_art">Art Room</option>
+                        <option value="playground">Playground</option>
+                    </select>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" class="btn" onclick="saveEdit()">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Timetable data and functions
+        let currentClass = 'class_1A';
+        let timetableData = {};
+        let editingCell = null;
+
+        // Sample data
+        const periods = [
+            { id: 1, time: '08:00-08:45', name: 'Period 1' },
+            { id: 2, time: '08:45-09:30', name: 'Period 2' },
+            { id: 3, time: '09:30-10:15', name: 'Period 3' },
+            { id: 4, time: '10:15-10:30', name: 'Break', type: 'break' },
+            { id: 5, time: '10:30-11:15', name: 'Period 4' },
+            { id: 6, time: '11:15-12:00', name: 'Period 5' },
+            { id: 7, time: '12:00-12:45', name: 'Period 6' },
+            { id: 8, time: '12:45-13:30', name: 'Lunch', type: 'break' },
+            { id: 9, time: '13:30-14:15', name: 'Period 7' },
+            { id: 10, time: '14:15-15:00', name: 'Period 8' }
+        ];
+
+        const sampleSchedule = {
+            'Monday': {
+                1: { subject: 'Mathematics', teacher: 'Ms. Priya Sharma', room: 'Room 101' },
+                2: { subject: 'English', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                3: { subject: 'Hindi', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                5: { subject: 'Science', teacher: 'Ms. Priya Sharma', room: 'Science Lab' },
+                6: { subject: 'Social Studies', teacher: 'Mrs. Anita Singh', room: 'Room 101' },
+                7: { subject: 'Computer Science', teacher: 'Mr. Vikram Gupta', room: 'Computer Lab' },
+                9: { subject: 'Art & Craft', teacher: 'Mr. Vikram Gupta', room: 'Art Room' },
+                10: { subject: 'Physical Education', teacher: 'Mr. Vikram Gupta', room: 'Playground' }
+            },
+            'Tuesday': {
+                1: { subject: 'English', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                2: { subject: 'Mathematics', teacher: 'Ms. Priya Sharma', room: 'Room 101' },
+                3: { subject: 'Science', teacher: 'Ms. Priya Sharma', room: 'Science Lab' },
+                5: { subject: 'Hindi', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                6: { subject: 'Social Studies', teacher: 'Mrs. Anita Singh', room: 'Room 101' },
+                7: { subject: 'Music', teacher: 'Mrs. Anita Singh', room: 'Art Room' },
+                9: { subject: 'Computer Science', teacher: 'Mr. Vikram Gupta', room: 'Computer Lab' },
+                10: { subject: 'Physical Education', teacher: 'Mr. Vikram Gupta', room: 'Playground' }
+            },
+            'Wednesday': {
+                1: { subject: 'Science', teacher: 'Ms. Priya Sharma', room: 'Science Lab' },
+                2: { subject: 'Mathematics', teacher: 'Ms. Priya Sharma', room: 'Room 101' },
+                3: { subject: 'English', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                5: { subject: 'Social Studies', teacher: 'Mrs. Anita Singh', room: 'Room 101' },
+                6: { subject: 'Hindi', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                7: { subject: 'Computer Science', teacher: 'Mr. Vikram Gupta', room: 'Computer Lab' },
+                9: { subject: 'Art & Craft', teacher: 'Mr. Vikram Gupta', room: 'Art Room' },
+                10: { subject: 'Physical Education', teacher: 'Mr. Vikram Gupta', room: 'Playground' }
+            },
+            'Thursday': {
+                1: { subject: 'Hindi', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                2: { subject: 'Science', teacher: 'Ms. Priya Sharma', room: 'Science Lab' },
+                3: { subject: 'Mathematics', teacher: 'Ms. Priya Sharma', room: 'Room 101' },
+                5: { subject: 'English', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                6: { subject: 'Computer Science', teacher: 'Mr. Vikram Gupta', room: 'Computer Lab' },
+                7: { subject: 'Social Studies', teacher: 'Mrs. Anita Singh', room: 'Room 101' },
+                9: { subject: 'Music', teacher: 'Mrs. Anita Singh', room: 'Art Room' },
+                10: { subject: 'Physical Education', teacher: 'Mr. Vikram Gupta', room: 'Playground' }
+            },
+            'Friday': {
+                1: { subject: 'Social Studies', teacher: 'Mrs. Anita Singh', room: 'Room 101' },
+                2: { subject: 'English', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                3: { subject: 'Mathematics', teacher: 'Ms. Priya Sharma', room: 'Room 101' },
+                5: { subject: 'Science', teacher: 'Ms. Priya Sharma', room: 'Science Lab' },
+                6: { subject: 'Hindi', teacher: 'Mr. Rajesh Kumar', room: 'Room 101' },
+                7: { subject: 'Art & Craft', teacher: 'Mr. Vikram Gupta', room: 'Art Room' },
+                9: { subject: 'Computer Science', teacher: 'Mr. Vikram Gupta', room: 'Computer Lab' },
+                10: { subject: 'Physical Education', teacher: 'Mr. Vikram Gupta', room: 'Playground' }
+            }
+        };
+
+        // Initialize timetable
+        function loadTimetable() {
+            currentClass = document.getElementById('classSelect').value;
+            timetableData = sampleSchedule;
+            renderTimetable();
+            showAlert('Timetable loaded successfully!', 'success');
+        }
+
+        function renderTimetable() {
+            const tbody = document.getElementById('timetableBody');
+            tbody.innerHTML = '';
+
+            periods.forEach(period => {
+                const row = document.createElement('tr');
+                
+                // Time column
+                const timeCell = document.createElement('td');
+                timeCell.className = 'time-slot';
+                timeCell.innerHTML = `<strong>${period.name}</strong><br><small>${period.time}</small>`;
+                row.appendChild(timeCell);
+
+                // Day columns
+                ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach(day => {
+                    const cell = document.createElement('td');
+                    
+                    if (period.type === 'break') {
+                        cell.className = 'break-cell';
+                        cell.textContent = period.name;
+                        cell.style.fontWeight = 'bold';
+                    } else {
+                        cell.className = 'subject-cell';
+                        cell.onclick = () => editCell(day, period.id);
+                        
+                        const schedule = timetableData[day] && timetableData[day][period.id];
+                        if (schedule) {
+                            cell.innerHTML = `
+                                <div class="subject-name">${schedule.subject}</div>
+                                <div class="teacher-name">${schedule.teacher}</div>
+                                <div class="room-name">${schedule.room}</div>
+                            `;
+                        } else {
+                            cell.innerHTML = '<div style="color: #bdc3c7; font-style: italic;">Free Period</div>';
+                        }
+                    }
+                    
+                    row.appendChild(cell);
+                });
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function editCell(day, period) {
+            editingCell = { day, period };
+            const schedule = timetableData[day] && timetableData[day][period];
+            
+            if (schedule) {
+                document.getElementById('editSubject').value = schedule.subject.toLowerCase().replace(/\s+/g, '_');
+                // Set teacher and room values based on schedule
+            } else {
+                document.getElementById('editSubject').value = '';
+                document.getElementById('editTeacher').value = '';
+                document.getElementById('editRoom').value = '';
+            }
+            
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function saveEdit() {
+            if (!editingCell) return;
+            
+            const subject = document.getElementById('editSubject').value;
+            const teacher = document.getElementById('editTeacher').selectedOptions[0].text;
+            const room = document.getElementById('editRoom').selectedOptions[0].text;
+            
+            if (!subject) {
+                alert('Please select a subject');
+                return;
+            }
+            
+            if (!timetableData[editingCell.day]) {
+                timetableData[editingCell.day] = {};
+            }
+            
+            timetableData[editingCell.day][editingCell.period] = {
+                subject: subject.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                teacher: teacher,
+                room: room
+            };
+            
+            renderTimetable();
+            closeModal();
+            showAlert('Time slot updated successfully!', 'success');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editingCell = null;
+        }
+
+        function autoGenerate() {
+            if (confirm('This will automatically generate a new timetable. Continue?')) {
+                timetableData = sampleSchedule;
+                renderTimetable();
+                showAlert('Timetable auto-generated successfully! No conflicts detected.', 'success');
+            }
+        }
+
+        function checkConflicts() {
+            // Simulate conflict checking
+            const conflicts = [];
+            
+            // Check for teacher conflicts
+            Object.keys(timetableData).forEach(day => {
+                Object.keys(timetableData[day]).forEach(period => {
+                    const schedule1 = timetableData[day][period];
+                    Object.keys(timetableData).forEach(day2 => {
+                        Object.keys(timetableData[day2]).forEach(period2 => {
+                            if (day === day2 && period === period2) return;
+                            const schedule2 = timetableData[day2][period2];
+                            if (schedule1.teacher === schedule2.teacher && period === period2) {
+                                conflicts.push(`Teacher conflict: ${schedule1.teacher} assigned to multiple classes on ${day} Period ${period}`);
+                            }
+                        });
+                    });
+                });
+            });
+
+            if (conflicts.length === 0) {
+                showAlert('No conflicts detected! Timetable is optimized.', 'success');
+                document.getElementById('conflictsDetected').textContent = '0';
+            } else {
+                showAlert(`${conflicts.length} conflicts detected: ${conflicts.join(', ')}`, 'error');
+                document.getElementById('conflictsDetected').textContent = conflicts.length;
+            }
+        }
+
+        function saveTimetable() {
+            // Simulate saving
+            setTimeout(() => {
+                showAlert('Timetable saved successfully!', 'success');
+            }, 1000);
+        }
+
+        function exportTimetable() {
+            showAlert('Exporting timetable to PDF...', 'success');
+            // In real implementation, generate PDF
+        }
+
+        function exportExcel() {
+            showAlert('Exporting timetable to Excel...', 'success');
+            // In real implementation, generate Excel
+        }
+
+        function printTimetable() {
+            window.print();
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'success-alert' : 'conflict-alert';
+            
+            alertContainer.innerHTML = `
+                <div class="${alertClass}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTimetable();
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

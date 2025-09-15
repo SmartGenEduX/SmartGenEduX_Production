@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vipu AI - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg shadow-md p-6 mb-6 text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/vipu-ai.png" alt="Vipu AI" class="w-12 h-12 mr-4">
+                    <div>
+                        <h1 class="text-2xl font-bold">Vipu AI Assistant</h1>
+                        <p class="opacity-90">Your intelligent educational assistant powered by advanced AI</p>
+                    </div>
+                </div>
+                <button onclick="window.close()" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded hover:bg-opacity-30">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Features Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-comments text-2xl text-blue-600"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2">Smart Chat</h3>
+                <p class="text-gray-600">Get instant answers about students, curriculum, and school operations</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-chart-bar text-2xl text-green-600"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2">Analytics</h3>
+                <p class="text-gray-600">AI-powered insights on student performance and trends</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-magic text-2xl text-purple-600"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2">Automation</h3>
+                <p class="text-gray-600">Automate routine tasks and generate intelligent reports</p>
+            </div>
+        </div>
+
+        <!-- AI Chat Interface -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">
+                    <i class="fas fa-robot mr-2 text-purple-600"></i>Chat with Vipu AI
+                </h2>
+                
+                <!-- Chat Messages -->
+                <div id="chatMessages" class="h-64 overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50">
+                    <div class="flex items-start mb-4">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-robot text-purple-600"></i>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 shadow-sm">
+                            <p>Hello! I'm Vipu AI, your educational assistant. I can help you with:</p>
+                            <ul class="list-disc list-inside mt-2 text-sm">
+                                <li>Student performance analysis</li>
+                                <li>Curriculum planning</li>
+                                <li>Administrative queries</li>
+                                <li>Report generation</li>
+                                <li>Data insights</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="flex space-x-2">
+                    <input 
+                        type="text" 
+                        id="chatInput" 
+                        placeholder="Ask me anything about your school data..."
+                        class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        onkeypress="handleChatEnter(event)"
+                    >
+                    <button 
+                        onclick="sendMessage()" 
+                        class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
+                    >
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600 mb-2">Quick Questions:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="quickQuestion('attendance')" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm hover:bg-blue-200">
+                            Show attendance trends
+                        </button>
+                        <button onclick="quickQuestion('performance')" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm hover:bg-green-200">
+                            Top performing students
+                        </button>
+                        <button onclick="quickQuestion('fees')" class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm hover:bg-orange-200">
+                            Fee collection status
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights Panel -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">
+                    <i class="fas fa-brain mr-2 text-blue-600"></i>AI Insights
+                </h2>
+                
+                <!-- Insight Cards -->
+                <div class="space-y-4">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-trending-up text-blue-600 mr-2"></i>
+                            <h3 class="font-semibold text-blue-800">Performance Alert</h3>
+                        </div>
+                        <p class="text-blue-700 text-sm">
+                            Class 5A mathematics scores have improved by 15% this month. 
+                            Consider similar teaching methods for other subjects.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                            <h3 class="font-semibold text-yellow-800">Attention Needed</h3>
+                        </div>
+                        <p class="text-yellow-700 text-sm">
+                            3 students have attendance below 75%. Schedule parent meetings to address concerns.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-star text-green-600 mr-2"></i>
+                            <h3 class="font-semibold text-green-800">Success Story</h3>
+                        </div>
+                        <p class="text-green-700 text-sm">
+                            Fee collection rate reached 95% this month - highest in 6 months!
+                        </p>
+                    </div>
+                    
+                    <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-lightbulb text-purple-600 mr-2"></i>
+                            <h3 class="font-semibold text-purple-800">AI Recommendation</h3>
+                        </div>
+                        <p class="text-purple-700 text-sm">
+                            Based on behavior patterns, implement peer mentoring program for improved classroom dynamics.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Tools -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">
+                <i class="fas fa-tools mr-2 text-green-600"></i>AI-Powered Tools
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button onclick="generateReport()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all">
+                    <i class="fas fa-file-alt text-2xl mb-2"></i>
+                    <div class="font-semibold">Smart Reports</div>
+                    <div class="text-xs opacity-90">AI-generated insights</div>
+                </button>
+                
+                <button onclick="predictTrends()" class="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all">
+                    <i class="fas fa-chart-line text-2xl mb-2"></i>
+                    <div class="font-semibold">Trend Analysis</div>
+                    <div class="text-xs opacity-90">Predict future patterns</div>
+                </button>
+                
+                <button onclick="optimizeSchedule()" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all">
+                    <i class="fas fa-calendar-alt text-2xl mb-2"></i>
+                    <div class="font-semibold">Schedule Optimizer</div>
+                    <div class="text-xs opacity-90">AI-optimized timetables</div>
+                </button>
+                
+                <button onclick="studentRecommendations()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all">
+                    <i class="fas fa-user-graduate text-2xl mb-2"></i>
+                    <div class="font-semibold">Student Insights</div>
+                    <div class="text-xs opacity-90">Personalized recommendations</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- VipuDev Integration -->
+        <div class="bg-gradient-to-r from-teal-500 to-blue-600 rounded-lg shadow-md p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/vipudev.png" alt="VipuDev" class="w-12 h-12 mr-4">
+                    <div>
+                        <h2 class="text-xl font-bold">Powered by VipuDev AI</h2>
+                        <p class="opacity-90">Advanced AI technology for educational excellence</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold">99.9%</div>
+                    <div class="text-sm opacity-90">Accuracy Rate</div>
+                </div>
+            </div>
+            
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-database text-2xl mr-3"></i>
+                        <div>
+                            <div class="font-semibold">Smart Data Processing</div>
+                            <div class="text-sm opacity-90">Real-time analysis</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-shield-alt text-2xl mr-3"></i>
+                        <div>
+                            <div class="font-semibold">Secure & Private</div>
+                            <div class="text-sm opacity-90">Data protection</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-rocket text-2xl mr-3"></i>
+                        <div>
+                            <div class="font-semibold">Continuous Learning</div>
+                            <div class="text-sm opacity-90">Adaptive AI</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chat functionality
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessageToChat('user', message);
+            input.value = '';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const response = generateAIResponse(message);
+                addMessageToChat('ai', response);
+            }, 1500);
+        }
+
+        function handleChatEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function addMessageToChat(sender, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start mb-4';
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="ml-auto">
+                        <div class="bg-purple-600 text-white rounded-lg p-3 shadow-sm max-w-xs">
+                            <p>${message}</p>
+                        </div>
+                    </div>
+                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center ml-3">
+                        <i class="fas fa-user text-gray-600"></i>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-robot text-purple-600"></i>
+                    </div>
+                    <div class="bg-white rounded-lg p-3 shadow-sm max-w-xs">
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function generateAIResponse(userMessage) {
+            const responses = {
+                'attendance': "Based on current data, overall attendance is 87.5%. Class 5A has the highest attendance at 92%, while Class 3B needs attention with 81%. I recommend implementing an attendance reward system.",
+                'performance': "Top performing students this month: 1) Amit Singh (95.2% avg), 2) Neha Patel (93.8% avg), 3) Rahul Kumar (91.5% avg). Mathematics and Science show strongest performance across all classes.",
+                'fees': "Fee collection status: 95% collected (₹8,42,350), 5% pending (₹1,23,450). 23 students have outstanding fees. I can generate reminder messages for parents.",
+                'default': "I understand you're asking about school operations. Could you be more specific? I can help with attendance analysis, student performance, fee management, scheduling, or generating reports."
+            };
+            
+            const lowerMessage = userMessage.toLowerCase();
+            
+            if (lowerMessage.includes('attendance')) return responses.attendance;
+            if (lowerMessage.includes('performance') || lowerMessage.includes('student') || lowerMessage.includes('marks')) return responses.performance;
+            if (lowerMessage.includes('fee') || lowerMessage.includes('payment') || lowerMessage.includes('money')) return responses.fees;
+            
+            return responses.default;
+        }
+
+        function quickQuestion(type) {
+            const questions = {
+                'attendance': 'Show me current attendance trends and patterns',
+                'performance': 'Who are the top performing students this month?',
+                'fees': 'What is the current fee collection status?'
+            };
+            
+            document.getElementById('chatInput').value = questions[type];
+            sendMessage();
+        }
+
+        // AI Tools
+        function generateReport() {
+            showAIProcess('Generating comprehensive AI report...', () => {
+                showSuccess('AI report generated successfully! Check your reports section.');
+            });
+        }
+
+        function predictTrends() {
+            showAIProcess('Analyzing data patterns and predicting trends...', () => {
+                showSuccess('Trend analysis complete! View insights in the analytics dashboard.');
+            });
+        }
+
+        function optimizeSchedule() {
+            showAIProcess('Optimizing timetable using AI algorithms...', () => {
+                showSuccess('Schedule optimization complete! New timetable suggestions available.');
+            });
+        }
+
+        function studentRecommendations() {
+            showAIProcess('Analyzing student data for personalized recommendations...', () => {
+                showSuccess('Student insights generated! Check individual student profiles.');
+            });
+        }
+
+        function showAIProcess(message, callback) {
+            const processDiv = document.createElement('div');
+            processDiv.className = 'fixed top-4 right-4 bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            processDiv.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${message}`;
+            document.body.appendChild(processDiv);
+            
+            setTimeout(() => {
+                processDiv.remove();
+                callback();
+            }, 3000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            successDiv.innerHTML = `<i class="fas fa-check mr-2"></i>${message}`;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

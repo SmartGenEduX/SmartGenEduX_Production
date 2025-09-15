@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Substitution - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/substitution.png" alt="Substitution" class="w-12 h-12 mr-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Teacher Substitution Management</h1>
+                        <p class="text-gray-600">Smart substitute allocation with automated notifications</p>
+                    </div>
+                </div>
+                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-red-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-user-times text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">3</div>
+                        <div class="text-red-100">Absent Today</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-green-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-user-check text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">7</div>
+                        <div class="text-green-100">Substitutes Assigned</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-blue-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">15</div>
+                        <div class="text-blue-100">Pending Assignments</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-purple-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">87%</div>
+                        <div class="text-purple-100">Coverage Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Teacher Absence -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Log Teacher Absence</h2>
+            <form id="absenceForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Teacher</label>
+                        <select id="absentTeacher" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Teacher</option>
+                            <option value="1">Mrs. Sharma - Mathematics</option>
+                            <option value="2">Mr. Patel - English</option>
+                            <option value="3">Dr. Singh - Science</option>
+                            <option value="4">Ms. Kumar - Social Studies</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Absence Type</label>
+                        <select id="absenceType" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Type</option>
+                            <option value="sick">Sick Leave</option>
+                            <option value="emergency">Emergency</option>
+                            <option value="personal">Personal Leave</option>
+                            <option value="training">Training/Workshop</option>
+                            <option value="official">Official Work</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Date Range</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="date" id="startDate" class="border rounded px-3 py-2" required>
+                            <input type="date" id="endDate" class="border rounded px-3 py-2" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Affected Periods</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" value="1" class="mr-2"> Period 1
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" value="2" class="mr-2"> Period 2
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" value="3" class="mr-2"> Period 3
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" value="4" class="mr-2"> Period 4
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" value="5" class="mr-2"> Period 5
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" value="6" class="mr-2"> Period 6
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Notes</label>
+                        <textarea id="absenceNotes" rows="3" placeholder="Additional information..." class="w-full border rounded px-3 py-2"></textarea>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Log Absence
+                        </button>
+                        <button type="button" onclick="autoAssignSubstitute()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                            <i class="fas fa-magic mr-2"></i>Auto-Assign Substitute
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Today's Substitutions -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Today's Substitutions</h2>
+                <div class="flex space-x-2">
+                    <button onclick="notifyAllSubstitutes()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+                        <i class="fas fa-bell mr-2"></i>Notify All
+                    </button>
+                    <button onclick="generateSubReport()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                        <i class="fas fa-file-alt mr-2"></i>Generate Report
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Substitution Card 1 -->
+                <div class="border rounded-lg p-4 bg-yellow-50">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Period 2 - Mathematics</h3>
+                            <p class="text-sm text-gray-600">Class 5A • 08:50 - 09:35</p>
+                        </div>
+                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Pending</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm">
+                            <i class="fas fa-user-times text-red-500 mr-2"></i>
+                            <span>Absent: Mrs. Sharma (Sick Leave)</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <i class="fas fa-user-plus text-green-500 mr-2"></i>
+                            <span>Substitute: Mr. Verma (Available)</span>
+                        </div>
+                        <div class="flex space-x-2 mt-3">
+                            <button onclick="confirmSubstitution(1)" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
+                                Confirm
+                            </button>
+                            <button onclick="findAlternative(1)" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+                                Find Alternative
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Substitution Card 2 -->
+                <div class="border rounded-lg p-4 bg-green-50">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">Period 4 - English</h3>
+                            <p class="text-sm text-gray-600">Class 5B • 11:00 - 11:45</p>
+                        </div>
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Confirmed</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center text-sm">
+                            <i class="fas fa-user-times text-red-500 mr-2"></i>
+                            <span>Absent: Mr. Patel (Training)</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <i class="fas fa-user-check text-green-500 mr-2"></i>
+                            <span>Substitute: Ms. Gupta (Confirmed)</span>
+                        </div>
+                        <div class="flex space-x-2 mt-3">
+                            <button class="bg-gray-400 text-white px-3 py-1 rounded text-sm cursor-not-allowed" disabled>
+                                Confirmed
+                            </button>
+                            <button onclick="sendReminder(2)" class="bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700">
+                                Send Reminder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add more substitution cards as needed -->
+            </div>
+        </div>
+
+        <!-- Available Substitutes -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Available Substitute Teachers</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Teacher</th>
+                            <th class="px-4 py-2 text-left">Subjects</th>
+                            <th class="px-4 py-2 text-left">Availability</th>
+                            <th class="px-4 py-2 text-left">Current Load</th>
+                            <th class="px-4 py-2 text-left">Rating</th>
+                            <th class="px-4 py-2 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-blue-600 font-medium">MV</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Mr. Verma</div>
+                                        <div class="text-gray-500 text-xs">Mathematics</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2">Math, Physics</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Available</span>
+                            </td>
+                            <td class="px-4 py-2">2/6 periods</td>
+                            <td class="px-4 py-2">
+                                <div class="flex items-center">
+                                    <span class="text-yellow-500">★★★★☆</span>
+                                    <span class="ml-1 text-xs text-gray-500">(4.2)</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2">
+                                <button onclick="assignSubstitute('verma')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700">
+                                    Assign
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-pink-600 font-medium">SG</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Ms. Gupta</div>
+                                        <div class="text-gray-500 text-xs">English</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2">English, Hindi</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Busy</span>
+                            </td>
+                            <td class="px-4 py-2">5/6 periods</td>
+                            <td class="px-4 py-2">
+                                <div class="flex items-center">
+                                    <span class="text-yellow-500">★★★★★</span>
+                                    <span class="ml-1 text-xs text-gray-500">(4.8)</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2">
+                                <button class="bg-gray-400 text-white px-3 py-1 rounded text-xs cursor-not-allowed" disabled>
+                                    Unavailable
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form submission
+        document.getElementById('absenceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            logAbsence();
+        });
+
+        function logAbsence() {
+            const formData = {
+                teacher: document.getElementById('absentTeacher').value,
+                type: document.getElementById('absenceType').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                notes: document.getElementById('absenceNotes').value
+            };
+            
+            if (!formData.teacher || !formData.type || !formData.startDate) {
+                showMessage('Please fill all required fields', 'error');
+                return;
+            }
+            
+            showMessage('Teacher absence logged successfully!', 'success');
+            document.getElementById('absenceForm').reset();
+        }
+
+        function autoAssignSubstitute() {
+            const teacher = document.getElementById('absentTeacher').value;
+            if (!teacher) {
+                showMessage('Please select an absent teacher first', 'error');
+                return;
+            }
+            
+            showMessage('Finding best substitute match...', 'info');
+            
+            setTimeout(() => {
+                showMessage('Substitute automatically assigned based on availability and expertise!', 'success');
+            }, 2000);
+        }
+
+        function confirmSubstitution(id) {
+            showMessage('Substitution confirmed and notification sent!', 'success');
+        }
+
+        function findAlternative(id) {
+            showMessage('Searching for alternative substitute teachers...', 'info');
+        }
+
+        function sendReminder(id) {
+            showMessage('Reminder sent to substitute teacher', 'success');
+        }
+
+        function assignSubstitute(teacher) {
+            showMessage(`${teacher} assigned as substitute teacher`, 'success');
+        }
+
+        function notifyAllSubstitutes() {
+            showMessage('Notifications sent to all substitute teachers', 'success');
+        }
+
+        function generateSubReport() {
+            showMessage('Substitution report generated successfully', 'success');
+        }
+
+        function showMessage(message, type) {
+            const colors = {
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
+                'info': 'bg-blue-600'
+            };
+            
+            const icons = {
+                'success': 'fas fa-check',
+                'error': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

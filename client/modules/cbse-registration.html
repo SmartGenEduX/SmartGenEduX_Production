@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBSE Registration - SmartGenEduX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <img src="../assets/logos/smartgenedx-logo.png" alt="SmartGenEduX" class="h-10 w-auto mr-4">
+                    <h1 class="text-2xl font-bold text-gray-900">CBSE Registration</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">Welcome, Admin</span>
+                    <button onclick="goBack()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900" id="totalRegistrations">0</h3>
+                        <p class="text-sm text-gray-600">Total Registrations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-clock text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900" id="pendingVerification">0</h3>
+                        <p class="text-sm text-gray-600">Pending Verification</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-check-circle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900" id="approved">0</h3>
+                        <p class="text-sm text-gray-600">Principal Approved</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-paper-plane text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900" id="cbseSubmitted">0</h3>
+                        <p class="text-sm text-gray-600">CBSE Submitted</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8">
+            <div class="flex flex-wrap gap-4">
+                <button onclick="showNewRegistrationForm()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center">
+                    <i class="fas fa-plus mr-2"></i>New CBSE Registration
+                </button>
+                <button onclick="filterRegistrations('submitted')" class="bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 flex items-center">
+                    <i class="fas fa-hourglass-half mr-2"></i>Pending Teacher Verification
+                </button>
+                <button onclick="filterRegistrations('teacher_verified')" class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 flex items-center">
+                    <i class="fas fa-user-check mr-2"></i>Awaiting Principal Approval
+                </button>
+                <button onclick="filterRegistrations('principal_approved')" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 flex items-center">
+                    <i class="fas fa-check mr-2"></i>Ready for CBSE Submission
+                </button>
+                <button onclick="showRequiredDocuments()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 flex items-center">
+                    <i class="fas fa-file-text mr-2"></i>Required Documents
+                </button>
+            </div>
+        </div>
+
+        <!-- Class Filter -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <div class="flex items-center space-x-4">
+                <label class="text-sm font-medium text-gray-700">Filter by Class:</label>
+                <select id="classFilter" onchange="filterByClass()" class="px-3 py-2 border border-gray-300 rounded-lg">
+                    <option value="">All Classes</option>
+                    <option value="9th">Class 9th</option>
+                    <option value="11th">Class 11th</option>
+                </select>
+                <label class="text-sm font-medium text-gray-700">Academic Year:</label>
+                <select id="yearFilter" onchange="filterByYear()" class="px-3 py-2 border border-gray-300 rounded-lg">
+                    <option value="">All Years</option>
+                    <option value="2024-25" selected>2024-25</option>
+                    <option value="2023-24">2023-24</option>
+                </select>
+                <button onclick="exportData()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center">
+                    <i class="fas fa-download mr-2"></i>Export
+                </button>
+            </div>
+        </div>
+
+        <!-- Registration Form Modal -->
+        <div id="registrationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+                    <div class="px-8 py-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-bold text-gray-900">New CBSE Registration</h2>
+                            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <form id="cbseRegistrationForm" class="px-8 py-6 space-y-6">
+                        <!-- Personal Details Section -->
+                        <div class="border border-gray-200 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Personal Details</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                                    <input type="text" id="fullName" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Class *</label>
+                                    <select id="studentClass" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                        <option value="">Select Class</option>
+                                        <option value="9th">9th</option>
+                                        <option value="11th">11th</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+                                    <input type="date" id="dateOfBirth" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender *</label>
+                                    <select id="gender" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Aadhaar Number *</label>
+                                    <input type="text" id="aadhaarNumber" class="w-full p-3 border border-gray-300 rounded-lg" pattern="[0-9]{4}-[0-9]{4}-[0-9]{4}" placeholder="1234-5678-9012" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">EMIS Number *</label>
+                                    <input type="text" id="emisNumber" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                    <select id="category" class="w-full p-3 border border-gray-300 rounded-lg">
+                                        <option value="General">General</option>
+                                        <option value="OBC">OBC</option>
+                                        <option value="SC">SC</option>
+                                        <option value="ST">ST</option>
+                                        <option value="EWS">EWS</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Blood Group</label>
+                                    <select id="bloodGroup" class="w-full p-3 border border-gray-300 rounded-lg">
+                                        <option value="">Select Blood Group</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Permanent Address *</label>
+                                <textarea id="permanentAddress" rows="3" class="w-full p-3 border border-gray-300 rounded-lg" required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Parent Details Section -->
+                        <div class="border border-gray-200 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Parent Details</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Father Details -->
+                                <div>
+                                    <h4 class="text-md font-medium text-gray-800 mb-3">Father's Details</h4>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Father's Name *</label>
+                                            <input type="text" id="fatherName" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Occupation *</label>
+                                            <input type="text" id="fatherOccupation" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
+                                            <input type="text" id="fatherQualification" class="w-full p-3 border border-gray-300 rounded-lg">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Annual Salary (₹) *</label>
+                                            <input type="number" id="fatherSalary" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Aadhaar Number *</label>
+                                            <input type="text" id="fatherAadhaar" class="w-full p-3 border border-gray-300 rounded-lg" pattern="[0-9]{4}-[0-9]{4}-[0-9]{4}" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                                            <input type="tel" id="fatherPhone" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mother Details -->
+                                <div>
+                                    <h4 class="text-md font-medium text-gray-800 mb-3">Mother's Details</h4>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Mother's Name *</label>
+                                            <input type="text" id="motherName" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
+                                            <input type="text" id="motherOccupation" class="w-full p-3 border border-gray-300 rounded-lg">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
+                                            <input type="text" id="motherQualification" class="w-full p-3 border border-gray-300 rounded-lg">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Annual Salary (₹)</label>
+                                            <input type="number" id="motherSalary" class="w-full p-3 border border-gray-300 rounded-lg">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Aadhaar Number *</label>
+                                            <input type="text" id="motherAadhaar" class="w-full p-3 border border-gray-300 rounded-lg" pattern="[0-9]{4}-[0-9]{4}-[0-9]{4}" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                            <input type="tel" id="motherPhone" class="w-full p-3 border border-gray-300 rounded-lg">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Previous Education Section -->
+                        <div class="border border-gray-200 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Previous Education Details</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Last School Name *</label>
+                                    <input type="text" id="lastSchoolName" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Board *</label>
+                                    <select id="lastSchoolBoard" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                        <option value="">Select Board</option>
+                                        <option value="CBSE">CBSE</option>
+                                        <option value="ICSE">ICSE</option>
+                                        <option value="State Board">State Board</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Last Class Passed *</label>
+                                    <input type="text" id="lastClass" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Passing Year *</label>
+                                    <input type="number" id="passingYear" class="w-full p-3 border border-gray-300 rounded-lg" min="2020" max="2024" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Roll Number *</label>
+                                    <input type="text" id="lastRollNumber" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Percentage/CGPA *</label>
+                                    <input type="number" id="percentage" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Document Upload Section -->
+                        <div class="border border-gray-200 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Required Documents</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Birth Certificate *</label>
+                                    <input type="file" id="birthCertificate" accept=".pdf,.jpg,.jpeg,.png" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Student Aadhaar Card *</label>
+                                    <input type="file" id="aadhaarCard" accept=".pdf,.jpg,.jpeg,.png" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Transfer Certificate *</label>
+                                    <input type="file" id="transferCertificate" accept=".pdf,.jpg,.jpeg,.png" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Previous Mark Sheet *</label>
+                                    <input type="file" id="markSheet" accept=".pdf,.jpg,.jpeg,.png" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Parent Aadhaar Cards *</label>
+                                    <input type="file" id="parentAadhaar" accept=".pdf,.jpg,.jpeg,.png" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Income Certificate *</label>
+                                    <input type="file" id="incomeCertificate" accept=".pdf,.jpg,.jpeg,.png" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Caste Certificate (if applicable)</label>
+                                    <input type="file" id="casteCertificate" accept=".pdf,.jpg,.jpeg,.png" class="w-full p-3 border border-gray-300 rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Passport Size Photograph *</label>
+                                    <input type="file" id="photograph" accept=".jpg,.jpeg,.png" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                                </div>
+                            </div>
+                            <div class="mt-4 text-sm text-gray-600">
+                                <p><i class="fas fa-info-circle text-blue-500 mr-2"></i>All documents should be in PDF, JPG, JPEG, or PNG format (max 10MB each)</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                            <button type="button" onclick="closeModal()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                Cancel
+                            </button>
+                            <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                Submit Registration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registrations Table -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">CBSE Registrations</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted By</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="registrationsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Registrations will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRegistrations = [];
+        let allRegistrations = [];
+
+        // Initialize the module
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCbseRegistrations();
+        });
+
+        function goBack() {
+            window.location.href = '../dist/index.html';
+        }
+
+        async function loadCbseRegistrations() {
+            try {
+                const response = await fetch('/api/cbse-registrations?schoolId=SCH001&academicYear=2024-25');
+                const result = await response.json();
+                
+                if (result.success) {
+                    allRegistrations = result.data;
+                    currentRegistrations = allRegistrations;
+                    updateStats(result.summary);
+                    renderRegistrationsTable();
+                }
+            } catch (error) {
+                console.error('Error loading registrations:', error);
+            }
+        }
+
+        function updateStats(summary) {
+            document.getElementById('totalRegistrations').textContent = summary.total || 0;
+            document.getElementById('pendingVerification').textContent = summary.submitted || 0;
+            document.getElementById('approved').textContent = summary.principalApproved || 0;
+            document.getElementById('cbseSubmitted').textContent = summary.cbseSubmitted || 0;
+        }
+
+        function renderRegistrationsTable() {
+            const tbody = document.getElementById('registrationsTableBody');
+            tbody.innerHTML = '';
+
+            currentRegistrations.forEach(registration => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${registration.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${registration.studentName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${registration.class === '9th' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
+                            ${registration.class}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(registration.status)}">
+                            ${getStatusText(registration.status)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">${registration.submittedBy}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(registration.submittedAt).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        ${getActionButtons(registration)}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'submitted': return 'bg-yellow-100 text-yellow-800';
+                case 'teacher_verified': return 'bg-blue-100 text-blue-800';
+                case 'teacher_rejected': return 'bg-red-100 text-red-800';
+                case 'principal_approved': return 'bg-green-100 text-green-800';
+                case 'principal_rejected': return 'bg-red-100 text-red-800';
+                case 'cbse_submitted': return 'bg-purple-100 text-purple-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'submitted': return 'Awaiting Teacher Verification';
+                case 'teacher_verified': return 'Teacher Verified';
+                case 'teacher_rejected': return 'Teacher Rejected';
+                case 'principal_approved': return 'Principal Approved';
+                case 'principal_rejected': return 'Principal Rejected';
+                case 'cbse_submitted': return 'CBSE Submitted';
+                default: return status;
+            }
+        }
+
+        function getActionButtons(registration) {
+            let buttons = '';
+            if (registration.status === 'submitted') {
+                buttons += `
+                    <button onclick="teacherVerify('${registration.id}', true)" class="text-green-600 hover:text-green-900 mr-3">
+                        <i class="fas fa-check"></i> Verify
+                    </button>
+                    <button onclick="teacherVerify('${registration.id}', false)" class="text-red-600 hover:text-red-900 mr-3">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                `;
+            } else if (registration.status === 'teacher_verified') {
+                buttons += `
+                    <button onclick="principalApprove('${registration.id}', true)" class="text-green-600 hover:text-green-900 mr-3">
+                        <i class="fas fa-stamp"></i> Approve
+                    </button>
+                    <button onclick="principalApprove('${registration.id}', false)" class="text-red-600 hover:text-red-900 mr-3">
+                        <i class="fas fa-ban"></i> Reject
+                    </button>
+                `;
+            } else if (registration.status === 'principal_approved') {
+                buttons += `
+                    <button onclick="submitToCbse('${registration.id}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                        <i class="fas fa-paper-plane"></i> Submit to CBSE
+                    </button>
+                `;
+            }
+            buttons += `
+                <button onclick="viewDetails('${registration.id}')" class="text-purple-600 hover:text-purple-900">
+                    <i class="fas fa-eye"></i> View
+                </button>
+            `;
+            return buttons;
+        }
+
+        function showNewRegistrationForm() {
+            document.getElementById('registrationModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('registrationModal').classList.add('hidden');
+            document.getElementById('cbseRegistrationForm').reset();
+        }
+
+        function filterRegistrations(status) {
+            if (status === 'all') {
+                currentRegistrations = allRegistrations;
+            } else {
+                currentRegistrations = allRegistrations.filter(registration => registration.status === status);
+            }
+            renderRegistrationsTable();
+        }
+
+        function filterByClass() {
+            const classFilter = document.getElementById('classFilter').value;
+            if (classFilter) {
+                currentRegistrations = allRegistrations.filter(registration => registration.class === classFilter);
+            } else {
+                currentRegistrations = allRegistrations;
+            }
+            renderRegistrationsTable();
+        }
+
+        function filterByYear() {
+            const yearFilter = document.getElementById('yearFilter').value;
+            if (yearFilter) {
+                currentRegistrations = allRegistrations.filter(registration => registration.academicYear === yearFilter);
+            } else {
+                currentRegistrations = allRegistrations;
+            }
+            renderRegistrationsTable();
+        }
+
+        async function teacherVerify(registrationId, verified) {
+            const action = verified ? 'verify' : 'reject';
+            const remarks = verified ? '' : prompt('Enter rejection reason:');
+            
+            if (!verified && !remarks) return;
+            
+            if (confirm(`Are you sure you want to ${action} this registration?`)) {
+                try {
+                    const response = await fetch(`/api/cbse-registrations/${registrationId}/teacher-verification`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ verified, verifiedBy: 'Teacher', remarks })
+                    });
+                    
+                    if (response.ok) {
+                        alert(`Registration ${action}ed successfully!`);
+                        loadCbseRegistrations();
+                    }
+                } catch (error) {
+                    console.error('Error in teacher verification:', error);
+                    alert('Error in verification process');
+                }
+            }
+        }
+
+        async function principalApprove(registrationId, approved) {
+            const action = approved ? 'approve' : 'reject';
+            const remarks = approved ? '' : prompt('Enter rejection reason:');
+            
+            if (!approved && !remarks) return;
+            
+            if (confirm(`Are you sure you want to ${action} this registration?`)) {
+                try {
+                    const response = await fetch(`/api/cbse-registrations/${registrationId}/principal-approval`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ approved, approvedBy: 'Principal', remarks })
+                    });
+                    
+                    if (response.ok) {
+                        alert(`Registration ${action}ed by Principal successfully!`);
+                        loadCbseRegistrations();
+                    }
+                } catch (error) {
+                    console.error('Error in principal approval:', error);
+                    alert('Error in approval process');
+                }
+            }
+        }
+
+        async function submitToCbse(registrationId) {
+            if (confirm('Submit this registration to CBSE? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`/api/cbse-registrations/${registrationId}/submit-cbse`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ submittedBy: 'School Admin' })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(`Registration submitted to CBSE successfully! Application Number: ${result.data.cbseSubmission.cbseApplicationNumber}`);
+                        loadCbseRegistrations();
+                    }
+                } catch (error) {
+                    console.error('Error submitting to CBSE:', error);
+                    alert('Error submitting to CBSE');
+                }
+            }
+        }
+
+        function viewDetails(registrationId) {
+            alert('Detailed view will show complete registration information, documents, and verification history.');
+        }
+
+        function showRequiredDocuments() {
+            alert('Required Documents:\n\n1. Birth Certificate\n2. Aadhaar Card (Student)\n3. Transfer Certificate\n4. Previous Mark Sheet\n5. Parent Aadhaar Cards\n6. Income Certificate\n7. Caste Certificate (if applicable)\n8. Passport Size Photograph\n\nAll documents should be in PDF/JPG/PNG format (max 10MB each)');
+        }
+
+        function exportData() {
+            alert('Export functionality will generate Excel/PDF reports of all registrations with filtering options.');
+        }
+
+        // Form submission
+        document.getElementById('cbseRegistrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const registrationData = {
+                studentId: `STU${Date.now()}`,
+                studentName: document.getElementById('fullName').value,
+                class: document.getElementById('studentClass').value,
+                academicYear: '2024-25',
+                personalDetails: {
+                    fullName: document.getElementById('fullName').value,
+                    dateOfBirth: document.getElementById('dateOfBirth').value,
+                    gender: document.getElementById('gender').value,
+                    category: document.getElementById('category').value,
+                    aadhaarNumber: document.getElementById('aadhaarNumber').value,
+                    emisNumber: document.getElementById('emisNumber').value,
+                    bloodGroup: document.getElementById('bloodGroup').value,
+                    nationality: 'Indian',
+                    address: {
+                        permanent: document.getElementById('permanentAddress').value,
+                        correspondence: document.getElementById('permanentAddress').value
+                    }
+                },
+                parentDetails: {
+                    fatherName: document.getElementById('fatherName').value,
+                    fatherOccupation: document.getElementById('fatherOccupation').value,
+                    fatherQualification: document.getElementById('fatherQualification').value,
+                    fatherSalary: document.getElementById('fatherSalary').value,
+                    fatherAadhaar: document.getElementById('fatherAadhaar').value,
+                    fatherPhone: document.getElementById('fatherPhone').value,
+                    motherName: document.getElementById('motherName').value,
+                    motherOccupation: document.getElementById('motherOccupation').value,
+                    motherQualification: document.getElementById('motherQualification').value,
+                    motherSalary: document.getElementById('motherSalary').value || '0',
+                    motherAadhaar: document.getElementById('motherAadhaar').value,
+                    motherPhone: document.getElementById('motherPhone').value
+                },
+                previousEducation: {
+                    lastSchoolName: document.getElementById('lastSchoolName').value,
+                    lastSchoolBoard: document.getElementById('lastSchoolBoard').value,
+                    lastClass: document.getElementById('lastClass').value,
+                    passingYear: document.getElementById('passingYear').value,
+                    rollNumber: document.getElementById('lastRollNumber').value,
+                    percentage: parseFloat(document.getElementById('percentage').value)
+                },
+                submittedBy: 'admin',
+                schoolId: 'SCH001'
+            };
+
+            try {
+                const response = await fetch('/api/cbse-registrations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(registrationData)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert('CBSE registration submitted successfully!');
+                    closeModal();
+                    loadCbseRegistrations();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error submitting registration:', error);
+                alert('Error submitting registration');
+            }
+        });
+    </script>
+</body>
+</html>

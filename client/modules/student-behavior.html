@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Behaviour Tracker - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .behavior-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .behavior-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .positive-behavior { border-left: 4px solid #22c55e; background: #f0fdf4; }
+        .negative-behavior { border-left: 4px solid #ef4444; background: #fef2f2; }
+        .neutral-behavior { border-left: 4px solid #6b7280; background: #f9fafb; }
+        
+        .score-excellent { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .score-good { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .score-average { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .score-poor { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        
+        .behavior-timeline {
+            position: relative;
+        }
+        .behavior-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 20px;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+        .positive-icon { background: #22c55e; }
+        .negative-icon { background: #ef4444; }
+        .neutral-icon { background: #6b7280; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-purple-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <img src="../assets/SmartGenEduX_Logo_1751034755324.png" alt="SmartGenEduX" class="h-12 w-auto">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Student Behaviour Tracker</h1>
+                        <p class="text-sm text-gray-600">Comprehensive behavior monitoring with points system and interventions</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showLogModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Log Behavior</span>
+                    </button>
+                    <button onclick="generateReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Behavior Overview Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-smile text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Positive Behaviors</p>
+                        <p class="text-2xl font-bold text-gray-900">156</p>
+                        <p class="text-xs text-green-600">+8 today</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-frown text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Incidents</p>
+                        <p class="text-2xl font-bold text-gray-900">23</p>
+                        <p class="text-xs text-red-600">-2 from yesterday</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Interventions</p>
+                        <p class="text-2xl font-bold text-gray-900">8</p>
+                        <p class="text-xs text-yellow-600">3 active</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-trophy text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Rewards Given</p>
+                        <p class="text-2xl font-bold text-gray-900">42</p>
+                        <p class="text-xs text-blue-600">5 this week</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Filter -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Class:</label>
+                        <select id="classFilter" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500">
+                            <option value="">All Classes</option>
+                            <option value="Class 1-A" selected>Class 1-A</option>
+                            <option value="Class 1-B">Class 1-B</option>
+                            <option value="Class 2-A">Class 2-A</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label class="text-sm font-medium text-gray-700">Period:</label>
+                        <select id="periodFilter" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500">
+                            <option value="">All Day</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="showRewardsModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-gift"></i>
+                        <span>Give Reward</span>
+                    </button>
+                    <button onclick="showInterventionModal()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-medkit"></i>
+                        <span>Create Intervention</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Behavior Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Student List with Behavior Scores -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900">Class 1-A - Behavior Overview</h3>
+                        <p class="text-sm text-gray-600 mt-1">Click on any student to view detailed behavior history</p>
+                    </div>
+                    
+                    <div class="p-6 space-y-4">
+                        <!-- Student 1 -->
+                        <div class="behavior-card p-4 rounded-lg border" onclick="showStudentDetail('student_001')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                                        AS
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900">Aarav Sharma</h4>
+                                        <p class="text-sm text-gray-600">Roll: 001 • Class 1-A</p>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Excellent</span>
+                                            <span class="text-xs text-gray-500">Last updated: 2 hours ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="score-excellent text-white px-4 py-2 rounded-lg mb-2">
+                                        <div class="text-2xl font-bold">95</div>
+                                        <div class="text-xs">Score</div>
+                                    </div>
+                                    <div class="text-xs text-gray-600">
+                                        <span class="text-green-600">+5</span> positive
+                                        <span class="text-red-600 ml-2">0</span> incidents
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student 2 -->
+                        <div class="behavior-card p-4 rounded-lg border" onclick="showStudentDetail('student_002')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+                                        PP
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900">Priya Patel</h4>
+                                        <p class="text-sm text-gray-600">Roll: 002 • Class 1-A</p>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Good</span>
+                                            <span class="text-xs text-gray-500">Last updated: 4 hours ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="score-good text-white px-4 py-2 rounded-lg mb-2">
+                                        <div class="text-2xl font-bold">82</div>
+                                        <div class="text-xs">Score</div>
+                                    </div>
+                                    <div class="text-xs text-gray-600">
+                                        <span class="text-green-600">+3</span> positive
+                                        <span class="text-red-600 ml-2">1</span> incident
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student 3 -->
+                        <div class="behavior-card p-4 rounded-lg border" onclick="showStudentDetail('student_003')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                        RG
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900">Ravi Gupta</h4>
+                                        <p class="text-sm text-gray-600">Roll: 003 • Class 1-A</p>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Needs Attention</span>
+                                            <span class="text-xs text-orange-500">Intervention Active</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="score-poor text-white px-4 py-2 rounded-lg mb-2">
+                                        <div class="text-2xl font-bold">45</div>
+                                        <div class="text-xs">Score</div>
+                                    </div>
+                                    <div class="text-xs text-gray-600">
+                                        <span class="text-green-600">+1</span> positive
+                                        <span class="text-red-600 ml-2">5</span> incidents
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student 4 -->
+                        <div class="behavior-card p-4 rounded-lg border" onclick="showStudentDetail('student_004')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                        SK
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-gray-900">Simran Kaur</h4>
+                                        <p class="text-sm text-gray-600">Roll: 004 • Class 1-A</p>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Average</span>
+                                            <span class="text-xs text-gray-500">Last updated: 1 day ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="score-average text-white px-4 py-2 rounded-lg mb-2">
+                                        <div class="text-2xl font-bold">68</div>
+                                        <div class="text-xs">Score</div>
+                                    </div>
+                                    <div class="text-xs text-gray-600">
+                                        <span class="text-green-600">+2</span> positive
+                                        <span class="text-red-600 ml-2">2</span> incidents
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity & Quick Stats -->
+            <div class="space-y-6">
+                <!-- Recent Behaviors -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
+                    <div class="behavior-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon positive-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="positive-behavior p-3 rounded-lg">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium text-sm">Helped classmate</p>
+                                        <p class="text-xs text-gray-600">Aarav Sharma</p>
+                                        <p class="text-xs text-gray-500">+5 points</p>
+                                    </div>
+                                    <span class="text-xs text-gray-500">2 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-icon negative-icon">
+                                <i class="fas fa-minus"></i>
+                            </div>
+                            <div class="negative-behavior p-3 rounded-lg">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium text-sm">Disrupted class</p>
+                                        <p class="text-xs text-gray-600">Ravi Gupta</p>
+                                        <p class="text-xs text-gray-500">-3 points</p>
+                                    </div>
+                                    <span class="text-xs text-gray-500">4 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-icon positive-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="positive-behavior p-3 rounded-lg">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium text-sm">Excellent participation</p>
+                                        <p class="text-xs text-gray-600">Priya Patel</p>
+                                        <p class="text-xs text-gray-500">+3 points</p>
+                                    </div>
+                                    <span class="text-xs text-gray-500">6 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-icon neutral-icon">
+                                <i class="fas fa-info"></i>
+                            </div>
+                            <div class="neutral-behavior p-3 rounded-lg">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-medium text-sm">Parent meeting scheduled</p>
+                                        <p class="text-xs text-gray-600">Ravi Gupta</p>
+                                        <p class="text-xs text-gray-500">Intervention</p>
+                                    </div>
+                                    <span class="text-xs text-gray-500">1 day ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Behavior Categories -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Behavior Categories</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span class="text-sm">Positive Engagement</span>
+                            </div>
+                            <span class="text-sm font-bold text-green-600">45</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                <span class="text-sm">Academic Excellence</span>
+                            </div>
+                            <span class="text-sm font-bold text-blue-600">32</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                                <span class="text-sm">Leadership</span>
+                            </div>
+                            <span class="text-sm font-bold text-purple-600">18</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <span class="text-sm">Disruption</span>
+                            </div>
+                            <span class="text-sm font-bold text-red-600">12</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                <span class="text-sm">Incomplete Work</span>
+                            </div>
+                            <span class="text-sm font-bold text-orange-600">8</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Interventions -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Active Interventions</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-sm">Behavior Support Plan</p>
+                                    <p class="text-xs text-gray-600">Ravi Gupta</p>
+                                    <p class="text-xs text-orange-600">Started: Dec 20, 2024</p>
+                                </div>
+                                <button onclick="viewIntervention('int_001')" class="text-orange-600 hover:text-orange-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-sm">Peer Mentoring</p>
+                                    <p class="text-xs text-gray-600">Simran Kaur</p>
+                                    <p class="text-xs text-blue-600">Started: Dec 15, 2024</p>
+                                </div>
+                                <button onclick="viewIntervention('int_002')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Log Behavior Modal -->
+    <div id="logModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Log Student Behavior</h3>
+                </div>
+                <form class="px-6 py-4 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Student</label>
+                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500">
+                            <option>Select student...</option>
+                            <option>Aarav Sharma (Roll: 001)</option>
+                            <option>Priya Patel (Roll: 002)</option>
+                            <option>Ravi Gupta (Roll: 003)</option>
+                            <option>Simran Kaur (Roll: 004)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Behavior Type</label>
+                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500">
+                            <option>Positive Behavior</option>
+                            <option>Negative Behavior</option>
+                            <option>Neutral Observation</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Category</label>
+                        <select class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500">
+                            <option>Academic Performance</option>
+                            <option>Classroom Behavior</option>
+                            <option>Social Interaction</option>
+                            <option>Leadership</option>
+                            <option>Participation</option>
+                            <option>Disruption</option>
+                            <option>Incomplete Work</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500" placeholder="Describe the behavior..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Points</label>
+                        <input type="number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500" placeholder="0" min="-10" max="10">
+                    </div>
+                </form>
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button onclick="closeLogModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md">
+                        Cancel
+                    </button>
+                    <button onclick="saveBehaviorLog()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md">
+                        Log Behavior
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showLogModal() {
+            document.getElementById('logModal').classList.remove('hidden');
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').classList.add('hidden');
+        }
+
+        function saveBehaviorLog() {
+            closeLogModal();
+            showToast('Behavior logged successfully and points updated', 'success');
+            // Add new entry to timeline
+            addTimelineEntry();
+        }
+
+        function showStudentDetail(studentId) {
+            showToast('Loading detailed behavior history...', 'info');
+            // Would open detailed view in real implementation
+        }
+
+        function showRewardsModal() {
+            showToast('Rewards system opened', 'info');
+        }
+
+        function showInterventionModal() {
+            showToast('Intervention planning opened', 'info');
+        }
+
+        function viewIntervention(interventionId) {
+            showToast('Loading intervention details...', 'info');
+        }
+
+        function generateReport() {
+            showToast('Behavior analytics report generated', 'success');
+        }
+
+        function addTimelineEntry() {
+            const timeline = document.querySelector('.behavior-timeline');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'timeline-item';
+            newEntry.innerHTML = `
+                <div class="timeline-icon positive-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="positive-behavior p-3 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-medium text-sm">New positive behavior</p>
+                            <p class="text-xs text-gray-600">Just logged</p>
+                            <p class="text-xs text-gray-500">+3 points</p>
+                        </div>
+                        <span class="text-xs text-gray-500">Just now</span>
+                    </div>
+                </div>
+            `;
+            timeline.insertBefore(newEntry, timeline.firstChild);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 
+                           type === 'warning' ? 'bg-yellow-500' : 
+                           type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            
+            toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Simulate real-time updates
+        setInterval(() => {
+            if (Math.random() > 0.95) {
+                const behaviors = ['helped a friend', 'completed assignment early', 'showed leadership', 'participated actively'];
+                const behavior = behaviors[Math.floor(Math.random() * behaviors.length)];
+                showToast(`New positive behavior logged: ${behavior}`, 'success');
+                addTimelineEntry();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

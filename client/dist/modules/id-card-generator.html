@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Card Generator | SmartGenEduX</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .workflow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .step-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .step-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .preview-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid #e9ecef;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .file-upload {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            background: #f8f9fa;
+            border-color: #2980b9;
+        }
+
+        .file-upload.dragover {
+            background: #e3f2fd;
+            border-color: #1976d2;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #2980b9, #21618c);
+            transform: translateY(-2px);
+        }
+
+        .btn-success { background: linear-gradient(135deg, #27ae60, #229954); }
+        .btn-warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+        .id-card {
+            width: 350px;
+            height: 220px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .id-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .school-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3498db;
+            font-size: 20px;
+        }
+
+        .card-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .photo-placeholder {
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-info h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .card-info p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 3px;
+        }
+
+        .approval-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .approval-section.approved {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .approval-section.rejected {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .signature-box {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .batch-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .student-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .student-item {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .id-card {
+                width: 100%;
+                max-width: 350px;
+            }
+            
+            .signature-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>
+                <img src="../../attached_assets/ID Card Generator_20250629_134332_0000_1751640187843.png" alt="ID Card Generator" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3);">
+                ID Card Generator
+                <i class="fas fa-magic"></i>
+            </h1>
+            <p>Professional ID Card Creation with Principal Approval Workflow</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Workflow Steps -->
+            <div class="workflow-steps">
+                <div class="step-card">
+                    <h3><i class="fas fa-upload"></i> Step 1: Upload Photo</h3>
+                    <p>Upload student/staff photo with proper dimensions and quality requirements.</p>
+                </div>
+                <div class="step-card">
+                    <h3><i class="fas fa-edit"></i> Step 2: Fill Details</h3>
+                    <p>Enter personal information, class, roll number, and other required details.</p>
+                </div>
+                <div class="step-card">
+                    <h3><i class="fas fa-eye"></i> Step 3: Preview Card</h3>
+                    <p>Review the generated ID card design and make necessary adjustments.</p>
+                </div>
+                <div class="step-card">
+                    <h3><i class="fas fa-check-circle"></i> Step 4: Principal Approval</h3>
+                    <p>Submit for principal approval with digital signature authorization.</p>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="content-grid">
+                <!-- Form Section -->
+                <div class="form-section">
+                    <h2><i class="fas fa-form"></i> ID Card Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="cardType">Card Type</label>
+                        <select id="cardType" class="form-control" onchange="updateCardType()">
+                            <option value="student">Student ID Card</option>
+                            <option value="teacher">Teacher ID Card</option>
+                            <option value="staff">Staff ID Card</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Photo Upload</label>
+                        <div class="file-upload" onclick="document.getElementById('photoUpload').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                            <i class="fas fa-cloud-upload-alt fa-3x" style="color: #3498db; margin-bottom: 15px;"></i>
+                            <p><strong>Click to upload</strong> or drag and drop</p>
+                            <p style="color: #666; margin-top: 10px;">Supported: JPG, PNG (Max: 2MB)</p>
+                            <input type="file" id="photoUpload" style="display: none;" accept="image/*" onchange="handlePhotoUpload(this)">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" class="form-control" placeholder="Enter full name" onchange="updatePreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="idNumber">ID Number</label>
+                        <input type="text" id="idNumber" class="form-control" placeholder="Enter ID number" onchange="updatePreview()">
+                    </div>
+
+                    <div id="studentFields" class="student-fields">
+                        <div class="form-group">
+                            <label for="className">Class</label>
+                            <input type="text" id="className" class="form-control" placeholder="e.g., Class 10-A" onchange="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rollNumber">Roll Number</label>
+                            <input type="text" id="rollNumber" class="form-control" placeholder="Enter roll number" onchange="updatePreview()">
+                        </div>
+                    </div>
+
+                    <div id="staffFields" class="staff-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="designation">Designation</label>
+                            <input type="text" id="designation" class="form-control" placeholder="e.g., Mathematics Teacher" onchange="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="department">Department</label>
+                            <input type="text" id="department" class="form-control" placeholder="e.g., Science Department" onchange="updatePreview()">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="validUntil">Valid Until</label>
+                        <input type="date" id="validUntil" class="form-control" onchange="updatePreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn" onclick="generateCard()">
+                            <i class="fas fa-magic"></i> Generate ID Card
+                        </button>
+                        <button class="btn btn-success" onclick="submitForApproval()">
+                            <i class="fas fa-paper-plane"></i> Submit for Approval
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="preview-section">
+                    <h3><i class="fas fa-eye"></i> Card Preview</h3>
+                    
+                    <div class="id-card" id="cardPreview">
+                        <div class="card-header">
+                            <div class="school-logo">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h3 style="font-size: 14px; margin: 0;">SmartGenEduX School</h3>
+                            <p style="font-size: 10px; margin: 0; opacity: 0.8;">Excellence in Education</p>
+                        </div>
+                        
+                        <div class="card-content">
+                            <div class="photo-placeholder" id="photoPreview">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="card-info">
+                                <h4 id="previewName">Student Name</h4>
+                                <p id="previewId">ID: 000000</p>
+                                <p id="previewClass">Class: -</p>
+                                <p id="previewRoll">Roll: -</p>
+                                <p id="previewValid">Valid: 2024-25</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Approval Section -->
+                    <div class="approval-section" id="approvalSection">
+                        <h4><i class="fas fa-clock"></i> Approval Status: Pending</h4>
+                        <p>This ID card requires principal approval before printing.</p>
+                        
+                        <div class="signature-section">
+                            <div class="signature-box">
+                                <i class="fas fa-signature fa-2x" style="color: #666; margin-bottom: 10px;"></i>
+                                <p><strong>Principal Signature</strong></p>
+                                <small>Digital Authorization Required</small>
+                            </div>
+                            <div class="signature-box">
+                                <i class="fas fa-stamp fa-2x" style="color: #666; margin-bottom: 10px;"></i>
+                                <p><strong>Official Seal</strong></p>
+                                <small>Authority Verification</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Batch Processing Section -->
+            <div class="batch-section">
+                <h2><i class="fas fa-users"></i> Batch ID Card Generation</h2>
+                <p>Generate multiple ID cards simultaneously for entire class or department.</p>
+                
+                <div style="margin: 20px 0;">
+                    <button class="btn" onclick="importStudentList()">
+                        <i class="fas fa-file-import"></i> Import Student List
+                    </button>
+                    <button class="btn btn-success" onclick="generateBatchCards()">
+                        <i class="fas fa-layer-group"></i> Generate Batch Cards
+                    </button>
+                    <button class="btn btn-warning" onclick="downloadTemplate()">
+                        <i class="fas fa-download"></i> Download Template
+                    </button>
+                </div>
+
+                <div class="student-list" id="studentList">
+                    <div class="student-item">
+                        <div>
+                            <strong>Rahul Sharma</strong><br>
+                            <small>Class 10-A | Roll: 15</small>
+                        </div>
+                        <span style="color: green;"><i class="fas fa-check-circle"></i> Ready</span>
+                    </div>
+                    <div class="student-item">
+                        <div>
+                            <strong>Priya Patel</strong><br>
+                            <small>Class 10-A | Roll: 28</small>
+                        </div>
+                        <span style="color: orange;"><i class="fas fa-clock"></i> Photo Pending</span>
+                    </div>
+                    <div class="student-item">
+                        <div>
+                            <strong>Arjun Kumar</strong><br>
+                            <small>Class 10-A | Roll: 42</small>
+                        </div>
+                        <span style="color: green;"><i class="fas fa-check-circle"></i> Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                info: 'fas fa-info-circle',
+                warning: 'fas fa-exclamation-triangle'
+            };
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 4000);
+        }
+
+        function updateCardType() {
+            const cardType = document.getElementById('cardType').value;
+            const studentFields = document.getElementById('studentFields');
+            const staffFields = document.getElementById('staffFields');
+            
+            if (cardType === 'student') {
+                studentFields.style.display = 'block';
+                staffFields.style.display = 'none';
+            } else {
+                studentFields.style.display = 'none';
+                staffFields.style.display = 'block';
+            }
+            updatePreview();
+        }
+
+        function handlePhotoUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoPreview = document.getElementById('photoPreview');
+                    photoPreview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+                showMessage('Photo uploaded successfully!', 'success');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const fileUpload = e.target.closest('.file-upload');
+            fileUpload.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('photoUpload').files = files;
+                handlePhotoUpload(document.getElementById('photoUpload'));
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.target.closest('.file-upload').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.target.closest('.file-upload').classList.remove('dragover');
+        }
+
+        function updatePreview() {
+            const fullName = document.getElementById('fullName').value || 'Student Name';
+            const idNumber = document.getElementById('idNumber').value || '000000';
+            const className = document.getElementById('className').value || '-';
+            const rollNumber = document.getElementById('rollNumber').value || '-';
+            const designation = document.getElementById('designation').value || '-';
+            const department = document.getElementById('department').value || '-';
+            const validUntil = document.getElementById('validUntil').value || '2024-25';
+            const cardType = document.getElementById('cardType').value;
+
+            document.getElementById('previewName').textContent = fullName;
+            document.getElementById('previewId').textContent = `ID: ${idNumber}`;
+            
+            if (cardType === 'student') {
+                document.getElementById('previewClass').textContent = `Class: ${className}`;
+                document.getElementById('previewRoll').textContent = `Roll: ${rollNumber}`;
+            } else {
+                document.getElementById('previewClass').textContent = `${designation}`;
+                document.getElementById('previewRoll').textContent = `${department}`;
+            }
+            
+            document.getElementById('previewValid').textContent = `Valid: ${validUntil}`;
+        }
+
+        function generateCard() {
+            showMessage('Generating ID card with professional design...', 'info');
+            setTimeout(() => {
+                showMessage('ID card generated successfully! Ready for approval.', 'success');
+            }, 2000);
+        }
+
+        function submitForApproval() {
+            showMessage('Submitting ID card for principal approval...', 'info');
+            setTimeout(() => {
+                const approvalSection = document.getElementById('approvalSection');
+                approvalSection.className = 'approval-section approved';
+                approvalSection.innerHTML = `
+                    <h4><i class="fas fa-check-circle"></i> Approval Status: Approved</h4>
+                    <p>This ID card has been approved by the principal and is ready for printing.</p>
+                    <div class="signature-section">
+                        <div class="signature-box" style="border-color: #28a745; background: #d4edda;">
+                            <i class="fas fa-signature fa-2x" style="color: #28a745; margin-bottom: 10px;"></i>
+                            <p><strong>Principal Approved</strong></p>
+                            <small>Digitally Signed</small>
+                        </div>
+                        <div class="signature-box" style="border-color: #28a745; background: #d4edda;">
+                            <i class="fas fa-stamp fa-2x" style="color: #28a745; margin-bottom: 10px;"></i>
+                            <p><strong>Official Seal Applied</strong></p>
+                            <small>Authority Verified</small>
+                        </div>
+                    </div>
+                `;
+                showMessage('ID card approved by principal! Ready for printing and distribution.', 'success');
+            }, 3000);
+        }
+
+        function importStudentList() {
+            showMessage('Importing student data from school database...', 'info');
+            setTimeout(() => {
+                showMessage('45 students imported successfully! Photos required for 12 students.', 'success');
+            }, 2000);
+        }
+
+        function generateBatchCards() {
+            showMessage('Generating batch ID cards for entire class...', 'info');
+            setTimeout(() => {
+                showMessage('Batch generation complete! 33 cards ready, 12 pending photos.', 'warning');
+            }, 4000);
+        }
+
+        function downloadTemplate() {
+            showMessage('Downloading Excel template for batch upload...', 'info');
+            setTimeout(() => {
+                showMessage('Template downloaded! Fill student details and upload for batch processing.', 'success');
+            }, 1500);
+        }
+
+        // Initialize valid until date
+        document.addEventListener('DOMContentLoaded', function() {
+            const nextYear = new Date();
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            document.getElementById('validUntil').value = nextYear.toISOString().split('T')[0];
+            updatePreview();
+            
+            showMessage('ID Card Generator ready! Upload photo and fill details to begin.', 'success');
+        });
+    </script>
+</body>
+</html>

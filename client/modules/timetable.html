@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Management - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .period-cell {
+            min-height: 80px;
+            transition: all 0.3s ease;
+        }
+        .period-cell:hover {
+            background: #f3f4f6;
+            cursor: pointer;
+        }
+        .timetable-grid {
+            display: grid;
+            grid-template-columns: 100px repeat(8, 1fr);
+            gap: 1px;
+            background: #e5e7eb;
+        }
+        .time-slot {
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #374151;
+        }
+        .subject-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 8px;
+            margin: 2px;
+            font-size: 12px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .math-subject { background: linear-gradient(135deg, #FF6B6B, #FF8E8E); }
+        .english-subject { background: linear-gradient(135deg, #4ECDC4, #44B3A9); }
+        .science-subject { background: linear-gradient(135deg, #45B7D1, #3498DB); }
+        .social-subject { background: linear-gradient(135deg, #96CEB4, #85C1A8); }
+        .computer-subject { background: linear-gradient(135deg, #FFEAA7, #FDCB6E); }
+        .games-subject { background: linear-gradient(135deg, #FD79A8, #E84393); }
+        .break-slot { background: linear-gradient(135deg, #DDA0DD, #DA70D6); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-blue-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <img src="../assets/SmartGenEduX_Logo_1751034755324.png" alt="SmartGenEduX" class="h-12 w-auto">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Timetable Management</h1>
+                        <p class="text-sm text-gray-600">Professional scheduling and automated conflict resolution</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="showCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Schedule</span>
+                    </button>
+                    <button onclick="autoGenerateSchedule()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-magic"></i>
+                        <span>Auto Generate</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Controls -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Class:</label>
+                    <select id="classFilter" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Classes</option>
+                        <option value="Class 1-A">Class 1-A</option>
+                        <option value="Class 1-B">Class 1-B</option>
+                        <option value="Class 2-A">Class 2-A</option>
+                        <option value="Class 2-B">Class 2-B</option>
+                        <option value="Class 3-A">Class 3-A</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Teacher:</label>
+                    <select id="teacherFilter" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Teachers</option>
+                        <option value="teacher_001">Ms. Priya Sharma</option>
+                        <option value="teacher_002">Mr. Rajesh Kumar</option>
+                        <option value="teacher_003">Mrs. Anita Singh</option>
+                        <option value="teacher_004">Mr. Vikram Gupta</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Week:</label>
+                    <input type="week" id="weekSelector" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button onclick="checkConflicts()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Check Conflicts</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-calendar-alt text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Periods</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalPeriods">240</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-check-circle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Scheduled</p>
+                        <p class="text-2xl font-bold text-gray-900" id="scheduledPeriods">198</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Conflicts</p>
+                        <p class="text-2xl font-bold text-gray-900" id="conflictCount">3</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-percentage text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Utilization</p>
+                        <p class="text-2xl font-bold text-gray-900" id="utilizationRate">82.5%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timetable Grid -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900">Weekly Timetable - Class 1-A</h2>
+                <p class="text-sm text-gray-600 mt-1">Click on any cell to add or edit schedule</p>
+            </div>
+            
+            <div class="p-6">
+                <div class="timetable-grid">
+                    <!-- Header Row -->
+                    <div class="time-slot border border-gray-300">Time</div>
+                    <div class="time-slot border border-gray-300 font-bold text-blue-600">Monday</div>
+                    <div class="time-slot border border-gray-300 font-bold text-blue-600">Tuesday</div>
+                    <div class="time-slot border border-gray-300 font-bold text-blue-600">Wednesday</div>
+                    <div class="time-slot border border-gray-300 font-bold text-blue-600">Thursday</div>
+                    <div class="time-slot border border-gray-300 font-bold text-blue-600">Friday</div>
+                    <div class="time-slot border border-gray-300 font-bold text-blue-600">Saturday</div>
+                    <div class="time-slot border border-gray-300 font-bold text-blue-600">Sunday</div>
+
+                    <!-- Period 1: 8:00-8:45 -->
+                    <div class="time-slot border border-gray-300">8:00<br>8:45</div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('mon', 1)">
+                        <div class="subject-card math-subject">
+                            <div class="font-semibold">Mathematics</div>
+                            <div class="text-xs">Ms. Priya</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('tue', 1)">
+                        <div class="subject-card english-subject">
+                            <div class="font-semibold">English</div>
+                            <div class="text-xs">Mr. Rajesh</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('wed', 1)">
+                        <div class="subject-card math-subject">
+                            <div class="font-semibold">Mathematics</div>
+                            <div class="text-xs">Ms. Priya</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('thu', 1)">
+                        <div class="subject-card english-subject">
+                            <div class="font-semibold">English</div>
+                            <div class="text-xs">Mr. Rajesh</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('fri', 1)">
+                        <div class="subject-card math-subject">
+                            <div class="font-semibold">Mathematics</div>
+                            <div class="text-xs">Ms. Priya</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('sat', 1)">
+                        <div class="subject-card games-subject">
+                            <div class="font-semibold">Games</div>
+                            <div class="text-xs">Mr. Vikram</div>
+                            <div class="text-xs">Playground</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-gray-100"></div>
+
+                    <!-- Period 2: 8:45-9:30 -->
+                    <div class="time-slot border border-gray-300">8:45<br>9:30</div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('mon', 2)">
+                        <div class="subject-card english-subject">
+                            <div class="font-semibold">English</div>
+                            <div class="text-xs">Mr. Rajesh</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('tue', 2)">
+                        <div class="subject-card math-subject">
+                            <div class="font-semibold">Mathematics</div>
+                            <div class="text-xs">Ms. Priya</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('wed', 2)">
+                        <div class="subject-card english-subject">
+                            <div class="font-semibold">English</div>
+                            <div class="text-xs">Mr. Rajesh</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('thu', 2)">
+                        <div class="subject-card math-subject">
+                            <div class="font-semibold">Mathematics</div>
+                            <div class="text-xs">Ms. Priya</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('fri', 2)">
+                        <div class="subject-card english-subject">
+                            <div class="font-semibold">English</div>
+                            <div class="text-xs">Mr. Rajesh</div>
+                            <div class="text-xs">Room 101</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-white" onclick="editPeriod('sat', 2)">
+                        <div class="subject-card computer-subject">
+                            <div class="font-semibold">Computer</div>
+                            <div class="text-xs">Mr. Vikram</div>
+                            <div class="text-xs">Lab</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-gray-100"></div>
+
+                    <!-- Break -->
+                    <div class="time-slot border border-gray-300">9:30<br>9:45</div>
+                    <div class="period-cell border border-gray-300 bg-yellow-50">
+                        <div class="break-slot">
+                            <div class="font-semibold">BREAK</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-yellow-50">
+                        <div class="break-slot">
+                            <div class="font-semibold">BREAK</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-yellow-50">
+                        <div class="break-slot">
+                            <div class="font-semibold">BREAK</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-yellow-50">
+                        <div class="break-slot">
+                            <div class="font-semibold">BREAK</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-yellow-50">
+                        <div class="break-slot">
+                            <div class="font-semibold">BREAK</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-yellow-50">
+                        <div class="break-slot">
+                            <div class="font-semibold">BREAK</div>
+                        </div>
+                    </div>
+                    <div class="period-cell border border-gray-300 bg-gray-100"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('weekSelector').value = getCurrentWeek();
+
+        function getCurrentWeek() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const week = getWeekNumber(now);
+            return `${year}-W${week.toString().padStart(2, '0')}`;
+        }
+
+        function getWeekNumber(date) {
+            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        }
+
+        function editPeriod(day, period) {
+            alert(`Editing ${day} period ${period}`);
+        }
+
+        function showCreateModal() {
+            alert('Create new schedule entry');
+        }
+
+        function autoGenerateSchedule() {
+            alert('Auto-generating optimal timetable...');
+        }
+
+        function checkConflicts() {
+            alert('Checking for scheduling conflicts...');
+        }
+    </script>
+</body>
+</html>

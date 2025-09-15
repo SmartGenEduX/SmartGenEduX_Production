@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admission Management - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../attached_assets/Admission Management_20250621_155736_0000_1751640161628.png" alt="Admission Management" class="w-12 h-12 mr-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Admission Management</h1>
+                        <p class="text-gray-600">Complete student enrollment and document management system</p>
+                    </div>
+                </div>
+                <button onclick="window.location.href='../index.html'" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-blue-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-user-plus text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">247</div>
+                        <div class="text-blue-100">New Applications</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-green-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">189</div>
+                        <div class="text-green-100">Approved</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-orange-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">42</div>
+                        <div class="text-orange-100">Under Review</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-purple-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-file-alt text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">16</div>
+                        <div class="text-purple-100">Incomplete</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admission Form Management -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Online Admission Form</h2>
+                <div class="space-y-4">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-blue-900">Admission Form 2025-26</h3>
+                                <p class="text-sm text-blue-700">Online application portal for new students</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-blue-600">Status: <span class="font-semibold">Active</span></div>
+                                <div class="text-xs text-blue-500">Last updated: Jan 4, 2025</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="openAdmissionForm()" class="bg-blue-600 text-white px-4 py-3 rounded hover:bg-blue-700">
+                            <i class="fas fa-external-link-alt mr-2"></i>Open Form
+                        </button>
+                        <button onclick="configureForm()" class="bg-green-600 text-white px-4 py-3 rounded hover:bg-green-700">
+                            <i class="fas fa-cog mr-2"></i>Configure
+                        </button>
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <h3 class="font-semibold mb-2">Required Documents</h3>
+                        <div class="grid grid-cols-1 gap-2 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span>Birth Certificate</span>
+                                <span class="text-green-600"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Previous School TC</span>
+                                <span class="text-green-600"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Aadhar Card</span>
+                                <span class="text-green-600"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Parent ID Proof</span>
+                                <span class="text-green-600"><i class="fas fa-check"></i></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Income Certificate</span>
+                                <span class="text-orange-600"><i class="fas fa-exclamation-triangle"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Processing -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Application Processing</h2>
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-orange-900">Pending Review</h3>
+                                <p class="text-sm text-orange-700">42 applications awaiting verification</p>
+                            </div>
+                            <div class="text-2xl font-bold text-orange-600">42</div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 border rounded">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold">Rahul Sharma</div>
+                                    <div class="text-sm text-gray-600">Class 9 - Application #AD2025001</div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="reviewApplication('AD2025001')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="approveApplication('AD2025001')" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button onclick="rejectApplication('AD2025001')" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-3 border rounded">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user text-pink-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold">Priya Patel</div>
+                                    <div class="text-sm text-gray-600">Class 8 - Application #AD2025002</div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="reviewApplication('AD2025002')" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button onclick="approveApplication('AD2025002')" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button onclick="rejectApplication('AD2025002')" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="bulkProcess()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">
+                        <i class="fas fa-tasks mr-2"></i>Bulk Process Applications
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Applications -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Recent Applications</h2>
+                <div class="flex space-x-2">
+                    <button onclick="exportApplications()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                    <button onclick="sendReminders()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+                        <i class="fas fa-bell mr-2"></i>Send Reminders
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Application ID</th>
+                            <th class="px-4 py-2 text-left">Student Name</th>
+                            <th class="px-4 py-2 text-left">Class</th>
+                            <th class="px-4 py-2 text-left">Parent Contact</th>
+                            <th class="px-4 py-2 text-left">Status</th>
+                            <th class="px-4 py-2 text-left">Date</th>
+                            <th class="px-4 py-2 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">#AD2025001</td>
+                            <td class="px-4 py-2">Rahul Sharma</td>
+                            <td class="px-4 py-2">Class 9</td>
+                            <td class="px-4 py-2">+91 98765 43210</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">Under Review</span>
+                            </td>
+                            <td class="px-4 py-2">Jan 4, 2025</td>
+                            <td class="px-4 py-2">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-green-600 hover:text-green-800" title="Approve">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="text-red-600 hover:text-red-800" title="Reject">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">#AD2025002</td>
+                            <td class="px-4 py-2">Priya Patel</td>
+                            <td class="px-4 py-2">Class 8</td>
+                            <td class="px-4 py-2">+91 87654 32109</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Approved</span>
+                            </td>
+                            <td class="px-4 py-2">Jan 3, 2025</td>
+                            <td class="px-4 py-2">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-purple-600 hover:text-purple-800" title="Generate ID Card">
+                                        <i class="fas fa-id-card"></i>
+                                    </button>
+                                    <button class="text-orange-600 hover:text-orange-800" title="Send Welcome">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAdmissionForm() {
+            // In a real SaaS, this would open the school's custom admission form
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-8 max-w-md mx-4">
+                    <h2 class="text-xl font-bold mb-4">Online Admission Form</h2>
+                    <p class="text-gray-600 mb-6">This will open your school's custom admission form for parents to fill out.</p>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 border rounded">
+                            <span>Student Information</span>
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div class="flex items-center justify-between p-3 border rounded">
+                            <span>Parent Details</span>
+                            <i class="fas fa-users text-green-600"></i>
+                        </div>
+                        <div class="flex items-center justify-between p-3 border rounded">
+                            <span>Document Upload</span>
+                            <i class="fas fa-upload text-orange-600"></i>
+                        </div>
+                        <div class="flex items-center justify-between p-3 border rounded">
+                            <span>Payment Gateway</span>
+                            <i class="fas fa-credit-card text-purple-600"></i>
+                        </div>
+                    </div>
+                    <div class="flex space-x-4 mt-6">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                            Close
+                        </button>
+                        <button onclick="launchForm()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            Launch Form
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function launchForm() {
+            showMessage('Admission form opened in new tab', 'success');
+        }
+
+        function configureForm() {
+            showMessage('Opening form configuration panel...', 'info');
+        }
+
+        function reviewApplication(id) {
+            showMessage(`Opening application ${id} for review...`, 'info');
+        }
+
+        function approveApplication(id) {
+            showMessage(`Application ${id} approved successfully`, 'success');
+        }
+
+        function rejectApplication(id) {
+            showMessage(`Application ${id} rejected`, 'error');
+        }
+
+        function bulkProcess() {
+            showMessage('Processing multiple applications...', 'info');
+        }
+
+        function exportApplications() {
+            showMessage('Exporting applications data...', 'success');
+        }
+
+        function sendReminders() {
+            showMessage('Sending reminders to incomplete applications...', 'info');
+        }
+
+        function showMessage(message, type) {
+            const colors = {
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
+                'info': 'bg-blue-600'
+            };
+            
+            const icons = {
+                'success': 'fas fa-check',
+                'error': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

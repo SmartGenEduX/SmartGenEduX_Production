@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Management Admin - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/fee-management.png" alt="Fee Management" class="w-12 h-12 mr-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Fee Management - Admin Configuration</h1>
+                        <p class="text-gray-600">Configure fee structures, payment gateways, and billing settings</p>
+                    </div>
+                </div>
+                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6 py-3">
+                    <button onclick="showTab('structure')" class="tab-btn py-2 px-1 border-b-2 border-blue-500 text-blue-600 font-medium" id="structure-tab">
+                        Fee Structure
+                    </button>
+                    <button onclick="showTab('payment')" class="tab-btn py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" id="payment-tab">
+                        Payment Gateway
+                    </button>
+                    <button onclick="showTab('notifications')" class="tab-btn py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" id="notifications-tab">
+                        Notifications
+                    </button>
+                    <button onclick="showTab('reports')" class="tab-btn py-2 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" id="reports-tab">
+                        Reports
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Fee Structure Tab -->
+            <div id="structure-content" class="tab-content p-6">
+                <h2 class="text-xl font-bold mb-4">Class-wise Fee Structure</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Add New Fee Structure -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4">Add New Fee Structure</h3>
+                        <form class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Class</label>
+                                <select class="w-full border rounded px-3 py-2">
+                                    <option>Select Class</option>
+                                    <option>Nursery</option>
+                                    <option>LKG</option>
+                                    <option>UKG</option>
+                                    <option>Class 1</option>
+                                    <option>Class 2</option>
+                                    <option>Class 3</option>
+                                    <option>Class 4</option>
+                                    <option>Class 5</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Academic Year</label>
+                                <select class="w-full border rounded px-3 py-2">
+                                    <option>2024-25</option>
+                                    <option>2025-26</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Admission Fee</label>
+                                    <input type="number" placeholder="₹5000" class="w-full border rounded px-3 py-2">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Monthly Tuition</label>
+                                    <input type="number" placeholder="₹3000" class="w-full border rounded px-3 py-2">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Transport Fee</label>
+                                    <input type="number" placeholder="₹1200" class="w-full border rounded px-3 py-2">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Exam Fee</label>
+                                    <input type="number" placeholder="₹500" class="w-full border rounded px-3 py-2">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Activity Fee</label>
+                                    <input type="number" placeholder="₹800" class="w-full border rounded px-3 py-2">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Development Fee</label>
+                                    <input type="number" placeholder="₹1000" class="w-full border rounded px-3 py-2">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                                <i class="fas fa-plus mr-2"></i>Add Fee Structure
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Existing Fee Structures -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Current Fee Structures</h3>
+                        <div class="space-y-4">
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-medium">Class 5 - 2024-25</h4>
+                                    <div class="space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-gray-600 space-y-1">
+                                    <p>Admission: ₹5,000</p>
+                                    <p>Monthly Tuition: ₹3,500</p>
+                                    <p>Transport: ₹1,200</p>
+                                    <p>Others: ₹1,300</p>
+                                    <p class="font-medium text-gray-800">Total Monthly: ₹6,000</p>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-medium">Class 3 - 2024-25</h4>
+                                    <div class="space-x-2">
+                                        <button class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-gray-600 space-y-1">
+                                    <p>Admission: ₹4,500</p>
+                                    <p>Monthly Tuition: ₹3,000</p>
+                                    <p>Transport: ₹1,200</p>
+                                    <p>Others: ₹1,100</p>
+                                    <p class="font-medium text-gray-800">Total Monthly: ₹5,300</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Gateway Tab -->
+            <div id="payment-content" class="tab-content p-6 hidden">
+                <h2 class="text-xl font-bold mb-4">Payment Gateway Configuration</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Razorpay Configuration -->
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <div class="flex items-center mb-4">
+                            <i class="fab fa-stripe text-2xl text-blue-600 mr-3"></i>
+                            <h3 class="text-lg font-semibold">Razorpay Configuration</h3>
+                        </div>
+                        <form class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Merchant ID</label>
+                                <input type="text" placeholder="rzp_test_xxxxxxxxxx" class="w-full border rounded px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Secret Key</label>
+                                <input type="password" placeholder="Secret Key" class="w-full border rounded px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Webhook Secret</label>
+                                <input type="password" placeholder="Webhook Secret" class="w-full border rounded px-3 py-2">
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="razorpay-enabled" class="mr-2">
+                                <label for="razorpay-enabled" class="text-sm">Enable Razorpay</label>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                                Save Razorpay Config
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- PayU Configuration -->
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-credit-card text-2xl text-green-600 mr-3"></i>
+                            <h3 class="text-lg font-semibold">PayU Configuration</h3>
+                        </div>
+                        <form class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Merchant Key</label>
+                                <input type="text" placeholder="Merchant Key" class="w-full border rounded px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Merchant Salt</label>
+                                <input type="password" placeholder="Salt Key" class="w-full border rounded px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Environment</label>
+                                <select class="w-full border rounded px-3 py-2">
+                                    <option>Test</option>
+                                    <option>Production</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="payu-enabled" class="mr-2">
+                                <label for="payu-enabled" class="text-sm">Enable PayU</label>
+                            </div>
+                            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+                                Save PayU Config
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Payment Settings -->
+                <div class="mt-6 bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-4">Payment Settings</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Late Fee (% per month)</label>
+                            <input type="number" value="2" step="0.5" class="w-full border rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Grace Period (days)</label>
+                            <input type="number" value="10" class="w-full border rounded px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Payment Gateway Fee (%)</label>
+                            <input type="number" value="2.5" step="0.1" class="w-full border rounded px-3 py-2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div id="notifications-content" class="tab-content p-6 hidden">
+                <h2 class="text-xl font-bold mb-4">Fee Notification Settings</h2>
+                <div class="space-y-6">
+                    <!-- SMS Notifications -->
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4">SMS Notifications</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span>Fee Due Reminder (7 days before)</span>
+                                <input type="checkbox" checked class="toggle-switch">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Payment Confirmation</span>
+                                <input type="checkbox" checked class="toggle-switch">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Late Fee Alert</span>
+                                <input type="checkbox" class="toggle-switch">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Notifications -->
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4">Email Notifications</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span>Monthly Fee Invoice</span>
+                                <input type="checkbox" checked class="toggle-switch">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Payment Receipt</span>
+                                <input type="checkbox" checked class="toggle-switch">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Yearly Fee Summary</span>
+                                <input type="checkbox" class="toggle-switch">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp Notifications -->
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4">WhatsApp Notifications</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span>Fee Due Alerts</span>
+                                <input type="checkbox" class="toggle-switch">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Payment Confirmations</span>
+                                <input type="checkbox" class="toggle-switch">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports-content" class="tab-content p-6 hidden">
+                <h2 class="text-xl font-bold mb-4">Fee Reports Configuration</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Report Schedule -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4">Automated Reports</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Daily Collection Report</label>
+                                <select class="w-full border rounded px-3 py-2">
+                                    <option>Disabled</option>
+                                    <option>Email to Admin</option>
+                                    <option>Email to Principal</option>
+                                    <option>Both</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Monthly Summary</label>
+                                <select class="w-full border rounded px-3 py-2">
+                                    <option>1st of every month</option>
+                                    <option>Last day of month</option>
+                                    <option>Custom date</option>
+                                    <option>Disabled</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Defaulter List</label>
+                                <select class="w-full border rounded px-3 py-2">
+                                    <option>Weekly</option>
+                                    <option>Monthly</option>
+                                    <option>Quarterly</option>
+                                    <option>Disabled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Recipients -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4">Report Recipients</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Principal Email</label>
+                                <input type="email" placeholder="principal@school.edu" class="w-full border rounded px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Finance Head Email</label>
+                                <input type="email" placeholder="finance@school.edu" class="w-full border rounded px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Admin Email</label>
+                                <input type="email" placeholder="admin@school.edu" class="w-full border rounded px-3 py-2">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Additional Recipients</label>
+                                <textarea rows="3" placeholder="Add multiple emails separated by commas" class="w-full border rounded px-3 py-2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save All Configuration -->
+        <div class="text-center">
+            <button onclick="saveAllConfig()" class="bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-green-700">
+                <i class="fas fa-save mr-2"></i>Save All Configuration
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active state from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-content').classList.remove('hidden');
+            
+            // Add active state to selected tab
+            const activeTab = document.getElementById(tabName + '-tab');
+            activeTab.classList.remove('border-transparent', 'text-gray-500');
+            activeTab.classList.add('border-blue-500', 'text-blue-600');
+        }
+
+        function saveAllConfig() {
+            // Show success message
+            const message = document.createElement('div');
+            message.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            message.innerHTML = '<i class="fas fa-check mr-2"></i>Configuration saved successfully!';
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

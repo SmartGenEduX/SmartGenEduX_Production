@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Management - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: 200px repeat(auto-fit, minmax(60px, 1fr));
+            gap: 1px;
+            background: #e5e7eb;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .student-row {
+            background: white;
+            display: contents;
+        }
+        .student-name {
+            background: #f9fafb;
+            padding: 12px;
+            font-weight: 600;
+            border-right: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+        }
+        .attendance-cell {
+            background: white;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .attendance-cell:hover {
+            background: #f3f4f6;
+        }
+        .present { background: #dcfce7; color: #166534; }
+        .absent { background: #fecaca; color: #991b1b; }
+        .late { background: #fef3c7; color: #92400e; }
+        .holiday { background: #f3f4f6; color: #6b7280; }
+        .biometric-scanner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-green-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <img src="../assets/SmartGenEduX_Logo_1751034755324.png" alt="SmartGenEduX" class="h-12 w-auto">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Students + Teachers Attendance</h1>
+                        <p class="text-sm text-gray-600">Digital attendance with biometric integration and real-time tracking</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="markBulkAttendance()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-check-double"></i>
+                        <span>Bulk Mark</span>
+                    </button>
+                    <button onclick="exportAttendance()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <i class="fas fa-download"></i>
+                        <span>Export</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-user-check text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Present Today</p>
+                        <p class="text-2xl font-bold text-gray-900" id="presentCount">187</p>
+                        <p class="text-xs text-green-600">+5 from yesterday</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-user-times text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Absent Today</p>
+                        <p class="text-2xl font-bold text-gray-900" id="absentCount">13</p>
+                        <p class="text-xs text-red-600">-2 from yesterday</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-clock text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Late Arrivals</p>
+                        <p class="text-2xl font-bold text-gray-900" id="lateCount">8</p>
+                        <p class="text-xs text-yellow-600">Same as yesterday</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-percentage text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Attendance Rate</p>
+                        <p class="text-2xl font-bold text-gray-900" id="attendanceRate">93.5%</p>
+                        <p class="text-xs text-blue-600">Above target</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls and Filters -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Date:</label>
+                    <input type="date" id="attendanceDate" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500" value="2024-12-29">
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Class:</label>
+                    <select id="classFilter" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500">
+                        <option value="">All Classes</option>
+                        <option value="Class 1-A" selected>Class 1-A</option>
+                        <option value="Class 1-B">Class 1-B</option>
+                        <option value="Class 2-A">Class 2-A</option>
+                        <option value="Class 2-B">Class 2-B</option>
+                        <option value="Class 3-A">Class 3-A</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Period:</label>
+                    <select id="periodFilter" class="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500">
+                        <option value="all">All Day</option>
+                        <option value="1">Period 1 (8:00-8:45)</option>
+                        <option value="2">Period 2 (8:45-9:30)</option>
+                        <option value="3">Period 3 (9:45-10:30)</option>
+                        <option value="4">Period 4 (10:30-11:15)</option>
+                        <option value="5">Period 5 (11:15-12:00)</option>
+                    </select>
+                </div>
+                <button onclick="loadAttendance()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                    Load Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Biometric Scanner Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="lg:col-span-1">
+                <div class="biometric-scanner">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-fingerprint text-6xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Biometric Scanner</h3>
+                        <p class="text-sm opacity-90">Place finger on scanner for automatic attendance</p>
+                    </div>
+                    <div class="bg-white bg-opacity-20 rounded-lg p-4 mb-4">
+                        <div class="text-center">
+                            <div class="animate-pulse">
+                                <div class="w-16 h-16 bg-white bg-opacity-30 rounded-full mx-auto mb-2"></div>
+                            </div>
+                            <p class="text-sm">Scanning...</p>
+                        </div>
+                    </div>
+                    <button onclick="simulateBiometric()" class="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-2 px-4 rounded-lg transition-all">
+                        Simulate Scan
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Check-ins</h3>
+                    <div class="space-y-3" id="recentCheckins">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                    AS
+                                </div>
+                                <div>
+                                    <p class="font-medium">Aarav Sharma</p>
+                                    <p class="text-sm text-gray-600">Class 1-A • Roll 01</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-green-600">Present</p>
+                                <p class="text-xs text-gray-500">08:15 AM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                                    PP
+                                </div>
+                                <div>
+                                    <p class="font-medium">Priya Patel</p>
+                                    <p class="text-sm text-gray-600">Class 1-A • Roll 02</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-green-600">Present</p>
+                                <p class="text-xs text-gray-500">08:12 AM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold">
+                                    RG
+                                </div>
+                                <div>
+                                    <p class="font-medium">Ravi Gupta</p>
+                                    <p class="text-sm text-gray-600">Class 1-A • Roll 03</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-yellow-600">Late</p>
+                                <p class="text-xs text-gray-500">08:47 AM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Grid -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900">Daily Attendance - Class 1-A</h2>
+                        <p class="text-sm text-gray-600 mt-1">Click on cells to mark attendance • P=Present, A=Absent, L=Late</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-green-200 rounded"></div>
+                            <span class="text-sm">Present</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-red-200 rounded"></div>
+                            <span class="text-sm">Absent</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 bg-yellow-200 rounded"></div>
+                            <span class="text-sm">Late</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="attendance-grid">
+                    <!-- Header -->
+                    <div class="student-name font-bold text-gray-700 bg-gray-100">Student Name</div>
+                    <div class="attendance-cell font-bold text-gray-700 bg-gray-100">Period 1<br><small>8:00-8:45</small></div>
+                    <div class="attendance-cell font-bold text-gray-700 bg-gray-100">Period 2<br><small>8:45-9:30</small></div>
+                    <div class="attendance-cell font-bold text-gray-700 bg-gray-100">Break<br><small>9:30-9:45</small></div>
+                    <div class="attendance-cell font-bold text-gray-700 bg-gray-100">Period 3<br><small>9:45-10:30</small></div>
+                    <div class="attendance-cell font-bold text-gray-700 bg-gray-100">Period 4<br><small>10:30-11:15</small></div>
+                    <div class="attendance-cell font-bold text-gray-700 bg-gray-100">Period 5<br><small>11:15-12:00</small></div>
+
+                    <!-- Student Rows -->
+                    <div class="student-row">
+                        <div class="student-name">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    AS
+                                </div>
+                                <div>
+                                    <p class="font-medium">Aarav Sharma</p>
+                                    <p class="text-xs text-gray-500">Roll: 01</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_001', 1)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_001', 2)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_001', 'break')">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_001', 3)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_001', 4)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_001', 5)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+
+                    <div class="student-row">
+                        <div class="student-name">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    PP
+                                </div>
+                                <div>
+                                    <p class="font-medium">Priya Patel</p>
+                                    <p class="text-xs text-gray-500">Roll: 02</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_002', 1)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_002', 2)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_002', 'break')">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_002', 3)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_002', 4)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_002', 5)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+
+                    <div class="student-row">
+                        <div class="student-name">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    RG
+                                </div>
+                                <div>
+                                    <p class="font-medium">Ravi Gupta</p>
+                                    <p class="text-xs text-gray-500">Roll: 03</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="attendance-cell late" onclick="toggleAttendance(this, 'student_003', 1)">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_003', 2)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_003', 'break')">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_003', 3)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_003', 4)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="attendance-cell present" onclick="toggleAttendance(this, 'student_003', 5)">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+
+                    <div class="student-row">
+                        <div class="student-name">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                    SK
+                                </div>
+                                <div>
+                                    <p class="font-medium">Simran Kaur</p>
+                                    <p class="text-xs text-gray-500">Roll: 04</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="attendance-cell absent" onclick="toggleAttendance(this, 'student_004', 1)">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div class="attendance-cell absent" onclick="toggleAttendance(this, 'student_004', 2)">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div class="attendance-cell absent" onclick="toggleAttendance(this, 'student_004', 'break')">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div class="attendance-cell absent" onclick="toggleAttendance(this, 'student_004', 3)">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div class="attendance-cell absent" onclick="toggleAttendance(this, 'student_004', 4)">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div class="attendance-cell absent" onclick="toggleAttendance(this, 'student_004', 5)">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="p-6 border-t border-gray-200 bg-gray-50">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <button onclick="markAllPresent()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Mark All Present</span>
+                        </button>
+                        <button onclick="sendAbsenteeNotifications()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                            <i class="fas fa-bell"></i>
+                            <span>Notify Parents</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button onclick="saveAttendance()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                            <i class="fas fa-save"></i>
+                            <span>Save Changes</span>
+                        </button>
+                        <button onclick="generateReport()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Generate Report</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleAttendance(cell, studentId, period) {
+            const classes = ['present', 'absent', 'late'];
+            let currentClass = classes.find(cls => cell.classList.contains(cls));
+            let currentIndex = classes.indexOf(currentClass);
+            let nextIndex = (currentIndex + 1) % classes.length;
+            
+            // Remove current class and add next class
+            cell.className = cell.className.replace(currentClass, classes[nextIndex]);
+            
+            // Update icon
+            const icons = {
+                'present': 'fas fa-check',
+                'absent': 'fas fa-times',
+                'late': 'fas fa-clock'
+            };
+            
+            cell.innerHTML = `<i class="${icons[classes[nextIndex]]}"></i>`;
+            
+            // Show save indicator
+            showToast(`Updated attendance for period ${period}`, 'info');
+        }
+
+        function simulateBiometric() {
+            showToast('Biometric scan successful - Aarav Sharma marked present', 'success');
+            // Add to recent check-ins
+            const recentCheckins = document.getElementById('recentCheckins');
+            const newCheckin = document.createElement('div');
+            newCheckin.className = 'flex items-center justify-between p-3 bg-green-50 rounded-lg';
+            newCheckin.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                        AS
+                    </div>
+                    <div>
+                        <p class="font-medium">Aarav Sharma</p>
+                        <p class="text-sm text-gray-600">Class 1-A • Roll 01</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-medium text-green-600">Present</p>
+                    <p class="text-xs text-gray-500">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                </div>
+            `;
+            recentCheckins.insertBefore(newCheckin, recentCheckins.firstChild);
+        }
+
+        function markBulkAttendance() {
+            showToast('Bulk attendance marking enabled', 'info');
+        }
+
+        function exportAttendance() {
+            showToast('Attendance report exported successfully', 'success');
+        }
+
+        function loadAttendance() {
+            showToast('Loading attendance data...', 'info');
+        }
+
+        function markAllPresent() {
+            const cells = document.querySelectorAll('.attendance-cell:not(.font-bold)');
+            cells.forEach(cell => {
+                cell.className = 'attendance-cell present';
+                cell.innerHTML = '<i class="fas fa-check"></i>';
+            });
+            showToast('All students marked present', 'success');
+        }
+
+        function sendAbsenteeNotifications() {
+            showToast('SMS notifications sent to parents of absent students', 'success');
+        }
+
+        function saveAttendance() {
+            showToast('Attendance saved successfully', 'success');
+        }
+
+        function generateReport() {
+            showToast('Attendance report generated', 'success');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-green-500' : 
+                           type === 'warning' ? 'bg-yellow-500' : 
+                           type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            
+            toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Real-time updates simulation
+        setInterval(() => {
+            const presentCount = document.getElementById('presentCount');
+            const currentCount = parseInt(presentCount.textContent);
+            if (Math.random() > 0.8) {
+                presentCount.textContent = currentCount + 1;
+                showToast('New student checked in via biometric scanner', 'success');
+            }
+        }, 15000);
+    </script>
+</body>
+</html>

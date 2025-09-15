@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Event Log - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/documentation.png" alt="School Events" class="w-12 h-12 mr-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">School Event Log</h1>
+                        <p class="text-gray-600">AI-Enhanced Event Documentation & Management</p>
+                    </div>
+                </div>
+                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Event Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-blue-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-check text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">127</div>
+                        <div class="text-blue-100">Total Events</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-green-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">95%</div>
+                        <div class="text-green-100">AI Enhanced</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-purple-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-users text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">1,247</div>
+                        <div class="text-purple-100">Participants</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-orange-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">4.8</div>
+                        <div class="text-orange-100">Avg Rating</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Event -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Add New Event</h2>
+            <form id="eventForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Wing/Department</label>
+                        <select id="wing" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Wing</option>
+                            <option value="Science Wing">Science Wing</option>
+                            <option value="Arts Wing">Arts Wing</option>
+                            <option value="Sports Wing">Sports Wing</option>
+                            <option value="Administrative">Administrative</option>
+                            <option value="Cultural">Cultural</option>
+                            <option value="Library">Library</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Event Title</label>
+                        <input type="text" id="eventTitle" placeholder="Annual Science Fair" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Brief Description</label>
+                    <textarea id="description" rows="3" placeholder="Describe the event briefly..." class="w-full border rounded px-3 py-2" required></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Event Date</label>
+                        <input type="date" id="eventDate" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Duration</label>
+                        <input type="text" id="duration" placeholder="4 hours" class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Participants</label>
+                        <input type="text" id="participants" placeholder="150 students, 20 teachers" class="w-full border rounded px-3 py-2">
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-robot mr-2"></i>Add Event with AI Enhancement
+                    </button>
+                    <button type="button" onclick="addBasicEvent()" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">
+                        <i class="fas fa-plus mr-2"></i>Add Basic Event
+                    </button>
+                    <button type="button" onclick="toggleQuickEventForm()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                        <i class="fas fa-plus-circle mr-2"></i>Quick Event Form
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Event List -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Recent Events</h2>
+                <div class="flex space-x-2">
+                    <select id="filterWing" class="border rounded px-3 py-2">
+                        <option value="">All Wings</option>
+                        <option value="Science Wing">Science Wing</option>
+                        <option value="Arts Wing">Arts Wing</option>
+                        <option value="Sports Wing">Sports Wing</option>
+                    </select>
+                    <input type="text" id="searchEvents" placeholder="Search events..." class="border rounded px-3 py-2">
+                </div>
+            </div>
+            
+            <div class="space-y-4" id="eventsList">
+                <!-- Event Card 1 -->
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-2">Science Wing</span>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs mr-2">AI Enhanced</span>
+                                <span class="text-gray-500 text-sm">Jan 4, 2025</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Annual Science Fair 2025</h3>
+                            <p class="text-gray-600 mb-3">Students presented innovative science projects covering various topics including renewable energy, artificial intelligence, and environmental conservation. The event showcased exceptional creativity and scientific understanding among participants.</p>
+                            
+                            <!-- AI Enhanced Content -->
+                            <div class="bg-blue-50 rounded-lg p-3 mb-3">
+                                <h4 class="font-medium text-blue-800 mb-2">
+                                    <i class="fas fa-robot mr-2"></i>AI Enhanced Insights
+                                </h4>
+                                <div class="space-y-2">
+                                    <div>
+                                        <strong class="text-blue-700">Key Highlights:</strong>
+                                        <ul class="list-disc list-inside text-sm text-blue-600 ml-4">
+                                            <li>15 innovative renewable energy projects</li>
+                                            <li>AI-based solutions for environmental challenges</li>
+                                            <li>Interactive demonstrations with live experiments</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <strong class="text-blue-700">Impact:</strong>
+                                        <span class="text-sm text-blue-600">Enhanced scientific curiosity and practical application skills among students, fostering innovation mindset for future STEM careers.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span><i class="fas fa-clock mr-1"></i>4 hours</span>
+                                <span><i class="fas fa-users mr-1"></i>150 students, 20 teachers</span>
+                                <span><i class="fas fa-star mr-1"></i>High Priority</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="text-blue-600 hover:text-blue-800" onclick="editEvent(1)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-800" onclick="exportEvent(1)">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Card 2 -->
+                <div class="border rounded-lg p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs mr-2">Cultural</span>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs mr-2">AI Enhanced</span>
+                                <span class="text-gray-500 text-sm">Jan 2, 2025</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Republic Day Celebration</h3>
+                            <p class="text-gray-600 mb-3">Patriotic cultural program featuring traditional dances, songs, and speeches commemorating India's Republic Day with participation from all grades.</p>
+                            
+                            <div class="bg-purple-50 rounded-lg p-3 mb-3">
+                                <h4 class="font-medium text-purple-800 mb-2">
+                                    <i class="fas fa-robot mr-2"></i>AI Enhanced Insights
+                                </h4>
+                                <div class="space-y-2">
+                                    <div>
+                                        <strong class="text-purple-700">Key Highlights:</strong>
+                                        <ul class="list-disc list-inside text-sm text-purple-600 ml-4">
+                                            <li>Traditional dance performances from 8 states</li>
+                                            <li>Student speeches on constitutional values</li>
+                                            <li>Flag hoisting ceremony with parade</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <strong class="text-purple-700">Impact:</strong>
+                                        <span class="text-sm text-purple-600">Strengthened cultural awareness and patriotic values, promoting unity and national pride among students.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                <span><i class="fas fa-clock mr-1"></i>3 hours</span>
+                                <span><i class="fas fa-users mr-1"></i>All students, Parents</span>
+                                <span><i class="fas fa-star mr-1"></i>Medium Priority</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="text-blue-600 hover:text-blue-800" onclick="editEvent(2)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-green-600 hover:text-green-800" onclick="exportEvent(2)">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Event form submission
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                wing: document.getElementById('wing').value,
+                title: document.getElementById('eventTitle').value,
+                description: document.getElementById('description').value,
+                date: document.getElementById('eventDate').value,
+                duration: document.getElementById('duration').value,
+                participants: document.getElementById('participants').value
+            };
+            
+            // Show AI processing
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing with AI...';
+            submitBtn.disabled = true;
+            
+            // Simulate AI processing
+            setTimeout(() => {
+                addEventWithAI(formData);
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // Reset form
+                e.target.reset();
+            }, 3000);
+        });
+
+        function addEventWithAI(eventData) {
+            // Show success message
+            const message = document.createElement('div');
+            message.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            message.innerHTML = '<i class="fas fa-check mr-2"></i>Event added successfully with AI enhancement!';
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 3000);
+            
+            console.log('Event added with AI enhancement:', eventData);
+        }
+
+        function addBasicEvent() {
+            const message = document.createElement('div');
+            message.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            message.innerHTML = '<i class="fas fa-info mr-2"></i>Basic event added successfully!';
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 3000);
+        }
+
+        function editEvent(id) {
+            alert(`Editing event ${id} - Feature available in full version`);
+        }
+
+        function exportEvent(id) {
+            alert(`Exporting event ${id} - Feature available in full version`);
+        }
+
+        // Search and filter functionality
+        document.getElementById('searchEvents').addEventListener('input', function(e) {
+            // Search implementation
+            console.log('Searching for:', e.target.value);
+        });
+
+        document.getElementById('filterWing').addEventListener('change', function(e) {
+            // Filter implementation
+            console.log('Filtering by wing:', e.target.value);
+        });
+        
+        // SaaS Form Functions
+        function toggleQuickEventForm() {
+            showMessage('Quick event form activated. You can now add events directly in the platform.', 'success');
+        }
+        
+        function addBasicEvent() {
+            showMessage('Basic event added successfully!', 'success');
+        }
+        
+        function showMessage(message, type) {
+            const colors = {
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
+                'info': 'bg-blue-600'
+            };
+            
+            const icons = {
+                'success': 'fas fa-check',
+                'error': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

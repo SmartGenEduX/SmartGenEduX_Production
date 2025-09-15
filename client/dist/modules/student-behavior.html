@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Behaviour Tracker - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/behavior-tracker.png" alt="Behavior Tracker" class="w-12 h-12 mr-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Student Behaviour Tracker</h1>
+                        <p class="text-gray-600">Monitor and track student behavior patterns with analytics</p>
+                    </div>
+                </div>
+                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-green-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-smile text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">89%</div>
+                        <div class="text-green-100">Positive Behavior</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-yellow-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">23</div>
+                        <div class="text-yellow-100">Incidents Today</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-blue-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-chart-line text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">15%</div>
+                        <div class="text-blue-100">Improvement Rate</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-purple-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-award text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">67</div>
+                        <div class="text-purple-100">Rewards Given</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log New Incident -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Log Behavior Incident</h2>
+            <form id="behaviorForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Student</label>
+                        <select id="studentSelect" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Student</option>
+                            <option value="1">Rahul Kumar - Class 5A</option>
+                            <option value="2">Priya Sharma - Class 5A</option>
+                            <option value="3">Amit Singh - Class 5B</option>
+                            <option value="4">Neha Patel - Class 5B</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Behavior Type</label>
+                        <select id="behaviorType" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Type</option>
+                            <optgroup label="Positive Behaviors">
+                                <option value="helpful">Helpful to Others</option>
+                                <option value="leadership">Leadership</option>
+                                <option value="academic_excellence">Academic Excellence</option>
+                                <option value="participation">Active Participation</option>
+                                <option value="punctuality">Punctuality</option>
+                            </optgroup>
+                            <optgroup label="Areas for Improvement">
+                                <option value="disruptive">Disruptive Behavior</option>
+                                <option value="late_arrival">Late Arrival</option>
+                                <option value="homework_incomplete">Incomplete Homework</option>
+                                <option value="inattentive">Inattentive in Class</option>
+                                <option value="conflicts">Conflicts with Peers</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Severity Level</label>
+                        <select id="severityLevel" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Severity</option>
+                            <option value="positive">Positive Recognition</option>
+                            <option value="minor">Minor Issue</option>
+                            <option value="moderate">Moderate Concern</option>
+                            <option value="serious">Serious Issue</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Location</label>
+                        <select id="location" class="w-full border rounded px-3 py-2">
+                            <option value="">Select Location</option>
+                            <option value="classroom">Classroom</option>
+                            <option value="playground">Playground</option>
+                            <option value="library">Library</option>
+                            <option value="cafeteria">Cafeteria</option>
+                            <option value="corridor">Corridor</option>
+                            <option value="assembly">Assembly Hall</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Description</label>
+                    <textarea id="description" rows="3" placeholder="Describe the behavior incident in detail..." class="w-full border rounded px-3 py-2" required></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Action Taken</label>
+                        <textarea id="actionTaken" rows="2" placeholder="What action was taken?" class="w-full border rounded px-3 py-2"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Follow-up Required</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="parentContact" class="mr-2"> Contact Parent
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="counselorReferral" class="mr-2"> Counselor Referral
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="principalMeeting" class="mr-2"> Principal Meeting
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-save mr-2"></i>Log Incident
+                    </button>
+                    <button type="button" onclick="sendParentAlert()" class="bg-orange-600 text-white px-6 py-2 rounded hover:bg-orange-700">
+                        <i class="fas fa-bell mr-2"></i>Send Parent Alert
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Recent Incidents -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Recent Behavior Logs</h2>
+                <div class="flex space-x-2">
+                    <select id="filterClass" class="border rounded px-3 py-2">
+                        <option value="">All Classes</option>
+                        <option value="5A">Class 5A</option>
+                        <option value="5B">Class 5B</option>
+                        <option value="4A">Class 4A</option>
+                    </select>
+                    <select id="filterType" class="border rounded px-3 py-2">
+                        <option value="">All Types</option>
+                        <option value="positive">Positive</option>
+                        <option value="improvement">Needs Improvement</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Student</th>
+                            <th class="px-4 py-2 text-left">Behavior</th>
+                            <th class="px-4 py-2 text-left">Type</th>
+                            <th class="px-4 py-2 text-left">Severity</th>
+                            <th class="px-4 py-2 text-left">Date/Time</th>
+                            <th class="px-4 py-2 text-left">Action</th>
+                            <th class="px-4 py-2 text-left">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                                        <span class="text-blue-600 font-medium">RK</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Rahul Kumar</div>
+                                        <div class="text-gray-500">Class 5A</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2">Active Participation</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Positive</span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Recognition</span>
+                            </td>
+                            <td class="px-4 py-2">Jan 4, 2025 10:30 AM</td>
+                            <td class="px-4 py-2">Praised in class</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Completed</span>
+                            </td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center mr-2">
+                                        <span class="text-pink-600 font-medium">PS</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Priya Sharma</div>
+                                        <div class="text-gray-500">Class 5A</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2">Late Arrival</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Minor</span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Minor</span>
+                            </td>
+                            <td class="px-4 py-2">Jan 4, 2025 08:45 AM</td>
+                            <td class="px-4 py-2">Verbal reminder</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">Follow-up</span>
+                            </td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                                        <span class="text-green-600 font-medium">AS</span>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Amit Singh</div>
+                                        <div class="text-gray-500">Class 5B</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2">Helpful to Others</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Positive</span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Recognition</span>
+                            </td>
+                            <td class="px-4 py-2">Jan 3, 2025 02:15 PM</td>
+                            <td class="px-4 py-2">Merit point awarded</td>
+                            <td class="px-4 py-2">
+                                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Completed</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Student Behavior Analytics -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Behavior Analytics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Top Performers -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-green-600">
+                        <i class="fas fa-star mr-2"></i>Top Performers This Week
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-green-600 font-medium">AS</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Amit Singh</div>
+                                    <div class="text-sm text-gray-500">Class 5B</div>
+                                </div>
+                            </div>
+                            <div class="text-green-600 font-bold">+15 pts</div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-green-600 font-medium">NP</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Neha Patel</div>
+                                    <div class="text-sm text-gray-500">Class 5B</div>
+                                </div>
+                            </div>
+                            <div class="text-green-600 font-bold">+12 pts</div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-green-600 font-medium">RK</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Rahul Kumar</div>
+                                    <div class="text-sm text-gray-500">Class 5A</div>
+                                </div>
+                            </div>
+                            <div class="text-green-600 font-bold">+10 pts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Students Needing Support -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3 text-orange-600">
+                        <i class="fas fa-hand-holding-heart mr-2"></i>Students Needing Support
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-orange-600 font-medium">PS</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium">Priya Sharma</div>
+                                    <div class="text-sm text-gray-500">Class 5A</div>
+                                </div>
+                            </div>
+                            <div class="text-orange-600 font-bold">3 incidents</div>
+                        </div>
+                        <div class="p-3 bg-orange-50 rounded-lg">
+                            <div class="text-sm text-orange-700">
+                                <strong>Recommended Actions:</strong>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li>Schedule parent meeting</li>
+                                    <li>Counselor consultation</li>
+                                    <li>Positive reinforcement plan</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form submission
+        document.getElementById('behaviorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                student: document.getElementById('studentSelect').value,
+                type: document.getElementById('behaviorType').value,
+                severity: document.getElementById('severityLevel').value,
+                location: document.getElementById('location').value,
+                description: document.getElementById('description').value,
+                actionTaken: document.getElementById('actionTaken').value,
+                parentContact: document.getElementById('parentContact').checked,
+                counselorReferral: document.getElementById('counselorReferral').checked,
+                principalMeeting: document.getElementById('principalMeeting').checked
+            };
+            
+            logBehaviorIncident(formData);
+        });
+
+        function logBehaviorIncident(data) {
+            // Show loading
+            const submitBtn = document.querySelector('#behaviorForm button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging...';
+            submitBtn.disabled = true;
+            
+            // Simulate logging
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                // Show success message
+                showMessage('Behavior incident logged successfully!', 'success');
+                
+                // Reset form
+                document.getElementById('behaviorForm').reset();
+            }, 2000);
+        }
+
+        function sendParentAlert() {
+            const student = document.getElementById('studentSelect').value;
+            const behaviorType = document.getElementById('behaviorType').value;
+            
+            if (!student || !behaviorType) {
+                showMessage('Please select student and behavior type first', 'error');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showMessage('Parent alert sent successfully!', 'success');
+            }, 2000);
+        }
+
+        function showMessage(message, type) {
+            const className = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+            const icon = type === 'success' ? 'fas fa-check' : 'fas fa-exclamation-triangle';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${className} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icon} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // Filter functionality
+        document.getElementById('filterClass').addEventListener('change', function() {
+            console.log('Filtering by class:', this.value);
+        });
+
+        document.getElementById('filterType').addEventListener('change', function() {
+            console.log('Filtering by type:', this.value);
+        });
+    </script>
+</body>
+</html>

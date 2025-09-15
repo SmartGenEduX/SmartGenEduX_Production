@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Paper Extractor - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../attached_assets/Question Extractor_20250621_153142_0000_1751640161625.png" alt="Question Extractor" class="w-12 h-12 mr-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Question Paper Extractor</h1>
+                        <p class="text-gray-600">Extract and digitize questions from PDF papers using AI</p>
+                    </div>
+                </div>
+                <button onclick="window.location.href='../index.html'" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-blue-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-file-pdf text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">127</div>
+                        <div class="text-blue-100">Papers Processed</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-green-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-question-circle text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">3,421</div>
+                        <div class="text-green-100">Questions Extracted</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-purple-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">97%</div>
+                        <div class="text-purple-100">AI Accuracy</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-orange-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">2.5m</div>
+                        <div class="text-orange-100">Avg Process Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Bank Integration -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Upload & Process -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Upload Question Paper</h2>
+                <div class="space-y-4">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <input type="file" id="pdfUpload" accept=".pdf" class="hidden" onchange="handleFileUpload(this)">
+                        <label for="pdfUpload" class="cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-600 mb-2">Drop PDF files here or click to upload</p>
+                            <p class="text-sm text-gray-500">Supports multiple question paper formats</p>
+                        </label>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-blue-900 mb-2">Subject-Wise Blueprint Upload</h3>
+                        <p class="text-sm text-blue-700 mb-3">Upload custom blueprints for each subject to guide extraction patterns</p>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <select id="blueprintSubject" class="border rounded px-3 py-2 text-sm">
+                                    <option value="">Select Subject</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="physics">Physics</option>
+                                    <option value="chemistry">Chemistry</option>
+                                    <option value="biology">Biology</option>
+                                    <option value="english">English</option>
+                                    <option value="hindi">Hindi</option>
+                                    <option value="social">Social Studies</option>
+                                    <option value="computer-science">Computer Science</option>
+                                    <option value="economics">Economics</option>
+                                </select>
+                                <select id="blueprintClass" class="border rounded px-3 py-2 text-sm">
+                                    <option value="">Select Class</option>
+                                    <option value="9">Class 9</option>
+                                    <option value="10">Class 10</option>
+                                    <option value="11">Class 11</option>
+                                    <option value="12">Class 12</option>
+                                </select>
+                            </div>
+                            
+                            <div class="border-2 border-dashed border-blue-300 rounded-lg p-4 text-center">
+                                <input type="file" id="blueprintUpload" accept=".json,.txt,.pdf,.docx" class="hidden" onchange="handleBlueprintUpload(this)">
+                                <label for="blueprintUpload" class="cursor-pointer">
+                                    <i class="fas fa-upload text-2xl text-blue-400 mb-2"></i>
+                                    <p class="text-sm text-blue-700">Upload Blueprint File</p>
+                                    <p class="text-xs text-blue-500">Supports JSON, TXT, PDF, DOCX formats</p>
+                                </label>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="uploadBlueprint()" class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm">
+                                    <i class="fas fa-upload mr-1"></i>Upload
+                                </button>
+                                <button onclick="viewBlueprints()" class="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm">
+                                    <i class="fas fa-eye mr-1"></i>View All
+                                </button>
+                                <button onclick="editBlueprint()" class="bg-orange-600 text-white px-3 py-2 rounded hover:bg-orange-700 text-sm">
+                                    <i class="fas fa-edit mr-1"></i>Edit
+                                </button>
+                            </div>
+                            
+                            <div id="blueprintStatus" class="text-sm text-gray-600 text-center py-2">
+                                No blueprints uploaded yet
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-green-900 mb-2">Question Paper Submission Form</h3>
+                        <p class="text-sm text-green-700 mb-3">Submit new question papers for extraction processing</p>
+                        <div class="space-y-3">
+                            <input type="text" placeholder="Paper Title" class="w-full border rounded px-3 py-2 text-sm">
+                            <select class="w-full border rounded px-3 py-2 text-sm">
+                                <option value="">Select Subject</option>
+                                <option value="mathematics">Mathematics</option>
+                                <option value="science">Science</option>
+                                <option value="english">English</option>
+                            </select>
+                            <input type="file" accept=".pdf,.doc,.docx" class="w-full border rounded px-3 py-2 text-sm">
+                            <button onclick="submitQuestionPaper()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm w-full">
+                                <i class="fas fa-upload mr-2"></i>Submit Paper
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Paper Information</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <select id="subjectSelect" class="border rounded px-3 py-2 text-sm">
+                                    <option value="">Subject</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="english">English</option>
+                                    <option value="social">Social Studies</option>
+                                </select>
+                                <select id="classSelect" class="border rounded px-3 py-2 text-sm">
+                                    <option value="">Class</option>
+                                    <option value="9">Class 9</option>
+                                    <option value="10">Class 10</option>
+                                    <option value="11">Class 11</option>
+                                    <option value="12">Class 12</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Blueprint Extraction Configuration</label>
+                            <div class="space-y-3">
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <h4 class="font-medium text-sm mb-2">Question Types to Extract</h4>
+                                    <div class="grid grid-cols-2 gap-2 text-sm">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_mcq" checked> MCQ (1 mark)
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_short" checked> Short (2-3 marks)
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_long" checked> Long (4-5 marks)
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_assertion"> Assertion-Reasoning
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_case"> Case Study
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_practical"> Practical/Lab
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <h4 class="font-medium text-sm mb-2">Advanced Extraction Features</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_options" checked> Extract MCQ options (A, B, C, D)
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_answers" checked> Identify correct answers
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_points" checked> Expected answer points
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_chapters" checked> Auto-map to chapters
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_difficulty" checked> Difficulty analysis
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="extract_keywords" checked> Extract key concepts
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-yellow-50 rounded-lg p-3">
+                                    <h4 class="font-medium text-sm mb-2 text-yellow-800">Quality Control</h4>
+                                    <div class="space-y-2 text-sm">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="confidence_threshold" checked> 
+                                            Minimum confidence: 85%
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="manual_review" checked> 
+                                            Flag for manual review
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="mr-2" id="duplicate_check" checked> 
+                                            Duplicate question detection
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Processing Status -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Processing Status</h2>
+                <div class="space-y-4">
+                    <div id="processingQueue" class="space-y-3">
+                        <div class="text-sm text-gray-500 text-center py-8">
+                            No files in processing queue
+                        </div>
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <h3 class="font-semibold mb-2">Processing Options</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="batchProcess()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm">
+                                <i class="fas fa-layer-group mr-2"></i>Batch Process
+                            </button>
+                            <button onclick="priorityProcess()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 text-sm">
+                                <i class="fas fa-bolt mr-2"></i>Priority Mode
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="font-semibold mb-2">AI Processing Stats</h3>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <div class="text-gray-600">Today's Processing:</div>
+                                <div class="font-bold">23 papers</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-600">Success Rate:</div>
+                                <div class="font-bold text-green-600">97.2%</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-600">Avg Time:</div>
+                                <div class="font-bold">2.5 minutes</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-600">Queue Status:</div>
+                                <div class="font-bold text-blue-600">3 pending</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blueprint Management -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Blueprint Management</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Uploaded Blueprints -->
+                <div>
+                    <h3 class="font-semibold mb-3">Uploaded Blueprints</h3>
+                    <div class="space-y-3" id="blueprintList">
+                        <div class="border rounded-lg p-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">Mathematics - Class 10</div>
+                                    <div class="text-sm text-gray-600">CBSE Pattern • 45 question types</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="editBlueprintItem('math-10')" class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteBlueprintItem('math-10')" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">Science - Class 9</div>
+                                    <div class="text-sm text-gray-600">NCERT Pattern • 38 question types</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="editBlueprintItem('science-9')" class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteBlueprintItem('science-9')" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border rounded-lg p-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">English - Class 11</div>
+                                    <div class="text-sm text-gray-600">Literature Focus • 29 question types</div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="editBlueprintItem('english-11')" class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteBlueprintItem('english-11')" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Blueprint Analytics -->
+                <div>
+                    <h3 class="font-semibold mb-3">Blueprint Analytics</h3>
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <h4 class="font-medium text-blue-900 mb-2">Extraction Accuracy by Blueprint</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span>Mathematics - Class 10:</span>
+                                    <span class="font-medium text-green-600">94.2%</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>Science - Class 9:</span>
+                                    <span class="font-medium text-green-600">91.8%</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>English - Class 11:</span>
+                                    <span class="font-medium text-yellow-600">87.3%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <h4 class="font-medium text-green-900 mb-2">Most Used Blueprints</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span>Mathematics (All Classes):</span>
+                                    <span class="font-medium">156 extractions</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>Science (All Classes):</span>
+                                    <span class="font-medium">134 extractions</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>English (All Classes):</span>
+                                    <span class="font-medium">89 extractions</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="generateBlueprintReport()" class="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 text-sm">
+                            <i class="fas fa-chart-bar mr-2"></i>Generate Detailed Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Extractions -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Recent Extractions</h2>
+                <div class="flex space-x-2">
+                    <button onclick="exportQuestions()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                    <button onclick="reviewExtractions()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-search mr-2"></i>Review All
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">File Name</th>
+                            <th class="px-4 py-2 text-left">Subject</th>
+                            <th class="px-4 py-2 text-left">Class</th>
+                            <th class="px-4 py-2 text-left">Questions Found</th>
+                            <th class="px-4 py-2 text-left">Accuracy</th>
+                            <th class="px-4 py-2 text-left">Processed</th>
+                            <th class="px-4 py-2 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">Math_Half_Yearly_2025.pdf</td>
+                            <td class="px-4 py-2">Mathematics</td>
+                            <td class="px-4 py-2">Class 10</td>
+                            <td class="px-4 py-2">36 questions</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">98%</span>
+                            </td>
+                            <td class="px-4 py-2">Jan 4, 2025</td>
+                            <td class="px-4 py-2">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800" title="View Questions">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-green-600 hover:text-green-800" title="Add to Bank">
+                                        <i class="fas fa-database"></i>
+                                    </button>
+                                    <button class="text-purple-600 hover:text-purple-800" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-orange-600 hover:text-orange-800" title="Export">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">Science_Unit_Test_3.pdf</td>
+                            <td class="px-4 py-2">Science</td>
+                            <td class="px-4 py-2">Class 9</td>
+                            <td class="px-4 py-2">25 questions</td>
+                            <td class="px-4 py-2">
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">94%</span>
+                            </td>
+                            <td class="px-4 py-2">Jan 3, 2025</td>
+                            <td class="px-4 py-2">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800" title="View Questions">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-green-600 hover:text-green-800" title="Add to Bank">
+                                        <i class="fas fa-database"></i>
+                                    </button>
+                                    <button class="text-purple-600 hover:text-purple-800" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-orange-600 hover:text-orange-800" title="Export">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Question Bank Submit Form -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Submit Questions to Shared Bank</h2>
+            <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 mr-3"></i>
+                    <div>
+                        <h3 class="font-semibold text-blue-900">Question Paper Submission Portal</h3>
+                        <p class="text-sm text-blue-700">Share your quality questions with other educators in the community</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="submissionForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Your Name</label>
+                        <input type="text" id="teacherName" placeholder="Teacher/Institution name" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Email</label>
+                        <input type="email" id="teacherEmail" placeholder="your.email@school.edu" class="w-full border rounded px-3 py-2" required>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Subject</label>
+                        <select id="submitSubject" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Subject</option>
+                            <option value="mathematics">Mathematics</option>
+                            <option value="science">Science</option>
+                            <option value="english">English</option>
+                            <option value="social">Social Studies</option>
+                            <option value="hindi">Hindi</option>
+                            <option value="computer">Computer Science</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Class/Grade</label>
+                        <select id="submitClass" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Class</option>
+                            <option value="6">Class 6</option>
+                            <option value="7">Class 7</option>
+                            <option value="8">Class 8</option>
+                            <option value="9">Class 9</option>
+                            <option value="10">Class 10</option>
+                            <option value="11">Class 11</option>
+                            <option value="12">Class 12</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Question Type</label>
+                        <select id="questionType" class="w-full border rounded px-3 py-2" required>
+                            <option value="">Select Type</option>
+                            <option value="mcq">Multiple Choice</option>
+                            <option value="short">Short Answer</option>
+                            <option value="long">Long Answer</option>
+                            <option value="fill">Fill in the Blanks</option>
+                            <option value="mixed">Mixed Types</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Question Paper Title</label>
+                    <input type="text" id="paperTitle" placeholder="e.g., Mathematics Half Yearly Exam 2025" class="w-full border rounded px-3 py-2" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">Description</label>
+                    <textarea id="paperDescription" rows="3" placeholder="Brief description of the question paper, difficulty level, and any special notes..." class="w-full border rounded px-3 py-2"></textarea>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="button" onclick="openSubmissionForm()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        <i class="fas fa-external-link-alt mr-2"></i>Open Submission Form
+                    </button>
+                    <button type="button" onclick="viewQuestionBank()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                        <i class="fas fa-database mr-2"></i>View Question Bank
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function handleFileUpload(input) {
+            const files = input.files;
+            if (files.length > 0) {
+                const processingQueue = document.getElementById('processingQueue');
+                processingQueue.innerHTML = '';
+                
+                Array.from(files).forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between p-3 border rounded';
+                    fileItem.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-file-pdf text-red-500 mr-3"></i>
+                            <div>
+                                <div class="font-semibold">${file.name}</div>
+                                <div class="text-sm text-gray-600">Processing...</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 bg-gray-200 rounded-full h-2 mr-3">
+                                <div class="bg-blue-600 h-2 rounded-full processing-bar" style="width: 0%"></div>
+                            </div>
+                            <span class="text-sm">0%</span>
+                        </div>
+                    `;
+                    processingQueue.appendChild(fileItem);
+                    
+                    // Simulate processing
+                    simulateProcessing(fileItem);
+                });
+                
+                showMessage('Files uploaded successfully. Starting AI extraction...', 'success');
+            }
+        }
+
+        function simulateProcessing(fileItem) {
+            let progress = 0;
+            const progressBar = fileItem.querySelector('.processing-bar');
+            const progressText = fileItem.querySelector('span');
+            const statusText = fileItem.querySelector('.text-gray-600');
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+                
+                progressBar.style.width = progress + '%';
+                progressText.textContent = Math.round(progress) + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    statusText.textContent = `${Math.floor(Math.random() * 15) + 20} questions extracted`;
+                    statusText.className = 'text-sm text-green-600';
+                    fileItem.querySelector('.bg-blue-600').className = 'bg-green-600 h-2 rounded-full';
+                    showMessage('Question extraction completed successfully!', 'success');
+                }
+            }, 200);
+        }
+
+        function connectQuestionBank() {
+            showMessage('Connecting to question bank database...', 'info');
+            setTimeout(() => {
+                showMessage('Successfully connected to question bank!', 'success');
+            }, 2000);
+        }
+
+        function batchProcess() {
+            showMessage('Batch processing initiated for all queued files', 'info');
+        }
+
+        function priorityProcess() {
+            showMessage('Priority processing mode activated', 'info');
+        }
+
+        function exportQuestions() {
+            showMessage('Exporting extracted questions to Excel format...', 'success');
+        }
+
+        function reviewExtractions() {
+            showMessage('Opening question review interface...', 'info');
+        }
+
+        function openSubmissionForm() {
+            // This opens the Google Form for question paper submission
+            showMessage('Opening question paper submission portal...', 'info');
+            // In real implementation, this would open: https://forms.gle/9WeJTNK2nkTXUrAm8
+            setTimeout(() => {
+                window.open('https://forms.gle/9WeJTNK2nkTXUrAm8', '_blank');
+            }, 1000);
+        }
+
+        function viewQuestionBank() {
+            // This opens the shared question bank spreadsheet
+            showMessage('Opening shared question bank...', 'info');
+            // In real implementation, this would open: https://docs.google.com/spreadsheets/d/1Lt_3DUapER4EcpymCkZne-8AeKShLyhGgvmBi0K7bao/edit?usp=sharing
+            setTimeout(() => {
+                window.open('https://docs.google.com/spreadsheets/d/1Lt_3DUapER4EcpymCkZne-8AeKShLyhGgvmBi0K7bao/edit?usp=sharing', '_blank');
+            }, 1000);
+        }
+
+        function showMessage(message, type) {
+            const colors = {
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
+                'info': 'bg-blue-600'
+            };
+            
+            const icons = {
+                'success': 'fas fa-check',
+                'error': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+        
+        // SaaS Form Functions
+        function submitQuestionPaper() {
+            showMessage('Question paper submitted successfully! Processing will begin shortly.', 'success');
+            
+            // Add to processing queue
+            const processingQueue = document.getElementById('processingQueue');
+            const newItem = document.createElement('div');
+            newItem.className = 'flex items-center justify-between p-3 border rounded bg-blue-50';
+            newItem.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-file-pdf text-blue-500 mr-3"></i>
+                    <div>
+                        <div class="font-semibold">New Submission</div>
+                        <div class="text-sm text-gray-600">Queued for processing</div>
+                    </div>
+                </div>
+                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Pending</span>
+            `;
+            processingQueue.appendChild(newItem);
+        }
+        
+        function connectQuestionBank() {
+            const questionBankUrl = 'https://docs.google.com/spreadsheets/d/1Lt_3DUapER4EcpymCkZne-8AeKShLyhGgvmBi0K7bao/edit';
+            window.open(questionBankUrl, '_blank');
+            showMessage('Question Bank connected successfully!', 'success');
+        }
+    </script>
+</body>
+</html>

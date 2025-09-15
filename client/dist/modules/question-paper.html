@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Paper Generation - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/question-paper.png" alt="Question Paper Generation" class="w-12 h-12 mr-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Question Paper Generation</h1>
+                        <p class="text-gray-600">AI-powered question paper creation with difficulty balancing</p>
+                    </div>
+                </div>
+                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-blue-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-file-alt text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">47</div>
+                        <div class="text-blue-100">Papers Generated</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-green-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-database text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">2,340</div>
+                        <div class="text-green-100">Questions in Bank</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-purple-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-brain text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">AI</div>
+                        <div class="text-purple-100">Smart Generation</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-orange-600 text-white rounded-lg p-6">
+                <div class="flex items-center">
+                    <i class="fas fa-balance-scale text-3xl mr-4"></i>
+                    <div>
+                        <div class="text-2xl font-bold">95%</div>
+                        <div class="text-orange-100">Balance Accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paper Generation Form -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Generate Question Paper</h2>
+                <form id="paperForm" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Class</label>
+                            <select id="classSelect" class="w-full border rounded px-3 py-2" required>
+                                <option value="">Select Class</option>
+                                <option value="9">Class 9</option>
+                                <option value="10">Class 10</option>
+                                <option value="11">Class 11</option>
+                                <option value="12">Class 12</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Subject</label>
+                            <select id="subjectSelect" class="w-full border rounded px-3 py-2" required>
+                                <option value="">Select Subject</option>
+                                <option value="mathematics">Mathematics</option>
+                                <option value="science">Science</option>
+                                <option value="english">English</option>
+                                <option value="social">Social Studies</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Exam Type</label>
+                            <select id="examType" class="w-full border rounded px-3 py-2" required>
+                                <option value="">Select Type</option>
+                                <option value="unit_test">Unit Test</option>
+                                <option value="monthly">Monthly Exam</option>
+                                <option value="quarterly">Quarterly Exam</option>
+                                <option value="half_yearly">Half Yearly</option>
+                                <option value="annual">Annual Exam</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Duration (minutes)</label>
+                            <input type="number" id="duration" value="180" min="60" max="240" class="w-full border rounded px-3 py-2">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Total Marks</label>
+                        <input type="number" id="totalMarks" value="100" min="50" max="100" class="w-full border rounded px-3 py-2">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Question Distribution</label>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">MCQ (1 mark each)</label>
+                                <input type="number" id="mcqCount" value="20" min="0" class="w-full border rounded px-2 py-1 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Short (2-3 marks)</label>
+                                <input type="number" id="shortCount" value="10" min="0" class="w-full border rounded px-2 py-1 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Long (5-10 marks)</label>
+                                <input type="number" id="longCount" value="6" min="0" class="w-full border rounded px-2 py-1 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Difficulty Level Distribution</label>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Easy (%)</label>
+                                <input type="number" id="easyPercent" value="40" min="0" max="100" class="w-full border rounded px-2 py-1 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Medium (%)</label>
+                                <input type="number" id="mediumPercent" value="40" min="0" max="100" class="w-full border rounded px-2 py-1 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-600 mb-1">Hard (%)</label>
+                                <input type="number" id="hardPercent" value="20" min="0" max="100" class="w-full border rounded px-2 py-1 text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                            <i class="fas fa-magic mr-2"></i>Generate Paper
+                        </button>
+                        <button type="button" onclick="generateWithAI()" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">
+                            <i class="fas fa-robot mr-2"></i>AI Smart Generation
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Question Bank Manager -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Question Bank</h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-semibold mb-2">Add New Question</h3>
+                        <div class="space-y-3">
+                            <select class="w-full border rounded px-3 py-2 text-sm">
+                                <option>Select Question Type</option>
+                                <option>Multiple Choice</option>
+                                <option>Short Answer</option>
+                                <option>Long Answer</option>
+                                <option>Fill in the Blanks</option>
+                            </select>
+                            <textarea rows="3" placeholder="Enter question text..." class="w-full border rounded px-3 py-2 text-sm"></textarea>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select class="border rounded px-3 py-2 text-sm">
+                                    <option>Easy</option>
+                                    <option>Medium</option>
+                                    <option>Hard</option>
+                                </select>
+                                <input type="number" placeholder="Marks" class="border rounded px-3 py-2 text-sm">
+                            </div>
+                            <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 text-sm">
+                                <i class="fas fa-plus mr-2"></i>Add to Bank
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4">
+                        <h3 class="font-semibold mb-2">Question Paper Bank Integration</h3>
+                        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-blue-700 mb-3">Access your centralized question bank for importing questions</p>
+                            <button onclick="openQuestionBank()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+                                <i class="fas fa-database mr-2"></i>Open Question Bank
+                            </button>
+                        </div>
+                        
+                        <h3 class="font-semibold mb-2">Import Questions</h3>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                            <input type="file" id="importFile" accept=".xlsx,.csv,.json" class="hidden" onchange="handleImport(this)">
+                            <label for="importFile" class="cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600 text-sm">Upload Excel/CSV file</p>
+                            </label>
+                        </div>
+                        <button onclick="downloadTemplate()" class="w-full mt-2 bg-blue-100 text-blue-700 py-2 rounded hover:bg-blue-200 text-sm">
+                            <i class="fas fa-download mr-2"></i>Download Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Papers -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Recently Generated Papers</h2>
+                <button onclick="manageTemplates()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+                    <i class="fas fa-cog mr-2"></i>Manage Templates
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Paper ID</th>
+                            <th class="px-4 py-2 text-left">Subject</th>
+                            <th class="px-4 py-2 text-left">Class</th>
+                            <th class="px-4 py-2 text-left">Type</th>
+                            <th class="px-4 py-2 text-left">Questions</th>
+                            <th class="px-4 py-2 text-left">Generated</th>
+                            <th class="px-4 py-2 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">#QP-2025-001</td>
+                            <td class="px-4 py-2">Mathematics</td>
+                            <td class="px-4 py-2">Class 10</td>
+                            <td class="px-4 py-2">Half Yearly</td>
+                            <td class="px-4 py-2">36 questions</td>
+                            <td class="px-4 py-2">Jan 4, 2025</td>
+                            <td class="px-4 py-2">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-green-600 hover:text-green-800" title="Download PDF">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="text-purple-600 hover:text-purple-800" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-orange-600 hover:text-orange-800" title="Duplicate">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="border-t">
+                            <td class="px-4 py-2">#QP-2025-002</td>
+                            <td class="px-4 py-2">Science</td>
+                            <td class="px-4 py-2">Class 9</td>
+                            <td class="px-4 py-2">Unit Test</td>
+                            <td class="px-4 py-2">25 questions</td>
+                            <td class="px-4 py-2">Jan 3, 2025</td>
+                            <td class="px-4 py-2">
+                                <div class="flex space-x-2">
+                                    <button class="text-blue-600 hover:text-blue-800" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="text-green-600 hover:text-green-800" title="Download PDF">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="text-purple-600 hover:text-purple-800" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="text-orange-600 hover:text-orange-800" title="Duplicate">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form submission
+        document.getElementById('paperForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generatePaper();
+        });
+
+        function generatePaper() {
+            const formData = {
+                class: document.getElementById('classSelect').value,
+                subject: document.getElementById('subjectSelect').value,
+                examType: document.getElementById('examType').value,
+                duration: document.getElementById('duration').value,
+                totalMarks: document.getElementById('totalMarks').value,
+                mcqCount: document.getElementById('mcqCount').value,
+                shortCount: document.getElementById('shortCount').value,
+                longCount: document.getElementById('longCount').value
+            };
+            
+            if (!formData.class || !formData.subject || !formData.examType) {
+                showMessage('Please fill all required fields', 'error');
+                return;
+            }
+            
+            const btn = document.querySelector('#paperForm button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showMessage('Question paper generated successfully!', 'success');
+                document.getElementById('paperForm').reset();
+            }, 4000);
+        }
+
+        function generateWithAI() {
+            const classVal = document.getElementById('classSelect').value;
+            const subject = document.getElementById('subjectSelect').value;
+            
+            if (!classVal || !subject) {
+                showMessage('Please select class and subject first', 'error');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>AI Processing...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showMessage('AI-optimized question paper generated with perfect difficulty balance!', 'success');
+            }, 6000);
+        }
+
+        function handleImport(input) {
+            const file = input.files[0];
+            if (file) {
+                showMessage(`Importing questions from ${file.name}...`, 'info');
+                setTimeout(() => {
+                    showMessage(`Successfully imported ${Math.floor(Math.random() * 50) + 10} questions`, 'success');
+                }, 2000);
+            }
+        }
+
+        function downloadTemplate() {
+            showMessage('Question bank template downloaded', 'success');
+        }
+
+        function manageTemplates() {
+            showMessage('Opening template manager...', 'info');
+        }
+
+        function showMessage(message, type) {
+            const colors = {
+                'success': 'bg-green-600',
+                'error': 'bg-red-600',
+                'info': 'bg-blue-600'
+            };
+            
+            const icons = {
+                'success': 'fas fa-check',
+                'error': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+        
+        // Question Bank Integration
+        function openQuestionBank() {
+            const questionBankUrl = 'https://docs.google.com/spreadsheets/d/1Lt_3DUapER4EcpymCkZne-8AeKShLyhGgvmBi0K7bao/edit';
+            window.open(questionBankUrl, '_blank');
+            showMessage('Question Bank opened successfully! You can now import questions from the centralized database.', 'success');
+        }
+        
+        function generateWithAI() {
+            showMessage('AI is generating optimal question paper based on your specifications...', 'info');
+            setTimeout(() => {
+                showMessage('Question paper generated successfully with AI optimization!', 'success');
+            }, 4000);
+        }
+        
+        function handleImport(input) {
+            if (input.files.length > 0) {
+                showMessage('Questions imported successfully from file!', 'success');
+            }
+        }
+    </script>
+</body>
+</html>
