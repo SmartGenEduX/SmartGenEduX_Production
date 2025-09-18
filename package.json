@@ -1,0 +1,32 @@
+{
+  "name": "smartgenedux-comprehensive-erp",
+  "version": "2.4.1",
+  "description": "Complete School Management ERP System with 17 Modules",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "nodemon api/index.js",
+    "build": "echo 'Build complete - static files ready'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["school", "management", "erp", "education", "saas"],
+  "author": "SmartGenEduX",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smartgenedux/comprehensive-erp"
+  }
+}

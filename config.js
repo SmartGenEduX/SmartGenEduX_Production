@@ -3,7 +3,7 @@
 
 const config = {
   // Set to 'demo' for standalone demo or 'production' for Supabase connection
-  mode: 'production', // Change to 'production' when deploying with Supabase
+  mode: 'demo', // Change to 'production' when deploying with Supabase
   
   // Demo Mode Settings
   demo: {
