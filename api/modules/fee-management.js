@@ -821,3 +821,36 @@ Delhi Public School`;
 }
 
 module.exports = router;
+const fetch = require('node-fetch');
+const ARATTAI_SEND_URL = process.env.NEXTPUBLICAPIURL + '/arattai-alert/send';
+
+async function sendFeeDueReminder(parentPhone, studentName, amount, dueDate, schoolName) {
+  const payload = {
+    templateId: 'template_fee_reminder', // Use actual template ID for fee reminders
+    recipientNumber: parentPhone,
+    variables: {
+      parent_name: 'Parent', // Fetch actual parent name if available
+      student_name: studentName,
+      amount: amount,
+      due_date: dueDate,
+      school_name: schoolName
+    }
+  };
+
+  try {
+    const response = await fetch(ARATTAI_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const resJson = await response.json();
+    return resJson;
+  } catch (error) {
+    console.error('Error sending Arattai fee reminder:', error);
+    return null;
+  }
+}
+
+// Call sendFeeDueReminder where fee reminders are generated
+
+module.exports = { sendFeeDueReminder };
