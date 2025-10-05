@@ -848,3 +848,35 @@ function calculateMonthStats(classId, studentId) {
 }
 
 module.exports = router;
+const fetch = require('node-fetch');
+const ARATTAI_SEND_URL = process.env.NEXTPUBLICAPIURL + '/arattai-alert/send';
+
+async function sendAttendanceAlert(parentPhone, studentName, date, schoolName) {
+  const payload = {
+    templateId: 'template_attendance_alert', // Use actual attendance alert template ID
+    recipientNumber: parentPhone,
+    variables: {
+      parent_name: 'Parent',
+      student_name: studentName,
+      date: date,
+      school_name: schoolName
+    }
+  };
+
+  try {
+    const response = await fetch(ARATTAI_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const resJson = await response.json();
+    return resJson;
+  } catch (error) {
+    console.error('Error sending Arattai attendance alert:', error);
+    return null;
+  }
+}
+
+// Call sendAttendanceAlert after marking student absent
+
+module.exports = { sendAttendanceAlert };
