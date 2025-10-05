@@ -908,3 +908,36 @@ function generateReportCardExcel(report) {
 }
 
 module.exports = router;
+const fetch = require('node-fetch');
+const ARATTAI_SEND_URL = process.env.NEXTPUBLICAPIURL + '/arattai-alert/send';
+
+async function sendReportCardReady(parentPhone, studentName, term, grade, schoolName) {
+  const payload = {
+    templateId: 'template_report_card_ready',
+    recipientNumber: parentPhone,
+    variables: {
+      parent_name: 'Parent',
+      student_name: studentName,
+      term: term,
+      grade: grade,
+      school_name: schoolName
+    }
+  };
+
+  try {
+    const response = await fetch(ARATTAI_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const resJson = await response.json();
+    return resJson;
+  } catch (error) {
+    console.error('Error sending Arattai report card alert:', error);
+    return null;
+  }
+}
+
+// Call sendReportCardReady when report card available
+
+module.exports = { sendReportCardReady };
