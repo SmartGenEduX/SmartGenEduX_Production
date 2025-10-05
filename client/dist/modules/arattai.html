@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Smart Arattai Alerts - SmartGenEduX</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="../assets/Smart_Arattai_Alert.png" alt="Arattai Alerts" class="w-12 h-12 mr-4" />
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Smart Arattai Alerts</h1>
+                        <p class="text-gray-600">Send automated Arattai notifications to parents and students</p>
+                    </div>
+                </div>
+                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            </div>
+        </div>
+
+        <!-- Alert Configuration -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Configure Arattai Alerts</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Alert Types -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Alert Types</h3>
+                    <div class="space-y-3">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked /> Attendance Notifications
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" checked /> Fee Due Reminders
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" /> Exam Notifications
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" /> Event Announcements
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2" /> Holiday Notifications
+                        </label>
+                    </div>
+                </div>
+                <!-- Timing Settings -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Timing Settings</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Daily Attendance Alert Time</label>
+                            <input type="time" value="15:30" class="w-full border rounded px-3 py-2" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Fee Due Reminder (Days Before)</label>
+                            <input type="number" value="7" class="w-full border rounded px-3 py-2" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Bulk Message Time</label>
+                            <input type="time" value="09:00" class="w-full border rounded px-3 py-2" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Send Custom Message -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Send Custom Message</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Select Recipients</label>
+                    <select id="recipientSelect" class="w-full border rounded px-3 py-2 mb-4">
+                        <option>All Parents</option>
+                        <option>Class 1 Parents</option>
+                        <option>Class 2 Parents</option>
+                        <option>All Teachers</option>
+                        <option>Custom Group</option>
+                    </select>
+
+                    <label class="block text-sm font-medium mb-2">Message Template</label>
+                    <select id="templateSelect" class="w-full border rounded px-3 py-2 mb-4">
+                        <option>Custom Message</option>
+                        <option>Attendance Alert</option>
+                        <option>Fee Reminder</option>
+                        <option>Event Notification</option>
+                        <option>Holiday Notice</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Message Content</label>
+                    <textarea id="messageContent" rows="6" class="w-full border rounded px-3 py-2" placeholder="Type your message here...">Dear Parent,
+
+This is to inform you about your child's attendance today.
+
+Regards,
+SmartGenEduX Team</textarea>
+
+                    <div class="flex justify-between items-center mt-4">
+                        <span id="charCount" class="text-sm text-gray-500">Characters: 123/1000</span>
+                        <button id="sendButton" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                            <i class="fab fa-whatsapp mr-2"></i>Send Message
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Messages -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Recent Messages</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Date</th>
+                            <th class="px-4 py-2 text-left">Type</th>
+                            <th class="px-4 py-2 text-left">Recipients</th>
+                            <th class="px-4 py-2 text-left">Message</th>
+                            <th class="px-4 py-2 text-left">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentMessagesBody">
+                        <!-- Dynamically filled -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Basic character count update for message textarea
+        const messageContent = document.getElementById('messageContent');
+        const charCount = document.getElementById('charCount');
+        messageContent.addEventListener('input', () => {
+            const length = messageContent.value.length;
+            charCount.textContent = `Characters: ${length}/1000`;
+        });
+
+        // Send button click handler
+        document.getElementById('sendButton').addEventListener('click', async () => {
+            const recipient = document.getElementById('recipientSelect').value;
+            const template = document.getElementById('templateSelect').value;
+            const message = messageContent.value.trim();
+
+            if (!message) {
+                alert('Message cannot be empty');
+                return;
+            }
+
+            // TODO: Map recipient and template to actual API parameters
+            // For demonstration, just alert
+            alert(`Message sent to ${recipient} using template "${template}":\n${message}`);
+
+            // Clear or update UI accordingly
+        });
+
+        // You may add API calls here to populate recent messages, templates dynamically
+    </script>
+</body>
+</html>
