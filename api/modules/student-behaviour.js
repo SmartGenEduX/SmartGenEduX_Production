@@ -911,3 +911,35 @@ function calculateImprovementRate(students, logs) {
 }
 
 module.exports = router;
+const fetch = require('node-fetch');
+const ARATTAI_SEND_URL = process.env.NEXTPUBLICAPIURL + '/arattai-alert/send';
+
+async function sendBehaviourAlert(parentPhone, studentName, teacherName, schoolName) {
+  const payload = {
+    templateId: 'template_behaviour_alert', // Use actual behaviour alert template ID
+    recipientNumber: parentPhone,
+    variables: {
+      parent_name: 'Parent',
+      student_name: studentName,
+      teacher_name: teacherName,
+      school_name: schoolName
+    }
+  };
+
+  try {
+    const response = await fetch(ARATTAI_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const resJson = await response.json();
+    return resJson;
+  } catch (error) {
+    console.error('Error sending Arattai behaviour alert:', error);
+    return null;
+  }
+}
+
+// Call sendBehaviourAlert on behaviour incident logged
+
+module.exports = { sendBehaviourAlert };
