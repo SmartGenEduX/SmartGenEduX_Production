@@ -948,3 +948,35 @@ function calculateDocumentCompletionRate(applications) {
 }
 
 module.exports = router;
+const fetch = require('node-fetch');
+const ARATTAI_SEND_URL = process.env.NEXTPUBLICAPIURL + '/arattai-alert/send';
+
+async function sendAdmissionStatusUpdate(parentPhone, studentName, admissionStatus, schoolName) {
+  const payload = {
+    templateId: 'template_admission_update', // Use actual admission status template ID
+    recipientNumber: parentPhone,
+    variables: {
+      parent_name: 'Parent',
+      student_name: studentName,
+      admission_status: admissionStatus,
+      school_name: schoolName
+    }
+  };
+
+  try {
+    const response = await fetch(ARATTAI_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const resJson = await response.json();
+    return resJson;
+  } catch (error) {
+    console.error('Error sending Arattai admission status update:', error);
+    return null;
+  }
+}
+
+// Call sendAdmissionStatusUpdate after admission status changes
+
+module.exports = { sendAdmissionStatusUpdate };
