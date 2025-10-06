@@ -85,6 +85,9 @@
           <select id="templateSelect" class="w-full border rounded px-3 py-2 mb-4">
             <option value="">Loading templates...</option>
           </select>
+
+          <!-- Container for Template Variable Inputs -->
+          <div id="templateVariablesContainer" class="mb-4"></div>
         </div>
 
         <div>
@@ -126,6 +129,9 @@
   <script>
     const ARATTAI_API_BASE = '/api/arattai-alert';
 
+    // Cache for templates and variables
+    let templateVariablesMap = {};
+
     // Fetch recipients to populate dropdown
     async function fetchRecipients() {
       const res = await fetch(`${ARATTAI_API_BASE}/contacts`);
@@ -142,7 +148,7 @@
 
     // Fetch recent messages for table
     async function fetchRecentMessages() {
-      const res = await fetch(`${ARATTAI_API_BASE}/scheduled`); // Or actual messages endpoint
+      const res = await fetch(`${ARATTAI_API_BASE}/scheduled`);
       if (!res.ok) throw new Error('Failed to fetch recent messages');
       return await res.json();
     }
@@ -184,10 +190,33 @@
         const templateSelect = document.getElementById('templateSelect');
         templateSelect.innerHTML = '<option value="">Select a template</option>';
         templates.forEach(tmpl => {
+          templateVariablesMap[tmpl.id] = tmpl.variables || [];
           const option = document.createElement('option');
           option.value = tmpl.id;
           option.textContent = tmpl.name;
           templateSelect.appendChild(option);
+        });
+
+        // Add listener to dynamically add inputs for variables
+        templateSelect.addEventListener('change', e => {
+          const variablesContainer = document.getElementById('templateVariablesContainer');
+          variablesContainer.innerHTML = '';
+          const selectedId = e.target.value;
+          if (!selectedId || !templateVariablesMap[selectedId]) return;
+
+          templateVariablesMap[selectedId].forEach(variableName => {
+            const label = document.createElement('label');
+            label.textContent = `${variableName.charAt(0).toUpperCase() + variableName.slice(1)}:`;
+            label.className = 'block text-sm font-medium mb-1';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = `var_${variableName}`;
+            input.className = 'w-full border rounded px-3 py-2 mb-3';
+
+            variablesContainer.appendChild(label);
+            variablesContainer.appendChild(input);
+          });
         });
 
         // Load recent messages
@@ -222,12 +251,18 @@
       if (!templateId) return alert('Please select a template');
       if (!message) return alert('Message cannot be empty');
 
-      // For simplicity, no template variables handled yet
+      // Collect template variable inputs
+      const variables = {};
+      (templateVariablesMap[templateId] || []).forEach(variableName => {
+        const input = document.getElementById(`var_${variableName}`);
+        if (input) variables[variableName] = input.value.trim();
+      });
+
       const payload = {
         recipientNumber,
         templateId,
-        variables: {}, // Add template variable collection if desired
-        message: message.trim()
+        variables,
+        message
       };
 
       try {
