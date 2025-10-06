@@ -662,3 +662,8 @@ router.post('/send', rateLimit, contentFilter, (req, res, next) => {
 });
 
 module.exports = router;
+/ GET /api/arattai-alert/contacts
+router.get('/contacts', (req, res) => {
+  // Fetch contacts from DB or memory
+  res.json(arattaiData.contacts || []);
+});
