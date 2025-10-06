@@ -630,3 +630,50 @@ window.app = app;
 window.switchRole = (role) => app.switchRole(role);
 window.logout = () => app.logout();
 window.closeModal = () => app.closeModal();
+// --- Arattai API functions ---
+const ARATTAI_API_BASE = '/api/arattai-alert';
+
+async function fetchArattaiTemplates() {
+  const res = await fetch(`${ARATTAI_API_BASE}/templates`);
+  return await res.json();
+}
+
+async function sendArattaiMessage(payload) {
+  const res = await fetch(`${ARATTAI_API_BASE}/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return await res.json();
+}
+
+// --- UI Handler for arattai.html ---
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.location.pathname.includes('arattai.html')) {
+    // Load templates in dropdown
+    const templates = await fetchArattaiTemplates();
+    const select = document.getElementById('templateSelect');
+    if (select && templates.length) {
+      templates.forEach(template => {
+        const option = document.createElement('option');
+        option.value = template.id;
+        option.textContent = template.name;
+        select.appendChild(option);
+      });
+    }
+
+    // Send message button event
+    const sendBtn = document.getElementById('sendButton');
+    if (sendBtn) {
+      sendBtn.addEventListener('click', async () => {
+        const templateId = select.value;
+        const recipientNumber = 'ENTER_PHONE_NUMBER'; // Replace with actual logic to determine
+        const variables = {}; // Collect variables from the UI
+        const payload = { templateId, recipientNumber, variables };
+
+        const response = await sendArattaiMessage(payload);
+        alert(response.success ? 'Message sent!' : 'Failed to send!');
+      });
+    }
+  }
+});
