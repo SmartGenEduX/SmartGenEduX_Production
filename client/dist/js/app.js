@@ -677,3 +677,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
+async function fetchArattaiContacts() {
+  const res = await fetch('/api/arattai-alert/contacts');
+  if (!res.ok) throw new Error('Failed to fetch contacts');
+  return await res.json();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.location.pathname.includes('arattai.html')) {
+    // Populate recipients dropdown
+    try {
+      const contacts = await fetchArattaiContacts();
+      const recipientSelect = document.getElementById('recipientSelect');
+
+      if (recipientSelect) {
+        contacts.forEach(contact => {
+          const option = document.createElement('option');
+          option.value = contact.phoneNumber;
+          option.textContent = `${contact.parentName} (${contact.studentName})`;
+          recipientSelect.appendChild(option);
+        });
+      }
+    } catch (err) {
+      console.error('Error loading contacts', err);
+    }
+  }
+});
