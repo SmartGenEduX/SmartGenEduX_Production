@@ -7,8 +7,7 @@
     "prebuild": "node setup-production.js",
     "start": "node API/index.js",
     "dev": "nodemon API/index.js",
-    "build": "npm run build:client",
-    "build:client": "echo 'Client build command placeholder'",
+    "build": "echo 'Vercel build done by prebuild script'", ⬅️ **SIMPLIFIED BUILD**
     "deploy": "vercel --prod"
   },
   "keywords": ["school", "management", "erp", "education", "saas"],
