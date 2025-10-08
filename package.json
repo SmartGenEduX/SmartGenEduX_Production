@@ -10,7 +10,13 @@
     "build": "echo 'Vercel build done by prebuild script'",
     "deploy": "vercel --prod"
   },
-  "keywords": ["school", "management", "erp", "education", "saas"],
+  "keywords": [
+    "school",
+    "management",
+    "erp",
+    "education",
+    "saas"
+  ],
   "author": "SmartGenEduX",
   "license": "MIT",
   "dependencies": {
@@ -22,7 +28,7 @@
     "pg": "^8.11.3",
     "bcrypt": "^5.1.1",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5",
+    "multer": "^1.4.4-lts.1",
     "nodemailer": "^6.9.8"
   },
   "devDependencies": {
