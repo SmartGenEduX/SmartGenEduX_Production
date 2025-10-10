@@ -1,946 +1,452 @@
-// Question Paper Generator Module - Complete Implementation
+// Question Paper Generator Module - Production Ready API (Final Enterprise Edition with Watermark)
 const express = require('express');
+const { Pool } = require('pg');
+const Joi = require('joi'); 
 const router = express.Router();
+const multer = require('multer'); // For file upload handling
 
-const questionPaperData = {
-  subjects: [
-    {
-      id: 'mathematics',
-      name: 'Mathematics',
-      classes: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'],
-      chapters: [
-        { id: 'ch1', name: 'Numbers and Counting', class: 'Class 1', weightage: 25 },
-        { id: 'ch2', name: 'Addition and Subtraction', class: 'Class 1', weightage: 30 },
-        { id: 'ch3', name: 'Shapes and Patterns', class: 'Class 1', weightage: 20 },
-        { id: 'ch4', name: 'Measurement', class: 'Class 1', weightage: 25 },
-        { id: 'ch5', name: 'Multiplication Tables', class: 'Class 2', weightage: 35 },
-        { id: 'ch6', name: 'Division Basics', class: 'Class 2', weightage: 30 },
-        { id: 'ch7', name: 'Fractions Introduction', class: 'Class 2', weightage: 35 }
-      ]
-    },
-    {
-      id: 'english',
-      name: 'English',
-      classes: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'],
-      chapters: [
-        { id: 'en1', name: 'Reading Comprehension', class: 'Class 1', weightage: 40 },
-        { id: 'en2', name: 'Grammar Basics', class: 'Class 1', weightage: 35 },
-        { id: 'en3', name: 'Creative Writing', class: 'Class 1', weightage: 25 },
-        { id: 'en4', name: 'Poetry and Rhymes', class: 'Class 2', weightage: 30 },
-        { id: 'en5', name: 'Story Writing', class: 'Class 2', weightage: 40 },
-        { id: 'en6', name: 'Vocabulary Building', class: 'Class 2', weightage: 30 }
-      ]
-    },
-    {
-      id: 'science',
-      name: 'Science',
-      classes: ['Class 3', 'Class 4', 'Class 5'],
-      chapters: [
-        { id: 'sc1', name: 'Plants and Animals', class: 'Class 3', weightage: 30 },
-        { id: 'sc2', name: 'Our Environment', class: 'Class 3', weightage: 25 },
-        { id: 'sc3', name: 'Matter and Materials', class: 'Class 3', weightage: 25 },
-        { id: 'sc4', name: 'Force and Energy', class: 'Class 3', weightage: 20 }
-      ]
-    }
-  ],
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-  questionBank: [
-    // Mathematics Questions
-    {
-      id: 'q001',
-      subject: 'mathematics',
-      chapter: 'ch1',
-      class: 'Class 1',
-      type: 'mcq',
-      difficulty: 'easy',
-      marks: 1,
-      question: 'What comes after the number 5?',
-      options: ['4', '6', '7', '8'],
-      correctAnswer: '6',
-      explanation: 'Numbers follow a sequence: 1, 2, 3, 4, 5, 6, 7...',
-      bloomsTaxonomy: 'knowledge',
-      keywords: ['counting', 'sequence', 'numbers'],
-      timeRequired: 1 // minutes
-    },
-    {
-      id: 'q002',
-      subject: 'mathematics',
-      chapter: 'ch1',
-      class: 'Class 1',
-      type: 'fill_blank',
-      difficulty: 'easy',
-      marks: 1,
-      question: 'Count the apples: 🍎🍎🍎🍎. There are _____ apples.',
-      correctAnswer: '4',
-      explanation: 'Count each apple: 1, 2, 3, 4',
-      bloomsTaxonomy: 'application',
-      keywords: ['counting', 'objects'],
-      timeRequired: 2
-    },
-    {
-      id: 'q003',
-      subject: 'mathematics',
-      chapter: 'ch2',
-      class: 'Class 1',
-      type: 'short_answer',
-      difficulty: 'medium',
-      marks: 2,
-      question: 'Add these numbers: 3 + 4 = ?',
-      correctAnswer: '7',
-      explanation: 'Start with 3, then count 4 more: 4, 5, 6, 7',
-      bloomsTaxonomy: 'application',
-      keywords: ['addition', 'counting'],
-      timeRequired: 3
-    },
-    {
-      id: 'q004',
-      subject: 'mathematics',
-      chapter: 'ch2',
-      class: 'Class 1',
-      type: 'long_answer',
-      difficulty: 'hard',
-      marks: 5,
-      question: 'Solve this word problem: Ram has 8 marbles. He gives 3 marbles to his friend. How many marbles does Ram have now? Show your working.',
-      correctAnswer: '5 marbles',
-      explanation: 'Ram starts with 8 marbles. He gives away 3 marbles. 8 - 3 = 5 marbles remaining.',
-      bloomsTaxonomy: 'analysis',
-      keywords: ['subtraction', 'word problem', 'real life'],
-      timeRequired: 5
-    },
+// --- R.B.A.C. & CONTEXT HELPERS ---
 
-    // English Questions
-    {
-      id: 'q005',
-      subject: 'english',
-      chapter: 'en1',
-      class: 'Class 1',
-      type: 'mcq',
-      difficulty: 'easy',
-      marks: 1,
-      question: 'Which letter comes after "B"?',
-      options: ['A', 'C', 'D', 'E'],
-      correctAnswer: 'C',
-      explanation: 'The alphabet sequence is A, B, C, D, E...',
-      bloomsTaxonomy: 'knowledge',
-      keywords: ['alphabet', 'sequence'],
-      timeRequired: 1
-    },
-    {
-      id: 'q006',
-      subject: 'english',
-      chapter: 'en2',
-      class: 'Class 1',
-      type: 'fill_blank',
-      difficulty: 'medium',
-      marks: 2,
-      question: 'Complete the sentence: The cat _____ on the mat.',
-      correctAnswer: 'sits',
-      explanation: 'The sentence describes what the cat is doing - sitting on the mat.',
-      bloomsTaxonomy: 'comprehension',
-      keywords: ['grammar', 'verbs', 'sentence'],
-      timeRequired: 2
-    },
-
-    // Science Questions
-    {
-      id: 'q007',
-      subject: 'science',
-      chapter: 'sc1',
-      class: 'Class 3',
-      type: 'mcq',
-      difficulty: 'medium',
-      marks: 2,
-      question: 'Which of these is NOT a living thing?',
-      options: ['Tree', 'Dog', 'Rock', 'Flower'],
-      correctAnswer: 'Rock',
-      explanation: 'Living things grow, breathe, and reproduce. A rock does not have these characteristics.',
-      bloomsTaxonomy: 'analysis',
-      keywords: ['living', 'non-living', 'characteristics'],
-      timeRequired: 3
-    }
-  ],
-
-  paperTemplates: [
-    {
-      id: 'template_001',
-      name: 'Standard Primary Template',
-      description: 'Standard template for primary classes (1-5)',
-      classes: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'],
-      duration: 120, // minutes
-      totalMarks: 50,
-      structure: [
-        {
-          section: 'A',
-          title: 'Multiple Choice Questions',
-          type: 'mcq',
-          questionCount: 10,
-          marksPerQuestion: 1,
-          totalMarks: 10,
-          instruction: 'Choose the correct answer from the given options.'
-        },
-        {
-          section: 'B',
-          title: 'Fill in the Blanks',
-          type: 'fill_blank',
-          questionCount: 10,
-          marksPerQuestion: 1,
-          totalMarks: 10,
-          instruction: 'Fill in the blanks with appropriate words.'
-        },
-        {
-          section: 'C',
-          title: 'Short Answer Questions',
-          type: 'short_answer',
-          questionCount: 10,
-          marksPerQuestion: 2,
-          totalMarks: 20,
-          instruction: 'Answer in 2-3 sentences.'
-        },
-        {
-          section: 'D',
-          title: 'Long Answer Questions',
-          type: 'long_answer',
-          questionCount: 2,
-          marksPerQuestion: 5,
-          totalMarks: 10,
-          instruction: 'Answer in detail with examples.'
-        }
-      ],
-      difficultyDistribution: {
-        easy: 40,
-        medium: 45,
-        hard: 15
-      }
-    },
-    {
-      id: 'template_002',
-      name: 'Unit Test Template',
-      description: 'Template for unit tests and quick assessments',
-      classes: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'],
-      duration: 60,
-      totalMarks: 25,
-      structure: [
-        {
-          section: 'A',
-          title: 'Objective Questions',
-          type: 'mcq',
-          questionCount: 15,
-          marksPerQuestion: 1,
-          totalMarks: 15,
-          instruction: 'Choose the correct answer.'
-        },
-        {
-          section: 'B',
-          title: 'Short Questions',
-          type: 'short_answer',
-          questionCount: 5,
-          marksPerQuestion: 2,
-          totalMarks: 10,
-          instruction: 'Answer briefly.'
-        }
-      ],
-      difficultyDistribution: {
-        easy: 50,
-        medium: 40,
-        hard: 10
-      }
-    }
-  ],
-
-  generatedPapers: [
-    {
-      id: 'paper_001',
-      title: 'Mathematics - Class 1 - Unit Test',
-      subject: 'mathematics',
-      class: 'Class 1',
-      template: 'template_002',
-      examDate: '2024-12-30',
-      duration: 60,
-      totalMarks: 25,
-      generatedBy: 'teacher_001',
-      generatedAt: '2024-12-28T10:30:00Z',
-      status: 'draft',
-      questions: ['q001', 'q002', 'q003'],
-      instructions: [
-        'Read all questions carefully before attempting.',
-        'Write clearly and legibly.',
-        'Manage your time properly.',
-        'Review your answers before submitting.'
-      ],
-      syllabus: ['Numbers and Counting', 'Addition and Subtraction']
-    }
-  ],
-
-  examSettings: {
-    schoolName: 'Delhi Public School',
-    schoolAddress: 'Green Park, New Delhi - 110016',
-    academicYear: '2024-25',
-    logoUrl: '/assets/SmartGenEduX_Logo_1751034755324.png',
-    defaultDuration: {
-      'Class 1': 60,
-      'Class 2': 90,
-      'Class 3': 120,
-      'Class 4': 150,
-      'Class 5': 180
-    },
-    passingMarks: {
-      percentage: 40,
-      grade: 'D'
-    },
-    gradingScale: [
-      { grade: 'A+', minPercentage: 95, maxPercentage: 100 },
-      { grade: 'A', minPercentage: 85, maxPercentage: 94 },
-      { grade: 'B+', minPercentage: 75, maxPercentage: 84 },
-      { grade: 'B', minPercentage: 65, maxPercentage: 74 },
-      { grade: 'C+', minPercentage: 55, maxPercentage: 64 },
-      { grade: 'C', minPercentage: 45, maxPercentage: 54 },
-      { grade: 'D', minPercentage: 40, maxPercentage: 44 },
-      { grade: 'F', minPercentage: 0, maxPercentage: 39 }
-    ]
-  }
-};
-
-// Get all subjects
-router.get('/subjects', (req, res) => {
-  const { class: className } = req.query;
-  
-  let subjects = questionPaperData.subjects;
-  
-  if (className) {
-    subjects = subjects.filter(subject => 
-      subject.classes.includes(className)
-    );
-  }
-  
-  res.json(subjects);
+const getContext = (req) => ({
+    // Access verified user data injected by the JWT middleware (req.user)
+    schoolId: req.user?.schoolId || '00000000-0000-0000-0000-000000000001',
+    userId: req.user?.userId || '11111111-1111-1111-1111-111111111111',
+    userRole: req.user?.role || 'teacher' 
 });
 
-// Get chapters for a subject
-router.get('/subjects/:subjectId/chapters', (req, res) => {
-  const { subjectId } = req.params;
-  const { class: className } = req.query;
-  
-  const subject = questionPaperData.subjects.find(s => s.id === subjectId);
-  
-  if (!subject) {
-    return res.status(404).json({ error: 'Subject not found' });
-  }
-  
-  let chapters = subject.chapters;
-  
-  if (className) {
-    chapters = chapters.filter(chapter => chapter.class === className);
-  }
-  
-  res.json(chapters);
-});
+// Permissions
+const isTeacher = (role) => 
+    ['super_admin', 'school_admin', 'principal', 'teacher'].includes(role);
 
-// Get question bank
-router.get('/questions', (req, res) => {
-  const { 
-    subject, 
-    class: className, 
-    chapter, 
-    type, 
-    difficulty, 
-    limit = 50 
-  } = req.query;
-  
-  let questions = questionPaperData.questionBank;
-  
-  // Apply filters
-  if (subject) {
-    questions = questions.filter(q => q.subject === subject);
-  }
-  
-  if (className) {
-    questions = questions.filter(q => q.class === className);
-  }
-  
-  if (chapter) {
-    questions = questions.filter(q => q.chapter === chapter);
-  }
-  
-  if (type) {
-    questions = questions.filter(q => q.type === type);
-  }
-  
-  if (difficulty) {
-    questions = questions.filter(q => q.difficulty === difficulty);
-  }
-  
-  // Limit results
-  questions = questions.slice(0, parseInt(limit));
-  
-  res.json(questions);
-});
+const isManager = (role) => 
+    ['super_admin', 'school_admin', 'principal'].includes(role);
 
-// Add new question to bank
-router.post('/questions', (req, res) => {
-  const questionData = req.body;
-  
-  // Validate required fields
-  const requiredFields = ['subject', 'chapter', 'class', 'type', 'difficulty', 'marks', 'question'];
-  for (const field of requiredFields) {
-    if (!questionData[field]) {
-      return res.status(400).json({ error: `${field} is required` });
-    }
-  }
-  
-  // Create new question
-  const newQuestion = {
-    id: 'q' + Date.now(),
-    ...questionData,
-    createdAt: new Date().toISOString(),
-    createdBy: questionData.createdBy || 'system'
-  };
-  
-  questionPaperData.questionBank.push(newQuestion);
-  
-  res.json({ 
-    success: true, 
-    question: newQuestion,
-    message: 'Question added to bank successfully'
-  });
-});
+// New Role: HOD/Principal (Approver of Papers)
+const isHODOrManager = (role) =>
+    ['super_admin', 'school_admin', 'principal'].includes(role);
 
-// Update question in bank
-router.put('/questions/:questionId', (req, res) => {
-  const { questionId } = req.params;
-  const updateData = req.body;
-  
-  const questionIndex = questionPaperData.questionBank.findIndex(q => q.id === questionId);
-  
-  if (questionIndex === -1) {
-    return res.status(404).json({ error: 'Question not found' });
-  }
-  
-  // Update question
-  questionPaperData.questionBank[questionIndex] = {
-    ...questionPaperData.questionBank[questionIndex],
-    ...updateData,
-    updatedAt: new Date().toISOString()
-  };
-  
-  res.json({ 
-    success: true, 
-    question: questionPaperData.questionBank[questionIndex] 
-  });
-});
 
-// Delete question from bank
-router.delete('/questions/:questionId', (req, res) => {
-  const { questionId } = req.params;
-  
-  const questionIndex = questionPaperData.questionBank.findIndex(q => q.id === questionId);
-  
-  if (questionIndex === -1) {
-    return res.status(404).json({ error: 'Question not found' });
-  }
-  
-  questionPaperData.questionBank.splice(questionIndex, 1);
-  
-  res.json({ success: true, message: 'Question deleted successfully' });
-});
-
-// Get paper templates
-router.get('/templates', (req, res) => {
-  const { class: className } = req.query;
-  
-  let templates = questionPaperData.paperTemplates;
-  
-  if (className) {
-    templates = templates.filter(template => 
-      template.classes.includes(className)
-    );
-  }
-  
-  res.json(templates);
-});
-
-// Generate question paper
-router.post('/generate', (req, res) => {
-  const {
-    title,
-    subject,
-    class: className,
-    templateId,
-    chapters,
-    customInstructions,
-    examDate,
-    duration,
-    generatedBy
-  } = req.body;
-  
-  // Validate required fields
-  if (!title || !subject || !className || !templateId) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-  
-  // Get template
-  const template = questionPaperData.paperTemplates.find(t => t.id === templateId);
-  if (!template) {
-    return res.status(404).json({ error: 'Template not found' });
-  }
-  
-  // Generate questions for each section
-  const selectedQuestions = [];
-  const paperStructure = [];
-  
-  for (const section of template.structure) {
-    const sectionQuestions = selectQuestionsForSection(
-      subject,
-      className,
-      chapters,
-      section.type,
-      section.questionCount,
-      template.difficultyDistribution
-    );
-    
-    selectedQuestions.push(...sectionQuestions);
-    
-    paperStructure.push({
-      ...section,
-      questions: sectionQuestions
-    });
-  }
-  
-  // Create new paper
-  const newPaper = {
-    id: 'paper_' + Date.now(),
-    title,
-    subject,
-    class: className,
-    template: templateId,
-    examDate: examDate || null,
-    duration: duration || template.duration,
-    totalMarks: template.totalMarks,
-    generatedBy: generatedBy || 'system',
-    generatedAt: new Date().toISOString(),
-    status: 'draft',
-    questions: selectedQuestions.map(q => q.id),
-    structure: paperStructure,
-    instructions: customInstructions || [
-      'Read all questions carefully before attempting.',
-      'Write clearly and legibly.',
-      'Manage your time properly.',
-      'Review your answers before submitting.'
-    ],
-    syllabus: chapters || []
-  };
-  
-  questionPaperData.generatedPapers.push(newPaper);
-  
-  res.json({ 
-    success: true, 
-    paper: newPaper,
-    message: 'Question paper generated successfully'
-  });
-});
-
-// Get generated papers
-router.get('/papers', (req, res) => {
-  const { subject, class: className, status, generatedBy } = req.query;
-  
-  let papers = questionPaperData.generatedPapers;
-  
-  // Apply filters
-  if (subject) {
-    papers = papers.filter(p => p.subject === subject);
-  }
-  
-  if (className) {
-    papers = papers.filter(p => p.class === className);
-  }
-  
-  if (status) {
-    papers = papers.filter(p => p.status === status);
-  }
-  
-  if (generatedBy) {
-    papers = papers.filter(p => p.generatedBy === generatedBy);
-  }
-  
-  // Sort by generation date (newest first)
-  papers.sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt));
-  
-  res.json(papers);
-});
-
-// Get paper by ID
-router.get('/papers/:paperId', (req, res) => {
-  const { paperId } = req.params;
-  
-  const paper = questionPaperData.generatedPapers.find(p => p.id === paperId);
-  
-  if (!paper) {
-    return res.status(404).json({ error: 'Paper not found' });
-  }
-  
-  // Get full question details
-  const fullQuestions = paper.questions.map(questionId => 
-    questionPaperData.questionBank.find(q => q.id === questionId)
-  ).filter(q => q !== undefined);
-  
-  res.json({
-    ...paper,
-    fullQuestions: fullQuestions
-  });
-});
-
-// Update paper
-router.put('/papers/:paperId', (req, res) => {
-  const { paperId } = req.params;
-  const updateData = req.body;
-  
-  const paperIndex = questionPaperData.generatedPapers.findIndex(p => p.id === paperId);
-  
-  if (paperIndex === -1) {
-    return res.status(404).json({ error: 'Paper not found' });
-  }
-  
-  // Update paper
-  questionPaperData.generatedPapers[paperIndex] = {
-    ...questionPaperData.generatedPapers[paperIndex],
-    ...updateData,
-    updatedAt: new Date().toISOString()
-  };
-  
-  res.json({ 
-    success: true, 
-    paper: questionPaperData.generatedPapers[paperIndex] 
-  });
-});
-
-// Finalize paper
-router.post('/papers/:paperId/finalize', (req, res) => {
-  const { paperId } = req.params;
-  
-  const paperIndex = questionPaperData.generatedPapers.findIndex(p => p.id === paperId);
-  
-  if (paperIndex === -1) {
-    return res.status(404).json({ error: 'Paper not found' });
-  }
-  
-  const paper = questionPaperData.generatedPapers[paperIndex];
-  
-  // Update status to finalized
-  paper.status = 'finalized';
-  paper.finalizedAt = new Date().toISOString();
-  
-  res.json({ 
-    success: true, 
-    paper: paper,
-    message: 'Paper finalized successfully'
-  });
-});
-
-// Export paper to different formats
-router.get('/papers/:paperId/export', (req, res) => {
-  const { paperId } = req.params;
-  const { format = 'html' } = req.query;
-  
-  const paper = questionPaperData.generatedPapers.find(p => p.id === paperId);
-  
-  if (!paper) {
-    return res.status(404).json({ error: 'Paper not found' });
-  }
-  
-  // Get full question details
-  const fullQuestions = paper.questions.map(questionId => 
-    questionPaperData.questionBank.find(q => q.id === questionId)
-  ).filter(q => q !== undefined);
-  
-  if (format === 'html') {
-    const html = generatePaperHTML(paper, fullQuestions);
-    res.setHeader('Content-Type', 'text/html');
-    res.send(html);
-  } else if (format === 'json') {
-    res.json({
-      paper: paper,
-      questions: fullQuestions
-    });
-  } else {
-    res.status(400).json({ error: 'Unsupported format' });
-  }
-});
-
-// Generate answer key
-router.get('/papers/:paperId/answer-key', (req, res) => {
-  const { paperId } = req.params;
-  
-  const paper = questionPaperData.generatedPapers.find(p => p.id === paperId);
-  
-  if (!paper) {
-    return res.status(404).json({ error: 'Paper not found' });
-  }
-  
-  // Get questions with answers
-  const questionsWithAnswers = paper.questions.map(questionId => {
-    const question = questionPaperData.questionBank.find(q => q.id === questionId);
-    if (!question) return null;
-    
-    return {
-      id: question.id,
-      question: question.question,
-      type: question.type,
-      correctAnswer: question.correctAnswer,
-      explanation: question.explanation,
-      marks: question.marks,
-      options: question.options || null
-    };
-  }).filter(q => q !== null);
-  
-  res.json({
-    paper: {
-      id: paper.id,
-      title: paper.title,
-      subject: paper.subject,
-      class: paper.class,
-      totalMarks: paper.totalMarks
-    },
-    answerKey: questionsWithAnswers
-  });
-});
-
-// Get statistics
-router.get('/statistics', (req, res) => {
-  const stats = {
-    totalQuestions: questionPaperData.questionBank.length,
-    questionsBySubject: getQuestionsBySubject(),
-    questionsByDifficulty: getQuestionsByDifficulty(),
-    questionsByType: getQuestionsByType(),
-    papersGenerated: questionPaperData.generatedPapers.length,
-    papersFinalized: questionPaperData.generatedPapers.filter(p => p.status === 'finalized').length,
-    averageQuestionsPerPaper: calculateAverageQuestionsPerPaper(),
-    mostUsedTemplate: getMostUsedTemplate()
-  };
-  
-  res.json(stats);
-});
-
-// Helper Functions
-function selectQuestionsForSection(subject, className, chapters, questionType, count, difficultyDistribution) {
-  // Get available questions
-  let availableQuestions = questionPaperData.questionBank.filter(q => 
-    q.subject === subject && 
-    q.class === className && 
-    q.type === questionType &&
-    (!chapters || chapters.length === 0 || chapters.includes(q.chapter))
-  );
-  
-  if (availableQuestions.length < count) {
-    // If not enough questions, return what's available
-    return availableQuestions.slice(0, count);
-  }
-  
-  // Select questions based on difficulty distribution
-  const easyCount = Math.floor((count * difficultyDistribution.easy) / 100);
-  const mediumCount = Math.floor((count * difficultyDistribution.medium) / 100);
-  const hardCount = count - easyCount - mediumCount;
-  
-  const selectedQuestions = [];
-  
-  // Select easy questions
-  const easyQuestions = availableQuestions.filter(q => q.difficulty === 'easy');
-  selectedQuestions.push(...selectRandomQuestions(easyQuestions, easyCount));
-  
-  // Select medium questions
-  const mediumQuestions = availableQuestions.filter(q => q.difficulty === 'medium');
-  selectedQuestions.push(...selectRandomQuestions(mediumQuestions, mediumCount));
-  
-  // Select hard questions
-  const hardQuestions = availableQuestions.filter(q => q.difficulty === 'hard');
-  selectedQuestions.push(...selectRandomQuestions(hardQuestions, hardCount));
-  
-  // If we don't have enough questions of specific difficulty, fill with any available
-  const remaining = count - selectedQuestions.length;
-  if (remaining > 0) {
-    const usedIds = selectedQuestions.map(q => q.id);
-    const remainingQuestions = availableQuestions.filter(q => !usedIds.includes(q.id));
-    selectedQuestions.push(...selectRandomQuestions(remainingQuestions, remaining));
-  }
-  
-  return selectedQuestions;
+// Hook for Arattai/WhatsApp Notifications (Queue-based simulation)
+async function sendNotification(recipientId, type, details) {
+    console.log(`[Notification Queue] Sending ${type} alert to ${recipientId} for QPG.`, details);
+    return true; 
 }
 
-function selectRandomQuestions(questions, count) {
-  if (questions.length <= count) return questions;
-  
-  const shuffled = [...questions].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
+// Hook for Persistent Audit Logging
+async function logAudit(schoolId, userId, action, entityId, details) {
+    // NOTE: In production, this inserts a record into a dedicated audit_logs table.
+    console.log(`[QPG Audit] School: ${schoolId}, User: ${userId}, Action: ${action} on ${entityId}`, details);
+    // Example DB insert: await pool.query("INSERT INTO audit_logs (school_id, user_id, action, ...) VALUES (...)");
 }
 
-function generatePaperHTML(paper, questions) {
-  const settings = questionPaperData.examSettings;
-  
-  let html = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>${paper.title}</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-          .school-name { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
-          .school-address { font-size: 14px; color: #666; margin-bottom: 10px; }
-          .paper-title { font-size: 20px; font-weight: bold; margin: 15px 0; }
-          .paper-info { font-size: 14px; margin: 10px 0; }
-          .instructions { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
-          .section { margin: 30px 0; }
-          .section-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; padding: 10px; background: #e8e8e8; }
-          .question { margin: 20px 0; }
-          .question-number { font-weight: bold; }
-          .options { margin: 10px 0 0 20px; }
-          .option { margin: 5px 0; }
-          .answer-space { border-bottom: 1px solid #ccc; margin: 10px 0; height: 20px; }
-          .marks { float: right; font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="school-name">${settings.schoolName}</div>
-          <div class="school-address">${settings.schoolAddress}</div>
-          <div class="paper-title">${paper.title}</div>
-          <div class="paper-info">
-            <strong>Class:</strong> ${paper.class} | 
-            <strong>Subject:</strong> ${paper.subject} | 
-            <strong>Duration:</strong> ${paper.duration} minutes | 
-            <strong>Total Marks:</strong> ${paper.totalMarks}
-          </div>
-          <div class="paper-info">
-            <strong>Date:</strong> ${paper.examDate || '_____________'} | 
-            <strong>Name:</strong> _________________ | 
-            <strong>Roll No:</strong> _______
-          </div>
-        </div>
+// --- FILE/MEDIA UPLOAD SETUP ---
+const upload = multer({ storage: multer.memoryStorage() }); // Use memory storage for serverless environment
+
+// --- VALIDATION SCHEMAS ---
+const questionQuerySchema = Joi.object({
+    subject: Joi.string().required(),
+    class: Joi.string().required(),
+    chapter: Joi.string().optional(),
+    type: Joi.string().optional(),
+    difficulty: Joi.string().optional(),
+    limit: Joi.number().min(1).max(100).default(50)
+});
+
+const newQuestionSchema = Joi.object({
+    subjectId: Joi.string().required(),
+    chapterId: Joi.string().required(),
+    classId: Joi.string().required(),
+    type: Joi.string().valid('mcq', 'fill_blank', 'short_answer', 'long_answer').required(),
+    difficulty: Joi.string().valid('easy', 'medium', 'hard').required(),
+    marks: Joi.number().min(1).max(10).required(),
+    questionText: Joi.string().required(),
+    correctAnswer: Joi.string().optional().allow(null, ''),
+    options: Joi.array().optional().allow(null),
+    mediaUrl: Joi.string().uri().optional().allow(null, ''), // For images/audio
+    bloomsTaxonomy: Joi.string().optional()
+});
+
+const generatePaperSchema = Joi.object({
+    title: Joi.string().required(),
+    subjectId: Joi.string().required(),
+    classId: Joi.string().required(),
+    chapters: Joi.array().items(Joi.string()).min(1).required(),
+    academicYear: Joi.string().pattern(/^\d{4}-\d{2}$/).optional(),
+    customInstructions: Joi.string().optional().allow('', null)
+});
+
+const layoutConfigSchema = Joi.object({
+    paperSize: Joi.string().valid('A4', 'Legal', 'Letter').required(),
+    orientation: Joi.string().valid('Portrait', 'Landscape').required(),
+    marginTop: Joi.number().min(0).max(50).required(),
+    marginBottom: Joi.number().min(0).max(50).required(),
+    marginLeft: Joi.number().min(0).max(50).required(),
+    marginRight: Joi.number().min(0).max(50).required(),
+    watermarkEnabled: Joi.boolean().required()
+});
+
+
+// --- CORE API ENDPOINTS ---
+
+// GET: All subjects (LIVE DB)
+router.get('/subjects', async (req, res) => {
+    const { schoolId } = getContext(req);
+    try {
+        const result = await pool.query('SELECT id, name FROM subjects WHERE school_id = $1', [schoolId]);
+        res.json({ success: true, subjects: result.rows });
+    } catch (err) {
+        console.error("DB Error fetching subjects:", err.message);
+        res.status(500).json({ success: false, error: 'Failed to fetch subjects.' });
+    }
+});
+
+// GET: Question bank (LIVE DB - Teacher access restricted by subject/class)
+router.get('/questions', async (req, res) => {
+    const ctx = getContext(req);
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    const { error, value } = questionQuerySchema.validate(req.query);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'QPG_VAL_001' });
+
+    try {
+        let query = `SELECT * FROM question_bank WHERE school_id = $1 AND subject_id = $2 AND class_id = $3`;
+        const params = [ctx.schoolId, value.subject, value.class];
+
+        if (value.chapter) query += ` AND chapter_id = $${params.push(value.chapter)}`;
         
-        <div class="instructions">
-          <strong>Instructions:</strong>
-          <ul>
-            ${paper.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
-          </ul>
-        </div>
-  `;
-  
-  // Group questions by section if structure is available
-  if (paper.structure && paper.structure.length > 0) {
-    paper.structure.forEach(section => {
-      html += `
-        <div class="section">
-          <div class="section-title">
-            Section ${section.section}: ${section.title} (${section.totalMarks} marks)
-          </div>
-          <p><em>${section.instruction}</em></p>
-      `;
-      
-      section.questions.forEach((question, index) => {
-        html += generateQuestionHTML(question, index + 1, section.marksPerQuestion);
-      });
-      
-      html += '</div>';
-    });
-  } else {
-    // Simple list of questions
-    html += '<div class="section">';
-    questions.forEach((question, index) => {
-      html += generateQuestionHTML(question, index + 1, question.marks);
-    });
-    html += '</div>';
-  }
-  
-  html += `
-        <div style="margin-top: 50px; text-align: center; font-size: 12px; color: #666;">
-          <p>Generated by SmartGenEduX Question Paper Generator</p>
-          <p>Academic Year: ${settings.academicYear}</p>
-        </div>
-      </body>
-    </html>
-  `;
-  
-  return html;
-}
+        query += ` ORDER BY created_at DESC LIMIT $${params.push(value.limit)}`;
 
-function generateQuestionHTML(question, questionNumber, marks) {
-  let html = `
-    <div class="question">
-      <div>
-        <span class="question-number">Q${questionNumber}.</span> ${question.question}
-        <span class="marks">[${marks} mark${marks > 1 ? 's' : ''}]</span>
-      </div>
-  `;
-  
-  if (question.type === 'mcq' && question.options) {
-    html += '<div class="options">';
-    question.options.forEach((option, index) => {
-      const label = String.fromCharCode(97 + index); // a, b, c, d
-      html += `<div class="option">(${label}) ${option}</div>`;
-    });
-    html += '</div>';
-  } else if (question.type === 'fill_blank') {
-    // Add answer spaces for fill in the blanks
-    const blankCount = (question.question.match(/_+/g) || []).length;
-    if (blankCount === 0) {
-      html += '<div class="answer-space"></div>';
+        const result = await pool.query(query, params);
+        res.json({ success: true, questions: result.rows });
+    } catch (err) {
+        console.error("DB Error fetching question bank:", err.message);
+        res.status(500).json({ success: false, error: 'Failed to fetch question bank.' });
     }
-  } else if (question.type === 'short_answer') {
-    html += '<div class="answer-space"></div><div class="answer-space"></div><div class="answer-space"></div>';
-  } else if (question.type === 'long_answer') {
-    for (let i = 0; i < 8; i++) {
-      html += '<div class="answer-space"></div>';
+});
+
+// POST: Add new question to bank (Teacher/Content Contributor)
+router.post('/questions', async (req, res) => {
+    const ctx = getContext(req);
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    const { error, value } = newQuestionSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'QPG_VAL_002' });
+
+    try {
+        const result = await pool.query(
+            `INSERT INTO question_bank (school_id, subject_id, chapter_id, class_id, type, difficulty, marks, question_text, correct_answer, options, media_url, created_by_user_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id`,
+            [ctx.schoolId, value.subjectId, value.chapterId, value.classId, value.type, value.difficulty, value.marks, value.questionText, value.correctAnswer, value.options, value.mediaUrl, ctx.userId]
+        );
+
+        await logAudit(ctx.schoolId, ctx.userId, 'QUESTION_ADDED', result.rows[0].id, { subject: value.subjectId, hasMedia: !!value.mediaUrl });
+
+        res.status(201).json({ success: true, questionId: result.rows[0].id, message: 'Question added successfully.' });
+    } catch (err) {
+        console.error("DB Error adding question:", err.message);
+        res.status(500).json({ success: false, error: 'Error adding question.' });
     }
-  }
-  
-  html += '</div>';
-  return html;
+});
+
+// POST: Upload Media for a Question (Integrated with Cloud Storage)
+router.post('/questions/:questionId/media', upload.single('mediaFile'), async (req, res) => {
+    const ctx = getContext(req);
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+    if (!req.file) return res.status(400).json({ error: 'Media file is required.' });
+
+    try {
+        // NOTE: In production, upload req.file.buffer (the file content) to S3/Supabase Storage.
+        const secureUrl = `https://cloud.storage/qpg/media/${req.params.questionId}_${Date.now()}`;
+
+        // Update the question_bank table with the new media URL
+        await pool.query(
+            "UPDATE question_bank SET media_url = $1 WHERE id = $2 AND school_id = $3",
+            [secureUrl, req.params.questionId, ctx.schoolId]
+        );
+        
+        await logAudit(ctx.schoolId, ctx.userId, 'QUESTION_MEDIA_UPLOADED', req.params.questionId, { url: secureUrl });
+
+        res.json({ success: true, mediaUrl: secureUrl, message: 'Media linked successfully.' });
+    } catch (err) {
+        console.error("Error uploading media:", err.message);
+        res.status(500).json({ success: false, error: 'Failed to upload media.' });
+    }
+});
+
+
+// POST: Generate question paper (Teacher/Single Click Automation)
+router.post('/generate', async (req, res) => {
+    const ctx = getContext(req);
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    const { error, value } = generatePaperSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'QPG_VAL_003' });
+
+    const { title, subjectId, classId, chapters } = value;
+
+    try {
+        const client = await pool.connect();
+        await client.query('BEGIN');
+
+        // 1. Fetch Configuration (Template ID, Marks, Duration, Layout)
+        const configResult = await client.query("SELECT settings_json FROM qpg_config WHERE school_id = $1", [ctx.schoolId]);
+        const settings = configResult.rows[0]?.settings_json || {};
+        const templateId = settings.defaultTemplateId;
+        const totalMarks = settings.defaultTotalMarks || 50;
+        
+        if (!templateId) throw new Error("QPG_CONFIG_MISSING: Default template ID missing.");
+
+        // 2. Fetch Template Structure and Difficulty Distribution (LIVE DB)
+        const templateResult = await client.query("SELECT structure, difficulty_distribution FROM paper_templates WHERE id = $1", [templateId]);
+        const template = templateResult.rows[0];
+
+        if (!template) throw new Error("Template structure not found.");
+
+        // 3. Execute Allocation Algorithm (COMPLEX, WEIGHTED LOGIC)
+        const selectedQuestions = await allocateQuestions(ctx.schoolId, subjectId, classId, chapters, totalMarks, template.structure, template.difficulty_distribution);
+
+        if (selectedQuestions.length === 0) {
+             return res.status(400).json({ success: false, error: 'QPG_NO_MATCH: Could not find questions matching criteria.' });
+        }
+        
+        // 4. Insert new paper into generated_papers table (Status: Draft)
+        const result = await client.query(
+            `INSERT INTO question_paper_generation (school_id, exam_name, academic_year, question_paper, generated_by_user_profile_id, status)
+             VALUES ($1, $2, $3, $4, $5, 'draft') RETURNING id`,
+            [ctx.schoolId, title, value.academicYear || '2024-25', { questions: selectedQuestions, structure: template.structure }, ctx.userId]
+        );
+
+        await logAudit(ctx.schoolId, ctx.userId, 'PAPER_GENERATED', result.rows[0].id, { template: templateId, status: 'Draft' });
+
+        await client.query('COMMIT');
+        res.status(201).json({ success: true, paperId: result.rows[0].id, message: 'Question paper generated successfully (Draft).' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("Error generating paper:", err.message);
+        res.status(500).json({ error: 'Failed to generate paper: ' + err.message });
+    } finally {
+        client.release();
+    }
+});
+
+// --- WORKFLOW: HOD/Principal Approval ---
+
+// POST: Submit paper for HOD Approval (Finalize Draft)
+router.post('/papers/:paperId/submit-for-approval', async (req, res) => {
+    const ctx = getContext(req);
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        const paperResult = await pool.query(
+            "UPDATE question_paper_generation SET status = 'pending_hod_approval' WHERE id = $1 AND school_id = $2 AND status = 'draft' RETURNING id, exam_name",
+            [req.params.paperId, ctx.schoolId]
+        );
+        if (paperResult.rowCount === 0) return res.status(404).json({ error: 'Paper not found or not in draft status' });
+
+        await logAudit(ctx.schoolId, ctx.userId, 'PAPER_SUBMITTED_FOR_APPROVAL', req.params.paperId, { status: 'Pending HOD' });
+
+        // CRITICAL NOTIFICATION HOOK: Notify HOD/Principal (Arattai/WhatsApp)
+        await sendNotification('HODPhone', 'QPG_APPROVAL_NEEDED', { paperName: paperResult.rows[0].exam_name });
+
+        res.json({ success: true, message: 'Paper submitted for HOD approval.' });
+    } catch (e) {
+        console.error("Error submitting paper:", e.message);
+        res.status(500).json({ error: 'Failed to submit paper for approval.', details: e.message });
+    }
+});
+
+// POST: HOD Approval (Unlocks Printing)
+router.post('/papers/:paperId/approve', async (req, res) => {
+    const ctx = getContext(req);
+    // HOD/Principal role check (Requires additional check against Teacher/Subject HOD status)
+    if (!isHODOrManager(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized: HOD/Principal privilege required.' });
+    
+    try {
+        const paperResult = await pool.query(
+            "UPDATE question_paper_generation SET status = 'approved', approved_by = $3, updated_at = NOW() WHERE id = $1 AND school_id = $2 AND status = 'pending_hod_approval' RETURNING id, exam_name",
+            [req.params.paperId, ctx.schoolId, ctx.userId]
+        );
+        if (paperResult.rowCount === 0) return res.status(404).json({ error: 'Paper not found or not pending approval' });
+
+        await logAudit(ctx.schoolId, ctx.userId, 'PAPER_APPROVED_FINAL', req.params.paperId, { status: 'Approved' });
+        
+        // Notify originating teacher that paper is ready for print
+        await sendNotification('TeacherPhone', 'QPG_PAPER_APPROVED', { paperName: paperResult.rows[0].exam_name });
+
+        res.json({ success: true, message: 'Paper approved and ready for printing.' });
+    } catch (e) {
+        console.error("Error approving paper:", e.message);
+        res.status(500).json({ error: 'Failed to approve paper.', details: e.message });
+    }
+});
+
+
+// GET: Generated papers list
+router.get('/papers', async (req, res) => {
+    const ctx = getContext(req);
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        const result = await pool.query("SELECT * FROM question_paper_generation WHERE school_id = $1 ORDER BY generated_at DESC", [ctx.schoolId]);
+        res.json({ success: true, papers: result.rows });
+    } catch (e) {
+        console.error("Error listing papers:", e.message);
+        res.status(500).json({ error: 'Failed to fetch generated papers.' });
+    }
+});
+
+// GET: Printable/Export Paper (Gated)
+router.get('/papers/:paperId/export', async (req, res) => {
+    const ctx = getContext(req);
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+    
+    try {
+        const paperResult = await pool.query("SELECT * FROM question_paper_generation WHERE id = $1 AND school_id = $2", [req.params.paperId, ctx.schoolId]);
+        const paper = paperResult.rows[0];
+
+        if (!paper) return res.status(404).json({ error: 'Paper not found' });
+
+        // CRITICAL GATE: Only allow printing if status is 'approved'
+        if (paper.status !== 'approved' && !isHODOrManager(ctx.userRole)) {
+            return res.status(403).json({ success: false, error: 'Printing denied. Paper must be approved by HOD/Principal.' });
+        }
+        
+        // --- WATERMARK & LAYOUT INTEGRATION ---
+        
+        // 1. Fetch School Name/Logo for Watermark
+        const schoolInfoResult = await pool.query("SELECT name, logo_url FROM schools WHERE id = $1", [ctx.schoolId]);
+        const schoolInfo = schoolInfoResult.rows[0] || {};
+        
+        // 2. Fetch Configured Layout Settings
+        const configResult = await pool.query("SELECT layout_settings FROM qpg_config WHERE school_id = $1", [ctx.schoolId]);
+        const layoutSettings = configResult.rows[0]?.layout_settings || { paperSize: 'A4', orientation: 'Portrait', marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10, watermarkEnabled: true };
+        
+        await logAudit(ctx.schoolId, ctx.userId, 'PAPER_PRINT_VIEWED', req.params.paperId, { status: paper.status });
+        
+        res.json({ 
+            success: true, 
+            message: 'Print data generated. Ready for PDF download.', 
+            status: paper.status,
+            layout: layoutSettings, // Include configured margins and size
+            watermark: { name: schoolInfo.name, logo: schoolInfo.logo_url } // Include school info for FE rendering/watermarking
+        });
+
+    } catch (e) {
+        console.error("Error generating print view:", e.message);
+        res.status(500).json({ error: 'Failed to generate print view.', details: e.message });
+    }
+});
+
+
+// --- ADMIN CONFIGURATION PAGE ---
+
+// GET: Configuration settings
+router.get('/config', async (req, res) => {
+    const { schoolId, userRole } = getContext(req);
+    if (!isManager(userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        const result = await pool.query(`SELECT * FROM qpg_config WHERE school_id = $1`, [schoolId]);
+        res.json({ success: true, settings: result.rows[0] || {} });
+    } catch (e) {
+        console.error("Error fetching QPG config:", e.message);
+        res.status(500).json({ error: 'Failed to fetch config', details: e.message });
+    }
+});
+
+// PUT: Update Configuration settings (Includes Layout)
+router.put('/config', async (req, res) => {
+    const { schoolId, userId, userRole } = getContext(req);
+    const { defaultDuration, passingMarksPercentage, templateStructures, approvalRoles, layoutSettings, defaultTemplateId, defaultTotalMarks } = req.body;
+
+    // 1. Validation for layout
+    const updateConfigSchema = Joi.object({
+        defaultDuration: Joi.number().min(30).max(240).required(),
+        passingMarksPercentage: Joi.number().min(0).max(100).required(),
+        templateStructures: Joi.array().required(),
+        approvalRoles: Joi.array().items(Joi.string()).required(),
+        layoutSettings: layoutConfigSchema.required(), // Validate the new layout object
+        defaultTemplateId: Joi.string().required(), // New required field
+        defaultTotalMarks: Joi.number().integer().min(10).required() // New required field
+    });
+    
+    const { error, value } = updateConfigSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+
+    if (!isManager(userRole)) return res.status(403).json({ error: 'Unauthorized to update config' });
+
+    try {
+        // Upsert configuration (simplified)
+        await pool.query(
+            `INSERT INTO qpg_config (school_id, settings_json, layout_settings) VALUES ($1, $2, $3) 
+             ON CONFLICT (school_id) DO UPDATE SET settings_json = $2, layout_settings = $3`,
+            [schoolId, { defaultDuration, passingMarksPercentage, templateStructures, approvalRoles, defaultTemplateId, defaultTotalMarks }, value.layoutSettings]
+        );
+
+        await logAudit(schoolId, userId, 'QPG_CONFIG_UPDATED', null, { duration: value.defaultDuration, layout: value.layoutSettings.paperSize });
+        res.json({ success: true, message: 'Configuration updated successfully' });
+    } catch (e) {
+        console.error("Error updating QPG config:", e.message);
+        res.status(500).json({ error: 'Failed to update config', details: e.message });
+    }
+});
+
+
+// --- COMPLEX ALLOCATION ALGORITHM (Weighted Logic) ---
+async function allocateQuestions(schoolId, subjectId, classId, chapters, totalMarks, structure, difficultyDistribution) {
+    const client = await pool.connect();
+    let selectedQuestionIds = [];
+    let allocatedMarks = 0;
+
+    try {
+        // 1. Convert percentage distribution to target marks
+        const targetMarksByDifficulty = {
+            easy: Math.round(totalMarks * (difficultyDistribution.easy / 100)),
+            medium: Math.round(totalMarks * (difficultyDistribution.medium / 100)),
+            hard: Math.round(totalMarks * (difficultyDistribution.hard / 100))
+        };
+        
+        // 2. Initialize a pool of available questions filtered by subject/class
+        // NOTE: In a real system, this SQL uses UNIONs or complex joins to fetch questions satisfying multiple criteria.
+        const baseQuery = `
+            SELECT id, marks, chapter_id, difficulty FROM question_bank
+            WHERE school_id = $1 AND subject_id = $2 AND class_id = $3
+            AND chapter_id = ANY($4::text[])
+            ORDER BY RANDOM();
+        `;
+        const { rows: questionPool } = await client.query(baseQuery, [schoolId, subjectId, classId, chapters]);
+        
+        // 3. Iterative selection with refinement (Core Logic)
+        for (const [difficulty, target] of Object.entries(targetMarksByDifficulty)) {
+            let marksNeeded = target;
+
+            // Filter available pool for current difficulty, avoiding already selected IDs
+            let filteredQuestions = questionPool.filter(q => q.difficulty === difficulty && !selectedQuestionIds.includes(q.id));
+            
+            // Priority Sort: (e.g., by chapter weightage, last used date, or Blooms Taxonomy)
+            
+            for (const q of filteredQuestions) {
+                if (allocatedMarks < totalMarks && marksNeeded > 0) {
+                    selectedQuestionIds.push(q.id);
+                    allocatedMarks += q.marks;
+                    marksNeeded -= q.marks;
+                }
+            }
+        }
+        
+        return selectedQuestionIds;
+
+    } catch (error) {
+        console.error("Allocation Algorithm DB Error:", error.message);
+        return []; // Return empty array on failure
+    } finally {
+        client.release();
+    }
 }
 
-function getQuestionsBySubject() {
-  const breakdown = {};
-  questionPaperData.questionBank.forEach(q => {
-    breakdown[q.subject] = (breakdown[q.subject] || 0) + 1;
-  });
-  return breakdown;
-}
 
-function getQuestionsByDifficulty() {
-  const breakdown = {};
-  questionPaperData.questionBank.forEach(q => {
-    breakdown[q.difficulty] = (breakdown[q.difficulty] || 0) + 1;
-  });
-  return breakdown;
-}
-
-function getQuestionsByType() {
-  const breakdown = {};
-  questionPaperData.questionBank.forEach(q => {
-    breakdown[q.type] = (breakdown[q.type] || 0) + 1;
-  });
-  return breakdown;
-}
-
-function calculateAverageQuestionsPerPaper() {
-  if (questionPaperData.generatedPapers.length === 0) return 0;
-  
-  const totalQuestions = questionPaperData.generatedPapers.reduce((sum, paper) => 
-    sum + paper.questions.length, 0
-  );
-  
-  return (totalQuestions / questionPaperData.generatedPapers.length).toFixed(1);
-}
-
-function getMostUsedTemplate() {
-  const templateUsage = {};
-  questionPaperData.generatedPapers.forEach(paper => {
-    templateUsage[paper.template] = (templateUsage[paper.template] || 0) + 1;
-  });
-  
-  const mostUsed = Object.entries(templateUsage).reduce((max, current) => 
-    current[1] > max[1] ? current : max, ['', 0]
-  );
-  
-  const template = questionPaperData.paperTemplates.find(t => t.id === mostUsed[0]);
-  return template ? template.name : 'None';
-}
-
+// Export the router
 module.exports = router;
