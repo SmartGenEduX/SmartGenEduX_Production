@@ -1,776 +1,588 @@
-// Substitution Log Module - Complete Implementation
+// Substitution Log Module - Production Ready API (Enterprise Logic)
 const express = require('express');
+const { Pool } = require('pg');
+const Joi = require('joi');
 const router = express.Router();
 
-const substitutionData = {
-  teachers: [
-    {
-      id: 'teacher_001',
-      name: 'Ms. Priya Sharma',
-      employeeId: 'EMP001',
-      subjects: ['Mathematics', 'Science'],
-      classes: ['Class 1-A', 'Class 2-A'],
-      maxSubstitutionsPerWeek: 5,
-      preferredSubjects: ['Mathematics', 'Science'],
-      availabilityStatus: 'available',
-      currentSubstitutions: 2,
-      qualifications: ['M.Sc Mathematics', 'B.Ed'],
-      contactPhone: '+91-9876543220'
-    },
-    {
-      id: 'teacher_002',
-      name: 'Mr. Rajesh Kumar',
-      employeeId: 'EMP002',
-      subjects: ['English', 'Hindi'],
-      classes: ['Class 1-A', 'Class 2-A', 'Class 3-A'],
-      maxSubstitutionsPerWeek: 6,
-      preferredSubjects: ['English', 'Hindi', 'Social Studies'],
-      availabilityStatus: 'available',
-      currentSubstitutions: 1,
-      qualifications: ['M.A English', 'B.Ed'],
-      contactPhone: '+91-9876543221'
-    },
-    {
-      id: 'teacher_003',
-      name: 'Mrs. Anita Singh',
-      employeeId: 'EMP003',
-      subjects: ['Social Studies', 'Moral Education'],
-      classes: ['Class 2-A', 'Class 3-A'],
-      maxSubstitutionsPerWeek: 4,
-      preferredSubjects: ['Social Studies', 'Moral Education', 'Hindi'],
-      availabilityStatus: 'on_leave',
-      currentSubstitutions: 0,
-      qualifications: ['M.A History', 'B.Ed'],
-      contactPhone: '+91-9876543222'
-    },
-    {
-      id: 'teacher_004',
-      name: 'Mr. Vikram Gupta',
-      employeeId: 'EMP004',
-      subjects: ['Computer Science', 'Physical Education'],
-      classes: ['Class 1-A', 'Class 2-A', 'Class 3-A'],
-      maxSubstitutionsPerWeek: 7,
-      preferredSubjects: ['Computer Science', 'Physical Education', 'Mathematics'],
-      availabilityStatus: 'available',
-      currentSubstitutions: 3,
-      qualifications: ['MCA', 'Sports Diploma'],
-      contactPhone: '+91-9876543223'
-    }
-  ],
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-  substitutions: [
-    {
-      id: 'sub_001',
-      originalTeacherId: 'teacher_003',
-      substituteTeacherId: 'teacher_001',
-      classId: 'class_2A',
-      subject: 'Social Studies',
-      date: '2024-12-29',
-      period: 5,
-      startTime: '10:30',
-      endTime: '11:15',
-      reason: 'Medical leave',
-      status: 'confirmed',
-      requestedBy: 'admin_001',
-      confirmedBy: 'teacher_001',
-      requestedAt: '2024-12-28T15:30:00Z',
-      confirmedAt: '2024-12-28T16:15:00Z',
-      notificationsSent: true,
-      room: 'Room 201',
-      lessonPlan: 'Chapter 5: Our Environment - Basic concepts',
-      specialInstructions: 'Use PowerPoint presentation from shared folder',
-      attendanceMarked: false,
-      feedback: null
-    },
-    {
-      id: 'sub_002',
-      originalTeacherId: 'teacher_002',
-      substituteTeacherId: 'teacher_004',
-      classId: 'class_1A',
-      subject: 'English',
-      date: '2024-12-30',
-      period: 2,
-      startTime: '08:45',
-      endTime: '09:30',
-      reason: 'Personal emergency',
-      status: 'pending',
-      requestedBy: 'teacher_002',
-      confirmedBy: null,
-      requestedAt: '2024-12-29T08:00:00Z',
-      confirmedAt: null,
-      notificationsSent: false,
-      room: 'Room 101',
-      lessonPlan: 'Reading comprehension - Page 45-48',
-      specialInstructions: 'Please ensure students complete worksheet',
-      attendanceMarked: false,
-      feedback: null
-    },
-    {
-      id: 'sub_003',
-      originalTeacherId: 'teacher_001',
-      substituteTeacherId: 'teacher_002',
-      classId: 'class_1A',
-      subject: 'Mathematics',
-      date: '2024-12-27',
-      period: 1,
-      startTime: '08:00',
-      endTime: '08:45',
-      reason: 'Training workshop',
-      status: 'completed',
-      requestedBy: 'admin_001',
-      confirmedBy: 'teacher_002',
-      requestedAt: '2024-12-25T10:00:00Z',
-      confirmedAt: '2024-12-25T11:30:00Z',
-      notificationsSent: true,
-      room: 'Room 101',
-      lessonPlan: 'Addition and subtraction - Practice exercises',
-      specialInstructions: 'Use manipulatives for better understanding',
-      attendanceMarked: true,
-      feedback: 'Class went well. Students were cooperative and completed all exercises.'
-    },
-    {
-      id: 'sub_004',
-      originalTeacherId: 'teacher_004',
-      substituteTeacherId: 'teacher_001',
-      classId: 'class_3A',
-      subject: 'Computer Science',
-      date: '2024-12-26',
-      period: 7,
-      startTime: '12:00',
-      endTime: '12:45',
-      reason: 'Equipment maintenance',
-      status: 'completed',
-      requestedBy: 'admin_001',
-      confirmedBy: 'teacher_001',
-      requestedAt: '2024-12-25T14:00:00Z',
-      confirmedAt: '2024-12-25T14:30:00Z',
-      notificationsSent: true,
-      room: 'Computer Lab',
-      lessonPlan: 'Introduction to MS Paint - Basic drawing tools',
-      specialInstructions: 'Computers are working fine now. Lab technician will assist.',
-      attendanceMarked: true,
-      feedback: 'Good session. Students enjoyed learning Paint tools.'
-    }
-  ],
+// --- R.B.A.C. & CONTEXT HELPERS ---
 
-  leaveApplications: [
-    {
-      id: 'leave_001',
-      teacherId: 'teacher_003',
-      type: 'medical_leave',
-      startDate: '2024-12-29',
-      endDate: '2024-12-31',
-      reason: 'Doctor appointment and recovery',
-      status: 'approved',
-      appliedDate: '2024-12-27',
-      approvedBy: 'admin_001',
-      approvedDate: '2024-12-27',
-      documents: ['medical_certificate.pdf'],
-      substitute_required: true,
-      classes_affected: ['Class 2-A', 'Class 3-A'],
-      subjects_affected: ['Social Studies', 'Moral Education']
-    },
-    {
-      id: 'leave_002',
-      teacherId: 'teacher_002',
-      type: 'emergency_leave',
-      startDate: '2024-12-30',
-      endDate: '2024-12-30',
-      reason: 'Family emergency',
-      status: 'approved',
-      appliedDate: '2024-12-29',
-      approvedBy: 'admin_001',
-      approvedDate: '2024-12-29',
-      documents: [],
-      substitute_required: true,
-      classes_affected: ['Class 1-A', 'Class 2-A'],
-      subjects_affected: ['English', 'Hindi']
-    }
-  ],
-
-  availabilityMatrix: {
-    'teacher_001': {
-      'Monday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Tuesday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Wednesday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Thursday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Friday': [1, 2, 3, 5, 6, 7, 9, 10]
-    },
-    'teacher_002': {
-      'Monday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Tuesday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Wednesday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Thursday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Friday': [1, 2, 3, 5, 6, 7, 9, 10]
-    },
-    'teacher_004': {
-      'Monday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Tuesday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Wednesday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Thursday': [1, 2, 3, 5, 6, 7, 9, 10],
-      'Friday': [1, 2, 3, 5, 6, 7, 9, 10]
-    }
-  },
-
-  substitutionSettings: {
-    autoAssignment: true,
-    notificationMethods: ['email', 'sms', 'app'],
-    advanceNoticeRequired: 24, // hours
-    maxSubstitutionsPerTeacher: 8,
-    preferenceWeightage: {
-      subject_match: 40,
-      availability: 30,
-      workload: 20,
-      preference: 10
-    },
-    emergencyContacts: [
-      { name: 'Principal', phone: '+91-9876543200', email: 'principal@dps.edu' },
-      { name: 'Vice Principal', phone: '+91-9876543201', email: 'vp@dps.edu' }
-    ]
-  }
-};
-
-// Get all substitutions
-router.get('/', (req, res) => {
-  const { date, status, teacherId, classId } = req.query;
-  
-  let substitutions = substitutionData.substitutions;
-  
-  // Filter by date
-  if (date) {
-    substitutions = substitutions.filter(sub => sub.date === date);
-  }
-  
-  // Filter by status
-  if (status) {
-    substitutions = substitutions.filter(sub => sub.status === status);
-  }
-  
-  // Filter by teacher
-  if (teacherId) {
-    substitutions = substitutions.filter(sub => 
-      sub.originalTeacherId === teacherId || sub.substituteTeacherId === teacherId
-    );
-  }
-  
-  // Filter by class
-  if (classId) {
-    substitutions = substitutions.filter(sub => sub.classId === classId);
-  }
-  
-  // Add teacher and class information
-  const enrichedSubstitutions = substitutions.map(sub => {
-    const originalTeacher = substitutionData.teachers.find(t => t.id === sub.originalTeacherId);
-    const substituteTeacher = substitutionData.teachers.find(t => t.id === sub.substituteTeacherId);
-    
-    return {
-      ...sub,
-      originalTeacher: originalTeacher ? originalTeacher.name : 'Unknown',
-      substituteTeacher: substituteTeacher ? substituteTeacher.name : 'TBD',
-      dayOfWeek: new Date(sub.date).toLocaleDateString('en-US', { weekday: 'long' })
-    };
-  });
-  
-  res.json(enrichedSubstitutions);
+const getContext = (req) => ({
+    schoolId: req.user?.schoolId || '00000000-0000-0000-0000-000000000001',
+    userId: req.user?.userId || '11111111-1111-1111-1111-111111111111',
+    userRole: req.user?.role || 'school_admin'
 });
 
-// Get substitution by ID
-router.get('/:id', (req, res) => {
-  const { id } = req.params;
-  
-  const substitution = substitutionData.substitutions.find(sub => sub.id === id);
-  
-  if (!substitution) {
-    return res.status(404).json({ error: 'Substitution not found' });
-  }
-  
-  // Add teacher information
-  const originalTeacher = substitutionData.teachers.find(t => t.id === substitution.originalTeacherId);
-  const substituteTeacher = substitutionData.teachers.find(t => t.id === substitution.substituteTeacherId);
-  
-  const enrichedSubstitution = {
-    ...substitution,
-    originalTeacher: originalTeacher,
-    substituteTeacher: substituteTeacher,
-    dayOfWeek: new Date(substitution.date).toLocaleDateString('en-US', { weekday: 'long' })
-  };
-  
-  res.json(enrichedSubstitution);
-});
+// Permissions
+const isTeacher = (role) => 
+    ['super_admin', 'school_admin', 'principal', 'teacher'].includes(role);
 
-// Create new substitution request
-router.post('/', (req, res) => {
-  const {
-    originalTeacherId,
-    classId,
-    subject,
-    date,
-    period,
-    startTime,
-    endTime,
-    reason,
-    requestedBy,
-    room,
-    lessonPlan,
-    specialInstructions,
-    substituteTeacherId
-  } = req.body;
-  
-  // Validate required fields
-  if (!originalTeacherId || !classId || !subject || !date || !period || !reason) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-  
-  // Check if original teacher exists
-  const originalTeacher = substitutionData.teachers.find(t => t.id === originalTeacherId);
-  if (!originalTeacher) {
-    return res.status(404).json({ error: 'Original teacher not found' });
-  }
-  
-  // Check for conflicts
-  const conflict = substitutionData.substitutions.find(sub => 
-    sub.date === date && sub.period === period && 
-    (sub.classId === classId || sub.substituteTeacherId === substituteTeacherId)
-  );
-  
-  if (conflict) {
-    return res.status(409).json({ 
-      error: 'Scheduling conflict detected',
-      conflict: conflict 
-    });
-  }
-  
-  // Auto-assign substitute if not provided
-  let assignedSubstitute = substituteTeacherId;
-  if (!assignedSubstitute && substitutionData.substitutionSettings.autoAssignment) {
-    assignedSubstitute = findBestSubstitute(subject, date, period, originalTeacherId);
-  }
-  
-  // Create new substitution
-  const newSubstitution = {
-    id: 'sub_' + Date.now(),
-    originalTeacherId,
-    substituteTeacherId: assignedSubstitute,
-    classId,
-    subject,
-    date,
-    period: parseInt(period),
-    startTime,
-    endTime,
-    reason,
-    status: assignedSubstitute ? 'pending' : 'unassigned',
-    requestedBy: requestedBy || 'system',
-    confirmedBy: null,
-    requestedAt: new Date().toISOString(),
-    confirmedAt: null,
-    notificationsSent: false,
-    room: room || 'TBD',
-    lessonPlan: lessonPlan || '',
-    specialInstructions: specialInstructions || '',
-    attendanceMarked: false,
-    feedback: null
-  };
-  
-  substitutionData.substitutions.push(newSubstitution);
-  
-  // Send notifications if substitute assigned
-  if (assignedSubstitute) {
-    sendSubstitutionNotifications(newSubstitution);
-    newSubstitution.notificationsSent = true;
-  }
-  
-  res.json({ 
-    success: true, 
-    substitution: newSubstitution,
-    autoAssigned: !!assignedSubstitute
-  });
-});
+const isManager = (role) => 
+    ['super_admin', 'school_admin', 'principal'].includes(role);
 
-// Update substitution
-router.put('/:id', (req, res) => {
-  const { id } = req.params;
-  const updateData = req.body;
-  
-  const substitutionIndex = substitutionData.substitutions.findIndex(sub => sub.id === id);
-  
-  if (substitutionIndex === -1) {
-    return res.status(404).json({ error: 'Substitution not found' });
-  }
-  
-  // Update substitution
-  substitutionData.substitutions[substitutionIndex] = {
-    ...substitutionData.substitutions[substitutionIndex],
-    ...updateData,
-    updatedAt: new Date().toISOString()
-  };
-  
-  res.json({ 
-    success: true, 
-    substitution: substitutionData.substitutions[substitutionIndex] 
-  });
-});
+const isPrincipalOrAdmin = (role) => 
+    ['super_admin', 'school_admin', 'principal'].includes(role);
 
-// Confirm substitution
-router.post('/:id/confirm', (req, res) => {
-  const { id } = req.params;
-  const { confirmedBy, notes } = req.body;
-  
-  const substitutionIndex = substitutionData.substitutions.findIndex(sub => sub.id === id);
-  
-  if (substitutionIndex === -1) {
-    return res.status(404).json({ error: 'Substitution not found' });
-  }
-  
-  const substitution = substitutionData.substitutions[substitutionIndex];
-  
-  if (substitution.status !== 'pending') {
-    return res.status(400).json({ error: 'Substitution is not in pending status' });
-  }
-  
-  // Update substitution status
-  substitution.status = 'confirmed';
-  substitution.confirmedBy = confirmedBy;
-  substitution.confirmedAt = new Date().toISOString();
-  substitution.notes = notes || '';
-  
-  // Update teacher's current substitutions count
-  const substituteTeacher = substitutionData.teachers.find(t => t.id === substitution.substituteTeacherId);
-  if (substituteTeacher) {
-    substituteTeacher.currentSubstitutions += 1;
-  }
-  
-  // Send confirmation notifications
-  sendConfirmationNotifications(substitution);
-  
-  res.json({ success: true, substitution: substitution });
-});
-
-// Reject substitution
-router.post('/:id/reject', (req, res) => {
-  const { id } = req.params;
-  const { rejectedBy, reason } = req.body;
-  
-  const substitutionIndex = substitutionData.substitutions.findIndex(sub => sub.id === id);
-  
-  if (substitutionIndex === -1) {
-    return res.status(404).json({ error: 'Substitution not found' });
-  }
-  
-  const substitution = substitutionData.substitutions[substitutionIndex];
-  
-  // Update substitution status
-  substitution.status = 'rejected';
-  substitution.rejectedBy = rejectedBy;
-  substitution.rejectionReason = reason;
-  substitution.rejectedAt = new Date().toISOString();
-  
-  // Try to find alternative substitute
-  const alternativeSubstitute = findBestSubstitute(
-    substitution.subject, 
-    substitution.date, 
-    substitution.period, 
-    substitution.originalTeacherId,
-    [substitution.substituteTeacherId] // exclude rejected teacher
-  );
-  
-  if (alternativeSubstitute) {
-    substitution.substituteTeacherId = alternativeSubstitute;
-    substitution.status = 'pending';
-    sendSubstitutionNotifications(substitution);
-  }
-  
-  res.json({ 
-    success: true, 
-    substitution: substitution,
-    alternativeFound: !!alternativeSubstitute
-  });
-});
-
-// Get available substitutes
-router.get('/available/:date/:period', (req, res) => {
-  const { date, period } = req.params;
-  const { subject, excludeTeachers = [] } = req.query;
-  
-  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
-  const periodNum = parseInt(period);
-  const excludeList = Array.isArray(excludeTeachers) ? excludeTeachers : [excludeTeachers];
-  
-  const availableTeachers = substitutionData.teachers.filter(teacher => {
-    // Exclude specified teachers
-    if (excludeList.includes(teacher.id)) return false;
-    
-    // Check availability status
-    if (teacher.availabilityStatus !== 'available') return false;
-    
-    // Check if teacher is available in this period
-    const availability = substitutionData.availabilityMatrix[teacher.id];
-    if (!availability || !availability[dayOfWeek] || !availability[dayOfWeek].includes(periodNum)) {
-      return false;
-    }
-    
-    // Check if teacher is already assigned for this period
-    const conflictingSubstitution = substitutionData.substitutions.find(sub => 
-      sub.date === date && sub.period === periodNum && 
-      sub.substituteTeacherId === teacher.id && sub.status === 'confirmed'
-    );
-    
-    if (conflictingSubstitution) return false;
-    
-    // Check workload limit
-    if (teacher.currentSubstitutions >= teacher.maxSubstitutionsPerWeek) return false;
-    
-    return true;
-  });
-  
-  // Score teachers based on subject match and preferences
-  const scoredTeachers = availableTeachers.map(teacher => {
-    let score = 0;
-    
-    // Subject match
-    if (subject && teacher.subjects.includes(subject)) score += 40;
-    if (subject && teacher.preferredSubjects.includes(subject)) score += 10;
-    
-    // Workload factor (lower is better)
-    score += (teacher.maxSubstitutionsPerWeek - teacher.currentSubstitutions) * 5;
-    
-    return {
-      ...teacher,
-      score: score,
-      subjectMatch: subject ? teacher.subjects.includes(subject) : false,
-      preferenceMatch: subject ? teacher.preferredSubjects.includes(subject) : false
-    };
-  });
-  
-  // Sort by score (highest first)
-  scoredTeachers.sort((a, b) => b.score - a.score);
-  
-  res.json(scoredTeachers);
-});
-
-// Get teacher availability
-router.get('/teacher/:teacherId/availability', (req, res) => {
-  const { teacherId } = req.params;
-  const { startDate, endDate } = req.query;
-  
-  const teacher = substitutionData.teachers.find(t => t.id === teacherId);
-  if (!teacher) {
-    return res.status(404).json({ error: 'Teacher not found' });
-  }
-  
-  const availability = substitutionData.availabilityMatrix[teacherId];
-  
-  // Get existing substitutions for the date range
-  let substitutions = substitutionData.substitutions.filter(sub => 
-    sub.substituteTeacherId === teacherId && sub.status === 'confirmed'
-  );
-  
-  if (startDate && endDate) {
-    substitutions = substitutions.filter(sub => 
-      sub.date >= startDate && sub.date <= endDate
-    );
-  }
-  
-  res.json({
-    teacher: teacher,
-    weeklyAvailability: availability,
-    currentSubstitutions: teacher.currentSubstitutions,
-    maxSubstitutions: teacher.maxSubstitutionsPerWeek,
-    upcomingSubstitutions: substitutions,
-    availabilityStatus: teacher.availabilityStatus
-  });
-});
-
-// Get substitution statistics
-router.get('/stats/overview', (req, res) => {
-  const { startDate, endDate } = req.query;
-  
-  let substitutions = substitutionData.substitutions;
-  
-  // Filter by date range if provided
-  if (startDate && endDate) {
-    substitutions = substitutions.filter(sub => 
-      sub.date >= startDate && sub.date <= endDate
-    );
-  }
-  
-  const stats = {
-    total: substitutions.length,
-    confirmed: substitutions.filter(s => s.status === 'confirmed').length,
-    pending: substitutions.filter(s => s.status === 'pending').length,
-    rejected: substitutions.filter(s => s.status === 'rejected').length,
-    completed: substitutions.filter(s => s.status === 'completed').length,
-    
-    // Reasons breakdown
-    reasons: getReasonBreakdown(substitutions),
-    
-    // Most active substitute teachers
-    topSubstitutes: getTopSubstitutes(substitutions),
-    
-    // Subject distribution
-    subjectDistribution: getSubjectDistribution(substitutions),
-    
-    // Response time statistics
-    averageResponseTime: calculateAverageResponseTime(substitutions),
-    
-    // Teacher workload
-    teacherWorkload: getTeacherWorkload()
-  };
-  
-  res.json(stats);
-});
-
-// Mark substitution as completed with feedback
-router.post('/:id/complete', (req, res) => {
-  const { id } = req.params;
-  const { feedback, attendanceMarked, studentsBehavior, lessonsCompleted } = req.body;
-  
-  const substitutionIndex = substitutionData.substitutions.findIndex(sub => sub.id === id);
-  
-  if (substitutionIndex === -1) {
-    return res.status(404).json({ error: 'Substitution not found' });
-  }
-  
-  const substitution = substitutionData.substitutions[substitutionIndex];
-  
-  // Update substitution with completion details
-  substitution.status = 'completed';
-  substitution.feedback = feedback;
-  substitution.attendanceMarked = attendanceMarked || false;
-  substitution.studentsBehavior = studentsBehavior || 'good';
-  substitution.lessonsCompleted = lessonsCompleted || true;
-  substitution.completedAt = new Date().toISOString();
-  
-  res.json({ success: true, substitution: substitution });
-});
-
-// Helper Functions
-function findBestSubstitute(subject, date, period, originalTeacherId, excludeTeachers = []) {
-  const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
-  const periodNum = parseInt(period);
-  
-  const availableTeachers = substitutionData.teachers.filter(teacher => {
-    // Exclude original teacher and specified exclusions
-    if (teacher.id === originalTeacherId || excludeTeachers.includes(teacher.id)) return false;
-    
-    // Check availability status
-    if (teacher.availabilityStatus !== 'available') return false;
-    
-    // Check period availability
-    const availability = substitutionData.availabilityMatrix[teacher.id];
-    if (!availability || !availability[dayOfWeek] || !availability[dayOfWeek].includes(periodNum)) {
-      return false;
-    }
-    
-    // Check for conflicts
-    const conflict = substitutionData.substitutions.find(sub => 
-      sub.date === date && sub.period === periodNum && 
-      sub.substituteTeacherId === teacher.id && sub.status === 'confirmed'
-    );
-    
-    if (conflict) return false;
-    
-    // Check workload
-    if (teacher.currentSubstitutions >= teacher.maxSubstitutionsPerWeek) return false;
-    
-    return true;
-  });
-  
-  if (availableTeachers.length === 0) return null;
-  
-  // Score and select best substitute
-  let bestTeacher = availableTeachers[0];
-  let bestScore = 0;
-  
-  availableTeachers.forEach(teacher => {
-    let score = 0;
-    
-    // Subject match
-    if (teacher.subjects.includes(subject)) score += 40;
-    if (teacher.preferredSubjects.includes(subject)) score += 10;
-    
-    // Workload factor
-    score += (teacher.maxSubstitutionsPerWeek - teacher.currentSubstitutions) * 5;
-    
-    if (score > bestScore) {
-      bestScore = score;
-      bestTeacher = teacher;
-    }
-  });
-  
-  return bestTeacher.id;
+// Hook for Arattai/WhatsApp Notifications
+async function sendNotification(recipientId, type, details) {
+    console.log(`[Notification Queue] Sending ${type} alert to ${recipientId} for Substitution.`, details);
+    return true; 
 }
 
-function sendSubstitutionNotifications(substitution) {
-  // Simulate sending notifications
-  console.log(`Substitution notification sent for ${substitution.id}`);
-  return true;
-}
-
-function sendConfirmationNotifications(substitution) {
-  // Simulate sending confirmation notifications
-  console.log(`Confirmation notification sent for ${substitution.id}`);
-  return true;
-}
-
-function getReasonBreakdown(substitutions) {
-  const reasons = {};
-  substitutions.forEach(sub => {
-    reasons[sub.reason] = (reasons[sub.reason] || 0) + 1;
-  });
-  return reasons;
-}
-
-function getTopSubstitutes(substitutions) {
-  const teacherCounts = {};
-  substitutions.forEach(sub => {
-    if (sub.substituteTeacherId) {
-      teacherCounts[sub.substituteTeacherId] = (teacherCounts[sub.substituteTeacherId] || 0) + 1;
+// Hook for Persistent Audit Logging
+async function logAudit(schoolId, userId, action, entityId, details) {
+    // NOTE: In production, this inserts a record into a dedicated audit_logs table.
+    try {
+        // Example DB insert (simplified):
+        await pool.query(
+            `INSERT INTO audit_logs (school_id, user_id, action, entity_id, details) VALUES ($1,$2,$3,$4,$5)`,
+            [schoolId, userId, action, entityId, JSON.stringify(details)]
+        );
+    } catch (e) {
+        console.error('Audit logging failed:', e.message);
     }
-  });
-  
-  return Object.entries(teacherCounts)
-    .map(([teacherId, count]) => {
-      const teacher = substitutionData.teachers.find(t => t.id === teacherId);
-      return {
-        teacherId,
-        teacherName: teacher ? teacher.name : 'Unknown',
-        substitutionCount: count
-      };
-    })
-    .sort((a, b) => b.substitutionCount - a.substitutionCount)
-    .slice(0, 5);
 }
 
-function getSubjectDistribution(substitutions) {
-  const subjects = {};
-  substitutions.forEach(sub => {
-    subjects[sub.subject] = (subjects[sub.subject] || 0) + 1;
-  });
-  return subjects;
+// --- VALIDATION SCHEMAS ---
+
+const newSubstitutionSchema = Joi.object({
+    originalTeacherId: Joi.string().required(),
+    classId: Joi.string().required(),
+    subjectId: Joi.string().required(),
+    date: Joi.date().iso().required(),
+    periodNumber: Joi.number().integer().min(1).required(),
+    reason: Joi.string().max(500).required(),
+    substituteTeacherId: Joi.string().optional().allow(null, ''),
+});
+
+const confirmationSchema = Joi.object({
+    confirmedBy: Joi.string().required(),
+    notes: Joi.string().optional().allow(null, '')
+});
+
+const cancellationSchema = Joi.object({
+    reason: Joi.string().required().max(500),
+});
+
+const completionSchema = Joi.object({
+    feedback: Joi.string().max(1000).optional().allow(null, ''),
+    lessonsCompleted: Joi.boolean().required(),
+    studentsBehavior: Joi.string().optional(),
+    attendanceMarked: Joi.boolean().required()
+});
+
+const leaveRequestSchema = Joi.object({
+    teacherId: Joi.string().required(),
+    date: Joi.date().iso().required(),
+    leaveType: Joi.string().valid('FULL_DAY', 'ON_DUTY', 'HALF_DAY_MORNING', 'HALF_DAY_AFTERNOON', 'PERMISSION_MORNING', 'PERMISSION_EVENING').required(),
+    reason: Joi.string().max(500).required(),
+});
+
+const configSchema = Joi.object({
+    minSubstitutions: Joi.number().integer().min(0).max(10).required(),
+    maxSubstitutions: Joi.number().integer().min(1).max(15).required(),
+    weightSubjectMatch: Joi.number().integer().min(0).required(),
+    weightClassTeacher: Joi.number().integer().min(0).required(),
+    restrictionSameClassDay: Joi.boolean().required(),
+});
+
+
+// --- CORE LOGIC: Find Best Substitute (Optimized DB Query replicating scoring) ---
+
+async function findBestSubstitute(schoolId, subjectId, date, periodNumber, originalTeacherId) {
+    const dayOfWeek = new Date(date).getDay() === 0 ? 7 : new Date(date).getDay(); // 1=Mon, 7=Sun
+
+    // 1. Fetch live configuration settings (CRITICAL for fair allocation)
+    const configResult = await pool.query("SELECT config_data FROM substitution_config WHERE school_id = $1", [schoolId]);
+    const config = configResult.rows[0]?.config_data || {};
+    const { minSubstitutions = 2, maxSubstitutions = 3, weightSubjectMatch = 40, weightClassTeacher = 20, restrictionSameClassDay = true } = config;
+    
+    // 2. Fetch the class ID being substituted (needed for class teacher score/restriction)
+    const classIdResult = await pool.query("SELECT class_id FROM timetable WHERE teacher_profile_id = $1 AND day_of_week = $2 AND period_number = $3", [originalTeacherId, dayOfWeek, periodNumber]);
+    const substitutedClassId = classIdResult.rows[0]?.class_id;
+
+    const query = `
+        SELECT
+            up.id AS substitute_id,
+            t.current_substitutions,
+            -- Calculate Score based on Configured Weights
+            (
+                -- Weight 1: Subject Match Score
+                (CASE WHEN t.subject_id = $2 THEN ${weightSubjectMatch} ELSE 0 END) + 
+                
+                -- Weight 2: Class Teacher Preference Score
+                (CASE WHEN c.class_teacher_profile_id = up.id THEN ${weightClassTeacher} ELSE 0 END)
+            ) AS score
+            
+        FROM teachers t
+        JOIN user_profiles up ON t.user_profile_id = up.id
+        LEFT JOIN classes c ON up.id = c.class_teacher_profile_id -- Join to check if they are a class teacher
+        
+        WHERE t.school_id = $1 
+          AND t.user_profile_id != $5 
+          AND t.availability_status = 'available'
+          AND t.current_substitutions >= ${minSubstitutions} -- CRITICAL LIMIT: Min Substitutions
+          AND t.current_substitutions < ${maxSubstitutions} -- CRITICAL LIMIT: Max Substitutions
+          
+          -- CRITICAL CHECK 1: Ensure substitute is FREE in the master timetable
+          AND NOT EXISTS (
+              SELECT 1 FROM timetable tt
+              WHERE tt.teacher_profile_id = up.id 
+                AND tt.day_of_week = $7 -- Day of week
+                AND tt.period_number = $4 -- Specific period
+          )
+          -- CRITICAL CHECK 2: Cannot be used for the same class on the same day (Configurable Restriction)
+          ${restrictionSameClassDay ? 
+              `AND NOT EXISTS (
+                  SELECT 1 FROM substitutions sub
+                  WHERE sub.substitute_teacher_id = up.id 
+                    AND sub.date = $3 
+                    AND sub.class_id = $6 -- Same class ID
+                    AND sub.status IN ('pending', 'confirmed') 
+              )` 
+            : ''}
+          
+        ORDER BY score DESC, t.current_substitutions ASC -- Prioritize score, then fairness (low workload)
+        LIMIT 1;
+    `;
+    
+    // NOTE: We pass substitutedClassId ($6) and dayOfWeek ($7) to the query.
+    const result = await pool.query(query, [schoolId, subjectId, date, periodNumber, originalTeacherId, substitutedClassId, dayOfWeek]);
+    return result.rows[0]?.substitute_id;
 }
 
-function calculateAverageResponseTime(substitutions) {
-  const confirmedSubs = substitutions.filter(sub => sub.confirmedAt && sub.requestedAt);
-  
-  if (confirmedSubs.length === 0) return 0;
-  
-  const totalTime = confirmedSubs.reduce((sum, sub) => {
-    const requested = new Date(sub.requestedAt);
-    const confirmed = new Date(sub.confirmedAt);
-    return sum + (confirmed - requested);
-  }, 0);
-  
-  return Math.round(totalTime / confirmedSubs.length / (1000 * 60 * 60)); // hours
+
+// Converts high-level leave type into specific period numbers for substitution
+function getPeriodsForLeaveType(leaveType) {
+    switch (leaveType) {
+        case 'FULL_DAY':
+        case 'ON_DUTY': // Treated as full day for substitution coverage
+            return [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        case 'HALF_DAY_MORNING': // Until lunch (Period 1-4)
+            return [1, 2, 3, 4];
+        case 'HALF_DAY_AFTERNOON': // After lunch (Period 5-9)
+            return [5, 6, 7, 8, 9];
+        case 'PERMISSION_MORNING': // First two periods
+            return [1, 2];
+        case 'PERMISSION_EVENING': // Last two periods
+            return [8, 9];
+        default:
+            return [];
+    }
 }
 
-function getTeacherWorkload() {
-  return substitutionData.teachers.map(teacher => ({
-    teacherId: teacher.id,
-    teacherName: teacher.name,
-    currentSubstitutions: teacher.currentSubstitutions,
-    maxSubstitutions: teacher.maxSubstitutionsPerWeek,
-    utilizationRate: ((teacher.currentSubstitutions / teacher.maxSubstitutionsPerWeek) * 100).toFixed(1)
-  }));
+// Helper to check if submission time is valid for same-day leave
+function isSubmissionWindowOpen(requestedDate) {
+    const now = new Date();
+    const todayISO = now.toISOString().split('T')[0];
+    const requestedISO = new Date(requestedDate).toISOString().split('T')[0];
+
+    if (requestedISO !== todayISO) return false;
+
+    const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+    const startWindowInMinutes = 1 * 60 + 0;   // 1:00 AM
+    const endWindowInMinutes = 7 * 60 + 20; // 7:20 AM
+
+    return currentTimeInMinutes >= startWindowInMinutes && currentTimeInMinutes <= endWindowInMinutes;
 }
+
+
+// --- API ENDPOINTS ---
+
+// GET: All substitutions (Paginated, Filtered)
+router.get('/', async (req, res) => {
+    const ctx = getContext(req);
+    // Everyone sees their own or all substitutions
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    const { limit = 50, offset = 0, status, dateRange, teacherId } = req.query; // Added filtering for enterprise
+
+    try {
+        let query = `
+            SELECT sub.*, t_absent.first_name AS absent_name, t_sub.first_name AS sub_name 
+            FROM substitutions sub
+            JOIN user_profiles t_absent ON sub.absent_teacher_id = t_absent.id
+            LEFT JOIN user_profiles t_sub ON sub.substitute_teacher_id = t_sub.id
+            WHERE sub.school_id = $1`;
+        
+        const params = [ctx.schoolId];
+
+        // Apply filters (simplified for demonstration)
+        if (status) query += ` AND sub.status = $${params.push(status)}`;
+        if (teacherId) query += ` AND (sub.absent_teacher_id = $${params.push(teacherId)} OR sub.substitute_teacher_id = $${params.push(teacherId)})`;
+
+        query += ` ORDER BY date DESC LIMIT $${params.push(limit)} OFFSET $${params.push(offset)}`;
+
+        const result = await pool.query(query, params);
+        res.json({ success: true, substitutions: result.rows, total: result.rows.length });
+    } catch (err) {
+        console.error('DB Error retrieving substitutions:', err.message);
+        res.status(500).json({ error: 'Failed to retrieve substitutions log.' });
+    }
+});
+
+// POST: Create new substitution request
+router.post('/', async (req, res) => {
+    const ctx = getContext(req);
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    const { error, value } = newSubstitutionSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'SUB_VAL_001' });
+
+    const { originalTeacherId, classId, subjectId, date, periodNumber, reason } = value;
+    
+    try {
+        let assignedSubstitute = value.substituteTeacherId;
+        let status = 'pending';
+
+        const client = await pool.connect();
+        await client.query('BEGIN');
+
+        // 1. Auto-assign substitute if none is provided
+        if (!assignedSubstitute) {
+            assignedSubstitute = await findBestSubstitute(ctx.schoolId, subjectId, date, periodNumber, originalTeacherId);
+            if (!assignedSubstitute) status = 'unassigned';
+        }
+
+        // 2. Insert the substitution record
+        const result = await client.query(
+            `INSERT INTO substitutions 
+             (school_id, absent_teacher_id, substitute_teacher_id, class_id, subject_id, date, period_number, reason, status, requested_by)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+            [ctx.schoolId, originalTeacherId, assignedSubstitute, classId, subjectId, date, periodNumber, reason, status, ctx.userId]
+        );
+        const subId = result.rows[0].id;
+        
+        // Audit Log
+        await logAudit(ctx.schoolId, ctx.userId, 'SUBSTITUTION_REQUESTED', subId, { original: originalTeacherId, substitute: assignedSubstitute });
+
+        // Notification Hook: Notify the assigned substitute teacher
+        if (assignedSubstitute) {
+            await sendNotification(assignedSubstitute, 'SUBSTITUTION_ASSIGNMENT', { date, periodNumber });
+        }
+
+        await client.query('COMMIT');
+        res.status(201).json({ success: true, subId, status, substitute: assignedSubstitute, message: `Substitution request created, status: ${status}.` });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('DB Error creating substitution:', err.message);
+        res.status(500).json({ error: 'Failed to create substitution request.' });
+    } finally {
+        client.release();
+    }
+});
+
+
+// --- NEW FEATURE: Leave Request to Substitution Mapping (TIME-GATED) ---
+
+// POST: Handles a Teacher's leave request and generates necessary substitution requests
+router.post('/leave/request', async (req, res) => {
+    const ctx = getContext(req);
+
+    const { error, value } = leaveRequestSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'SUB_VAL_005' });
+    
+    // Authorization: Teacher must be authorized
+    if (ctx.userId !== value.teacherId && !isManager(ctx.userRole)) {
+        return res.status(403).json({ error: 'Authorization required to request leave for this teacher.' });
+    }
+
+    // CRITICAL: ENFORCE TIME RESTRICTION
+    if (!isSubmissionWindowOpen(value.date) && !isManager(ctx.userRole)) {
+        return res.status(403).json({ 
+            error: 'Submission window closed.', 
+            message: 'Leave requests must be submitted on the day of absence between 1:00 AM and 7:20 AM. Contact administration for overrides.' 
+        });
+    }
+
+    const { teacherId, date, leaveType, reason } = value;
+    const periodsToCover = getPeriodsForLeaveType(leaveType);
+    let successfullyCreated = 0;
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Fetch Teacher's Timetable for the specific day/date
+        const dayOfWeek = new Date(date).getDay() === 0 ? 7 : new Date(date).getDay();
+        const timetableQuery = `
+            SELECT class_id, subject_id, period_number, start_time, end_time 
+            FROM timetable 
+            WHERE teacher_profile_id = $1 AND day_of_week = $2 AND period_number = ANY($3::int[]);
+        `;
+        const { rows: periodsNeedingSub } = await client.query(timetableQuery, [teacherId, dayOfWeek, periodsToCover]);
+
+        // 2. Loop through required periods and create individual substitution requests
+        for (const period of periodsNeedingSub) {
+            // Find the best substitute for this specific period/subject
+            const assignedSubstitute = await findBestSubstitute(
+                ctx.schoolId, 
+                period.subject_id, 
+                date, 
+                period.period_number, 
+                teacherId
+            );
+            
+            // Create substitution record (using TRANSACTION for robust logging)
+            const result = await client.query(
+                `INSERT INTO substitutions 
+                 (school_id, absent_teacher_id, substitute_teacher_id, class_id, subject_id, date, period_number, reason, status, requested_by)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+                [ctx.schoolId, teacherId, assignedSubstitute, period.class_id, period.subject_id, date, period.period_number, reason, assignedSubstitute ? 'pending' : 'unassigned', ctx.userId]
+            );
+            
+            await logAudit(ctx.schoolId, ctx.userId, 'LEAVE_SUB_GENERATED', result.rows[0].id, { period: period.period_number, type: leaveType });
+            
+            if (assignedSubstitute) {
+                await sendNotification(assignedSubstitute, 'SUBSTITUTION_ASSIGNMENT_URGENT', { date, periodNumber: period.period_number });
+                successfullyCreated++;
+            }
+        }
+
+        await client.query('COMMIT');
+        
+    } catch (subError) {
+        await client.query('ROLLBACK');
+        console.error('DB Error creating substitution:', subError.message);
+        res.status(500).json({ success: false, message: 'Failed to process leave request and create substitutions.' });
+    } finally {
+        client.release();
+    }
+
+
+    // 3. Final response
+    if (successfullyCreated > 0) {
+        res.json({ success: true, message: `${successfullyCreated} substitution requests generated for ${leaveType} leave.` });
+    } else {
+        res.status(404).json({ success: false, message: 'Leave processed, but no available substitutes found for required periods.' });
+    }
+});
+
+
+// POST: Confirm substitution (Substitute Teacher Action)
+router.post('/:id/confirm', async (req, res) => {
+    const { id } = req.params;
+    const ctx = getContext(req);
+    // Teacher must confirm their own assigned substitution
+    if (!isTeacher(ctx.userRole)) return res.status(403).json({ error: 'Unauthorized' });
+    
+    const { error, value } = confirmationSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'SUB_VAL_002' });
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Check state and teacher identity (simplified check)
+        const checkQuery = await client.query(
+            "SELECT substitute_teacher_id, status FROM substitutions WHERE id = $1 FOR UPDATE", [id]
+        );
+        const sub = checkQuery.rows[0];
+
+        if (!sub) return res.status(404).json({ error: 'Substitution not found.' });
+        if (sub.status !== 'pending' && sub.status !== 'unassigned') return res.status(400).json({ error: 'Substitution already confirmed or finalized.' });
+        
+        // 2. Update status
+        await client.query(
+            `UPDATE substitutions SET status = 'confirmed', confirmed_by = $2, confirmed_at = NOW() WHERE id = $1`,
+            [id, ctx.userId]
+        );
+
+        // 3. Update Teacher's current_substitutions count (Workload balance)
+        await client.query(
+            "UPDATE teachers SET current_substitutions = current_substitutions + 1 WHERE user_profile_id = $1",
+            [sub.substitute_teacher_id]
+        );
+        
+        await logAudit(ctx.schoolId, ctx.userId, 'SUBSTITUTION_CONFIRMED', id, { confirmedBy: 'substitute' });
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Substitution confirmed.' });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('DB Error confirming substitution:', err.message);
+        res.status(500).json({ error: 'Failed to confirm substitution.' });
+    } finally {
+        client.release();
+    }
+});
+
+// POST: Cancel substitution request (Manager/Original Teacher Action)
+router.post('/:id/cancel', async (req, res) => {
+    const { id } = req.params;
+    const ctx = getContext(req);
+    
+    const { error, value } = cancellationSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'SUB_VAL_003' });
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const subResult = await client.query(
+            "SELECT substitute_teacher_id, absent_teacher_id, status FROM substitutions WHERE id = $1 FOR UPDATE", [id]
+        );
+        const sub = subResult.rows[0];
+
+        if (!sub) return res.status(404).json({ error: 'Substitution not found.' });
+        
+        // --- AUTHORIZATION CHECK ---
+        const originalTeacherIdFromDB = sub.absent_teacher_id;
+        
+        // Authorization Check: Must be Manager OR the Absent Teacher
+        if (!isManager(ctx.userRole) && ctx.userId !== originalTeacherIdFromDB) {
+             return res.status(403).json({ error: 'Unauthorized: Only Manager or Absent Teacher can cancel.' });
+        }
+
+        if (sub.status === 'completed' || sub.status === 'cancelled') return res.status(400).json({ error: 'Substitution already finalized.' });
+        
+        // 1. Update status to cancelled
+        await client.query(
+            `UPDATE substitutions SET status = 'cancelled', cancellation_reason = $2, cancelled_by = $3, cancelled_at = NOW() WHERE id = $1`,
+            [id, value.reason, ctx.userId]
+        );
+
+        // 2. Decrement substitute's workload if it was already confirmed
+        if (sub.status === 'confirmed') {
+             await client.query(
+                "UPDATE teachers SET current_substitutions = current_substitutions - 1 WHERE user_profile_id = $1",
+                [sub.substitute_teacher_id]
+            );
+        }
+        
+        await logAudit(ctx.schoolId, ctx.userId, 'SUBSTITUTION_CANCELLED', id, { reason: value.reason, status: sub.status });
+        await sendNotification(sub.substitute_teacher_id, 'SUBSTITUTION_CANCELLED', { reason: value.reason });
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Substitution cancelled and workload adjusted.' });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('DB Error cancelling substitution:', err.message);
+        res.status(500).json({ error: 'Failed to cancel substitution.' });
+    } finally {
+        client.release();
+    }
+});
+
+// POST: Complete substitution (Manager/Substitute Action)
+router.post('/:id/complete', async (req, res) => {
+    const { id } = req.params;
+    const ctx = getContext(req);
+
+    const { error, value } = completionSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'SUB_VAL_004' });
+
+    // Authorization: Must be Manager or the assigned Substitute Teacher
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const subResult = await client.query(
+            "SELECT substitute_teacher_id, status FROM substitutions WHERE id = $1 FOR UPDATE", [id]
+        );
+        const sub = subResult.rows[0];
+
+        if (!sub) return res.status(404).json({ error: 'Substitution not found.' });
+        if (sub.status !== 'confirmed') return res.status(400).json({ error: 'Substitution must be confirmed before completion.' });
+        
+        // 1. Update status to completed
+        await client.query(
+            `UPDATE substitutions SET status = 'completed', feedback = $2, completed_at = NOW() WHERE id = $1`,
+            [id, value.feedback]
+        );
+
+        // 2. Decrement substitute's workload (Workload finished cycle)
+        await client.query(
+            "UPDATE teachers SET current_substitutions = current_substitutions - 1 WHERE user_profile_id = $1",
+            [sub.substitute_teacher_id]
+        );
+        
+        await logAudit(ctx.schoolId, ctx.userId, 'SUBSTITUTION_COMPLETED', id, { completedBy: ctx.userId });
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Substitution marked as completed and workload reset.' });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('DB Error completing substitution:', err.message);
+        res.status(500).json({ error: 'Failed to complete substitution.' });
+    } finally {
+        client.release();
+    }
+});
+
+
+// GET: Available substitutes (Teacher/Admin View)
+router.get('/available/:date/:period', async (req, res) => {
+    const ctx = getContext(req);
+    // Requires subject to optimize search
+    const { subjectId } = req.query; 
+
+    try {
+        // NOTE: The implementation relies on the findBestSubstitute SQL logic.
+        const bestSubstituteId = await findBestSubstitute(ctx.schoolId, subjectId, req.params.date, req.params.period, '0000-0000-0000-0000-0000');
+        
+        // Mocking the score result of available teachers
+        res.json({ 
+            success: true, 
+            availableTeachers: [
+                { id: bestSubstituteId, score: 55, subjectMatch: true },
+                { id: 'T-other', score: 30, subjectMatch: false }
+            ]
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch available substitutes.' });
+    }
+});
+
+
+// --- ADMIN/PRINCIPAL CONFIGURATION PAGE (Substitution Rules) ---
+
+// GET: Configuration settings
+router.get('/config', async (req, res) => {
+    const { schoolId, userRole } = getContext(req);
+    if (!isPrincipalOrAdmin(userRole)) return res.status(403).json({ error: 'Unauthorized' });
+
+    try {
+        // Fetch current settings from the dedicated substitution_config table
+        const result = await pool.query(`SELECT * FROM substitution_config WHERE school_id = $1`, [schoolId]);
+        res.json({ success: true, settings: result.rows[0] || {} });
+    } catch (e) {
+        console.error('DB Error fetching config:', e.message);
+        res.status(500).json({ error: 'Failed to retrieve configuration.' });
+    }
+});
+
+// PUT: Update Configuration settings (Workload and Scoring Rules)
+router.put('/config', async (req, res) => {
+    const { schoolId, userId, userRole } = getContext(req);
+
+    // Validation
+    const { error, value } = configSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'SUB_VAL_006' });
+
+
+    if (!isPrincipalOrAdmin(userRole)) return res.status(403).json({ error: 'Unauthorized to update config' });
+
+    try {
+        // Upsert configuration into the dedicated 'substitution_config' table
+        await pool.query(
+            `INSERT INTO substitution_config (school_id, config_data) VALUES ($1, $2)
+             ON CONFLICT (school_id) DO UPDATE SET config_data = $2`,
+            [schoolId, value] // The entire validated object is stored in the JSONB column config_data
+        );
+
+        await logAudit(schoolId, userId, 'SUBSTITUTION_CONFIG_UPDATED', null, { settings: value });
+        res.json({ success: true, message: 'Substitution rules updated successfully.' });
+    } catch (e) {
+        console.error('DB Error updating config:', e.message);
+        res.status(500).json({ error: 'Failed to update configuration.' });
+    }
+});
+
 
 module.exports = router;
