@@ -4,364 +4,586 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admission Management - SmartGenEduX</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CSS from client/styles/admission.css */
+        .data-card { transition: transform 0.2s; }
+        .data-card:hover { transform: translateY(-3px); }
+        .status-tag { 
+            padding: 0.25rem 0.5rem; 
+            font-weight: 600; 
+            border-radius: 0.375rem; 
+            display: inline-block; 
+        }
+        .loading-shimmer {
+            background-color: #e2e8f0;
+            background: linear-gradient(to right, #f2f2f2 8%, #e0e0e0 18%, #f2f2f2 33%);
+            background-size: 800px 104px;
+            animation: shimmer 1.5s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { background-position: -468px 0; }
+            100% { background-position: 468px 0; }
+        }
+        /* Custom accessibility focus styles */
+        :focus:not(:focus-visible) { outline: none; }
+        :focus-visible { outline: 2px solid #3b82f6; /* Tailwind blue-500 */ outline-offset: 2px; }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
         <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <header class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <img src="../attached_assets/Admission Management_20250621_155736_0000_1751640161628.png" alt="Admission Management" class="w-12 h-12 mr-4">
+                    <i class="fas fa-user-graduate text-4xl text-blue-600 mr-4" aria-hidden="true"></i>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Admission Management</h1>
-                        <p class="text-gray-600">Complete student enrollment and document management system</p>
+                        <p class="text-gray-600">Complete student enrollment and verification workflow.</p>
                     </div>
                 </div>
-                <button onclick="window.location.href='../index.html'" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                <button onclick="window.location.href='../index.html'" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Back to Dashboard" title="Back to Dashboard" role="link">
+                    <i class="fas fa-arrow-left mr-2" aria-hidden="true"></i>Dashboard
                 </button>
-            </div>
+            </header>
         </div>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-blue-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-user-plus text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">247</div>
-                        <div class="text-blue-100">New Applications</div>
-                    </div>
-                </div>
+        <!-- Quick Stats (Dynamic Content) -->
+        <section id="statsContainer" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" role="region" aria-label="Admission Statistics">
+            <div id="statTotal" class="data-card bg-blue-600 text-white rounded-xl p-6">
+                <div class="text-xs text-blue-200">Total Applications</div>
+                <div class="stat-value text-3xl font-extrabold mt-1 loading-shimmer h-8 w-1/2 rounded" aria-live="polite"></div>
             </div>
-            <div class="bg-green-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">189</div>
-                        <div class="text-green-100">Approved</div>
-                    </div>
-                </div>
+            <div id="statApproved" class="data-card bg-green-600 text-white rounded-xl p-6">
+                <div class="text-xs text-green-200">Admitted (Finalized)</div>
+                <div class="stat-value text-3xl font-extrabold mt-1 loading-shimmer h-8 w-1/2 rounded" aria-live="polite"></div>
             </div>
-            <div class="bg-orange-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-clock text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">42</div>
-                        <div class="text-orange-100">Under Review</div>
-                    </div>
-                </div>
+            <div id="statPending" class="data-card bg-orange-600 text-white rounded-xl p-6">
+                <div class="text-xs text-orange-200">Pending Review</div>
+                <div class="stat-value text-3xl font-extrabold mt-1 loading-shimmer h-8 w-1/2 rounded" aria-live="polite"></div>
             </div>
-            <div class="bg-purple-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-file-alt text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">16</div>
-                        <div class="text-purple-100">Incomplete</div>
-                    </div>
-                </div>
+            <div id="statIncomplete" class="data-card bg-purple-600 text-white rounded-xl p-6">
+                <div class="text-xs text-purple-200">Conversion Rate</div>
+                <div class="stat-value text-3xl font-extrabold mt-1 loading-shimmer h-8 w-1/2 rounded" aria-live="polite"></div>
             </div>
-        </div>
+        </section>
 
-        <!-- Admission Form Management -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">Online Admission Form</h2>
-                <div class="space-y-4">
-                    <div class="bg-blue-50 rounded-lg p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="font-semibold text-blue-900">Admission Form 2025-26</h3>
-                                <p class="text-sm text-blue-700">Online application portal for new students</p>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-sm text-blue-600">Status: <span class="font-semibold">Active</span></div>
-                                <div class="text-xs text-blue-500">Last updated: Jan 4, 2025</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="openAdmissionForm()" class="bg-blue-600 text-white px-4 py-3 rounded hover:bg-blue-700">
-                            <i class="fas fa-external-link-alt mr-2"></i>Open Form
-                        </button>
-                        <button onclick="configureForm()" class="bg-green-600 text-white px-4 py-3 rounded hover:bg-green-700">
-                            <i class="fas fa-cog mr-2"></i>Configure
-                        </button>
-                    </div>
-                    
-                    <div class="border-t pt-4">
-                        <h3 class="font-semibold mb-2">Required Documents</h3>
-                        <div class="grid grid-cols-1 gap-2 text-sm">
-                            <div class="flex items-center justify-between">
-                                <span>Birth Certificate</span>
-                                <span class="text-green-600"><i class="fas fa-check"></i></span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Previous School TC</span>
-                                <span class="text-green-600"><i class="fas fa-check"></i></span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Aadhar Card</span>
-                                <span class="text-green-600"><i class="fas fa-check"></i></span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Parent ID Proof</span>
-                                <span class="text-green-600"><i class="fas fa-check"></i></span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Income Certificate</span>
-                                <span class="text-orange-600"><i class="fas fa-exclamation-triangle"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Application Processing -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">Application Processing</h2>
-                <div class="space-y-4">
-                    <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="font-semibold text-orange-900">Pending Review</h3>
-                                <p class="text-sm text-orange-700">42 applications awaiting verification</p>
-                            </div>
-                            <div class="text-2xl font-bold text-orange-600">42</div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 border rounded">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                    <i class="fas fa-user text-blue-600"></i>
-                                </div>
-                                <div>
-                                    <div class="font-semibold">Rahul Sharma</div>
-                                    <div class="text-sm text-gray-600">Class 9 - Application #AD2025001</div>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="reviewApplication('AD2025001')" class="text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button onclick="approveApplication('AD2025001')" class="text-green-600 hover:text-green-800">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button onclick="rejectApplication('AD2025001')" class="text-red-600 hover:text-red-800">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between p-3 border rounded">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center mr-3">
-                                    <i class="fas fa-user text-pink-600"></i>
-                                </div>
-                                <div>
-                                    <div class="font-semibold">Priya Patel</div>
-                                    <div class="text-sm text-gray-600">Class 8 - Application #AD2025002</div>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button onclick="reviewApplication('AD2025002')" class="text-blue-600 hover:text-blue-800">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button onclick="approveApplication('AD2025002')" class="text-green-600 hover:text-green-800">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button onclick="rejectApplication('AD2025002')" class="text-red-600 hover:text-red-800">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button onclick="bulkProcess()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">
-                        <i class="fas fa-tasks mr-2"></i>Bulk Process Applications
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Applications -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Recent Applications</h2>
-                <div class="flex space-x-2">
-                    <button onclick="exportApplications()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                        <i class="fas fa-download mr-2"></i>Export
-                    </button>
-                    <button onclick="sendReminders()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
-                        <i class="fas fa-bell mr-2"></i>Send Reminders
-                    </button>
-                </div>
-            </div>
+        <!-- Admission Form Management / Configuration -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Application ID</th>
-                            <th class="px-4 py-2 text-left">Student Name</th>
-                            <th class="px-4 py-2 text-left">Class</th>
-                            <th class="px-4 py-2 text-left">Parent Contact</th>
-                            <th class="px-4 py-2 text-left">Status</th>
-                            <th class="px-4 py-2 text-left">Date</th>
-                            <th class="px-4 py-2 text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">#AD2025001</td>
-                            <td class="px-4 py-2">Rahul Sharma</td>
-                            <td class="px-4 py-2">Class 9</td>
-                            <td class="px-4 py-2">+91 98765 43210</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">Under Review</span>
-                            </td>
-                            <td class="px-4 py-2">Jan 4, 2025</td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="text-green-600 hover:text-green-800" title="Approve">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800" title="Reject">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">#AD2025002</td>
-                            <td class="px-4 py-2">Priya Patel</td>
-                            <td class="px-4 py-2">Class 8</td>
-                            <td class="px-4 py-2">+91 87654 32109</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Approved</span>
-                            </td>
-                            <td class="px-4 py-2">Jan 3, 2025</td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="text-purple-600 hover:text-purple-800" title="Generate ID Card">
-                                        <i class="fas fa-id-card"></i>
-                                    </button>
-                                    <button class="text-orange-600 hover:text-orange-800" title="Send Welcome">
-                                        <i class="fas fa-envelope"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <!-- Configuration Panel -->
+            <nav id="configCard" class="bg-white rounded-xl shadow-lg p-6 lg:col-span-1 hidden" role="menu" aria-label="Module Configuration">
+                <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fas fa-cogs mr-2" aria-hidden="true"></i>Configuration & Setup</h2>
+                
+                <div class="space-y-4 border-t pt-4" role="group" aria-labelledby="workflow-settings">
+                    <h3 id="workflow-settings" class="font-bold text-gray-700 border-b pb-1">Workflow & Documents</h3>
+                    
+                    <div class="flex items-center justify-between">
+                        <label for="assessmentToggle" class="text-sm">Assessment Required</label>
+                        <input type="checkbox" id="assessmentToggle" class="form-checkbox h-5 w-5 text-blue-600 rounded-lg focus:ring-blue-500" aria-label="Toggle Assessment Required">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label for="interviewToggle" class="text-sm">Interview Required</label>
+                        <input type="checkbox" id="interviewToggle" class="form-checkbox h-5 w-5 text-blue-600 rounded-lg focus:ring-blue-500" aria-label="Toggle Interview Required">
+                    </div>
+
+                    <p class="text-sm font-medium pt-2">Compliance Documents</p>
+                    <button onclick="showMessage('Opening document list editor...', 'info')" class="w-full bg-yellow-100 text-yellow-700 px-4 py-3 rounded-lg hover:bg-yellow-200 text-left focus:outline-none focus:ring-2 focus:ring-yellow-500" title="Manage Document Requirements" aria-label="Manage Document Requirements" role="menuitem">
+                        <i class="fas fa-list-alt mr-2" aria-hidden="true"></i>Manage Required Documents
+                    </button>
+                </div>
+
+                <div class="space-y-3 border-t pt-4 mt-4" role="group" aria-labelledby="form-tools">
+                    <h3 id="form-tools" class="font-bold text-gray-700 border-b pb-1">Form Customization</h3>
+                    <button onclick="showMessage('Opening form builder utility...', 'info')" class="w-full bg-blue-100 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-200 text-left focus:outline-none focus:ring-2 focus:ring-blue-500" title="Customize Application Form" aria-label="Customize Application Form" role="menuitem">
+                        <i class="fas fa-file-invoice mr-2" aria-hidden="true"></i>Customize Form Fields
+                    </button>
+                    <button onclick="showMessage('Opening bulk upload utility...', 'info')" class="w-full bg-purple-100 text-purple-700 px-4 py-3 rounded-lg hover:bg-purple-200 text-left focus:outline-none focus:ring-2 focus:ring-purple-500" title="Bulk Upload Applications" aria-label="Bulk Upload Applications" role="menuitem">
+                        <i class="fas fa-upload mr-2" aria-hidden="true"></i>Bulk Upload Applications
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Applications List -->
+            <section class="bg-white rounded-xl shadow-lg p-6 lg:col-span-3" role="region" aria-label="Application List">
+                <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-3 md:space-y-0">
+                    <h2 class="text-xl font-bold">Applications Awaiting Action</h2>
+                    
+                    <!-- Filters -->
+                    <div class="flex space-x-2 w-full md:w-auto">
+                        <select id="statusFilter" onchange="fetchApplications()" class="border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Filter by Admission Status">
+                            <option value="">All Statuses</option>
+                            <option value="under_review">Under Review</option>
+                            <option value="assessment_scheduled">Assessment</option>
+                            <option value="pending_fee">Pending Fee</option>
+                            <option value="admitted">Admitted</option>
+                        </select>
+                        <input id="searchFilter" type="search" placeholder="Search Student..." class="border rounded-lg p-2 text-sm w-full md:w-40 focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="debounce(fetchApplications, 300)()" aria-label="Search Applications" autocomplete="off">
+                        <button onclick="fetchApplications()" class="bg-gray-300 text-gray-800 px-3 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500" title="Refresh List" aria-label="Refresh List">
+                            <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                        </button>
+                        <button onclick="exportApplications()" class="bg-green-600 text-white px-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500" title="Export All Data" aria-label="Export All Data">
+                            <i class="fas fa-download" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </header>
+                
+                <!-- Application List Table -->
+                <div class="overflow-x-auto">
+                    <table id="applicationTable" class="min-w-full text-sm" role="table" aria-label="List of Student Applications">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-3 text-left">ID</th>
+                                <th class="px-4 py-3 text-left">Student Name</th>
+                                <th class="px-4 py-3 text-left">Applied Class</th>
+                                <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-left">Date</th>
+                                <th class="px-4 py-3 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationList" role="rowgroup">
+                            <!-- Loading Rows -->
+                            <tr><td colspan="6" class="text-center py-4"><div class="loading-shimmer h-6 w-full rounded"></div></td></tr>
+                            <tr><td colspan="6" class="text-center py-4"><div class="loading-shimmer h-6 w-full rounded"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination/Load More -->
+                <div id="paginationControls" class="mt-4 flex justify-center space-x-4">
+                    <button onclick="fetchApplications({ loadMore: true })" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500" id="loadMoreBtn" disabled aria-label="Load More Applications">
+                        Load More Applications
+                    </button>
+                </div>
+            </section>
         </div>
     </div>
 
+    <!-- Modal Placeholder -->
+    <div id="modalContainer"></div>
+    <div id="ariaLiveRegion" role="status" aria-live="polite" class="sr-only" aria-atomic="true"></div>
+
+    <!-- CRITICAL FIX: Externalized JavaScript -->
     <script>
-        function openAdmissionForm() {
-            // In a real SaaS, this would open the school's custom admission form
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-            modal.innerHTML = `
-                <div class="bg-white rounded-lg p-8 max-w-md mx-4">
-                    <h2 class="text-xl font-bold mb-4">Online Admission Form</h2>
-                    <p class="text-gray-600 mb-6">This will open your school's custom admission form for parents to fill out.</p>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 border rounded">
-                            <span>Student Information</span>
-                            <i class="fas fa-user text-blue-600"></i>
-                        </div>
-                        <div class="flex items-center justify-between p-3 border rounded">
-                            <span>Parent Details</span>
-                            <i class="fas fa-users text-green-600"></i>
-                        </div>
-                        <div class="flex items-center justify-between p-3 border rounded">
-                            <span>Document Upload</span>
-                            <i class="fas fa-upload text-orange-600"></i>
-                        </div>
-                        <div class="flex items-center justify-between p-3 border rounded">
-                            <span>Payment Gateway</span>
-                            <i class="fas fa-credit-card text-purple-600"></i>
-                        </div>
-                    </div>
-                    <div class="flex space-x-4 mt-6">
-                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                            Close
-                        </button>
-                        <button onclick="launchForm()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                            Launch Form
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
+        // JS from client/js/admission.js
+        const API_BASE_URL = window.SMARTGEN_CONFIG ? window.SMARTGEN_CONFIG.apiBaseUrl : '/api/v1';
+        let currentUser = {}; 
+        let applicationPage = 0;
+        const PAGE_SIZE = 10;
+        let debounceTimeout;
 
-        function launchForm() {
-            showMessage('Admission form opened in new tab', 'success');
-        }
-
-        function configureForm() {
-            showMessage('Opening form configuration panel...', 'info');
-        }
-
-        function reviewApplication(id) {
-            showMessage(`Opening application ${id} for review...`, 'info');
-        }
-
-        function approveApplication(id) {
-            showMessage(`Application ${id} approved successfully`, 'success');
-        }
-
-        function rejectApplication(id) {
-            showMessage(`Application ${id} rejected`, 'error');
-        }
-
-        function bulkProcess() {
-            showMessage('Processing multiple applications...', 'info');
-        }
-
-        function exportApplications() {
-            showMessage('Exporting applications data...', 'success');
-        }
-
-        function sendReminders() {
-            showMessage('Sending reminders to incomplete applications...', 'info');
-        }
-
+        // --- Utility Functions (Error/Message/Debounce/ARIA) ---
         function showMessage(message, type) {
-            const colors = {
-                'success': 'bg-green-600',
-                'error': 'bg-red-600',
-                'info': 'bg-blue-600'
-            };
-            
-            const icons = {
-                'success': 'fas fa-check',
-                'error': 'fas fa-exclamation-triangle',
-                'info': 'fas fa-info-circle'
-            };
+            const colors = { 'success': 'bg-green-600', 'error': 'bg-red-600', 'info': 'bg-blue-600' };
+            const icons = { 'success': 'check', 'error': 'exclamation-triangle', 'info': 'info-circle' };
+            const statusMap = { 'success': 'Success', 'error': 'Error', 'info': 'Information' };
             
             const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
+            messageDiv.innerHTML = `<i class="fas fa-${icons[type]} mr-2" aria-hidden="true"></i>${message}`;
             document.body.appendChild(messageDiv);
+
+            // ARIA Live Region Announcement
+            const ariaLive = document.getElementById('ariaLiveRegion');
+            if (ariaLive) ariaLive.textContent = `${statusMap[type]}: ${message}`;
             
             setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
+                messageDiv.classList.add('opacity-0');
+                setTimeout(() => messageDiv.remove(), 300);
+            }, 4000);
+        }
+
+        function debounce(func, delay) {
+            return function() {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => func.apply(this, arguments), delay);
+            };
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '—';
+            // Use 'en-IN' locale for Indian context
+            return new Date(isoString).toLocaleDateString('en-IN', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+        }
+
+        // --- API Abstraction (Handles Auth/Errors) ---
+
+        async function apiFetch(url, method = 'GET', body = null) {
+            // NOTE: Tokens should ideally be stored in HttpOnly cookies for security
+            const token = localStorage.getItem('smartgenedux_token'); 
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers,
+                    body: body ? JSON.stringify(body) : null
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    showMessage('Session expired or unauthorized. Please log in again.', 'error');
+                    throw new Error('AUTH_FAILED');
+                }
+
+                const data = await response.json();
+                if (!response.ok || data.success === false) {
+                    throw new Error(data.error || 'API call failed with unknown error.');
+                }
+                return data;
+
+            } catch (error) {
+                console.error("API Fetch Error:", error);
+                return { success: false, error: error.message }; 
+            }
+        }
+
+
+        // --- Core Authentication and Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // NOTE: For final security, switch token storage to HttpOnly cookies.
+            currentUser.role = localStorage.getItem('smartgenedux_role') || 'school_admin';
+            currentUser.schoolId = localStorage.getItem('smartgenedux_schoolid') || '00000000-0000-0000-0000-000000000001';
+            
+            checkRolePermissions();
+            fetchStatistics();
+            fetchApplications();
+        });
+
+        function checkRolePermissions() {
+            const configCard = document.getElementById('configCard');
+            // Principal/Super Admin/School Admin can manage configuration
+            if (currentUser.role === 'school_admin' || currentUser.role === 'principal' || currentUser.role === 'super_admin') {
+                configCard.classList.remove('hidden');
+            }
+        }
+
+
+        // --- Data Fetching ---
+
+        function setStatLoading(isLoading) {
+            document.querySelectorAll('#statsContainer .stat-value').forEach(el => {
+                if (isLoading) {
+                    el.classList.add('loading-shimmer', 'h-8', 'w-1/2');
+                    el.textContent = '';
+                } else {
+                    el.classList.remove('loading-shimmer', 'h-8', 'w-1/2');
+                }
+            });
+        }
+
+        async function fetchStatistics() {
+            setStatLoading(true);
+            try {
+                const data = await apiFetch(`${API_BASE_URL}/admission/statistics`);
+
+                if (data.success) {
+                    document.querySelector('#statTotal .text-3xl').textContent = data.summary.totalApplications || 0;
+                    document.querySelector('#statApproved .text-3xl').textContent = data.summary.admitted || 0;
+                    document.querySelector('#statPending .text-3xl').textContent = data.summary.pending || 0;
+                    document.querySelector('#statIncomplete .text-3xl').textContent = `${data.summary.conversionRate || 'N/A'}`;
+                } else {
+                    showMessage('Failed to load stats. Retrying.', 'error');
+                }
+                setStatLoading(false);
+            } catch (error) {
+                setStatLoading(false);
+            }
+        }
+
+        async function fetchApplications(options = {}) {
+            const listBody = document.getElementById('applicationList');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchFilter').value;
+
+            if (!options.loadMore) {
+                applicationPage = 0;
+                listBody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i>Loading applications...</td></tr>';
+            }
+            loadMoreBtn.disabled = true;
+
+
+            const url = new URL(`${API_BASE_URL}/admission/applications`);
+            url.searchParams.append('limit', PAGE_SIZE);
+            url.searchParams.append('offset', applicationPage * PAGE_SIZE);
+            if (status) url.searchParams.append('status', status);
+            if (search) url.searchParams.append('search', search);
+
+
+            try {
+                const data = await apiFetch(url.toString());
+
+                if (!options.loadMore) listBody.innerHTML = '';
+                    
+                if(data.success) {
+                    data.applications.forEach(app => listBody.appendChild(createApplicationRow(app)));
+                        
+                    if (data.applications.length < PAGE_SIZE) {
+                        loadMoreBtn.style.display = 'none';
+                    } else {
+                        loadMoreBtn.style.display = 'block';
+                        loadMoreBtn.disabled = false;
+                        applicationPage++;
+                    }
+
+                    if (listBody.children.length === 0) {
+                         listBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No applications match your criteria.</td></tr>';
+                    }
+                } else {
+                    // Error recovery with retry button
+                     listBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">${data.error || 'Failed to load data.'} <button onclick="fetchApplications()" class="text-blue-600 hover:underline" aria-label="Retry loading applications" role="button">Retry</button></td></tr>`;
+                }
+            } catch (error) {
+                 // Catches AUTH_FAILED errors from apiFetch
+                 listBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Connection Error. <button onclick="fetchApplications()" class="text-blue-600 hover:underline" aria-label="Retry loading applications" role="button">Retry</button></td></tr>`;
+            }
+        }
+
+
+        // --- UI Rendering ---
+
+        function getStatusTag(status) {
+            const classes = {
+                'applied': 'bg-blue-100 text-blue-800',
+                'under_review': 'bg-yellow-100 text-yellow-800',
+                'assessment_scheduled': 'bg-purple-100 text-purple-800',
+                'approved': 'bg-green-100 text-green-800',
+                'admitted': 'bg-indigo-100 text-indigo-800',
+                'rejected': 'bg-red-100 text-red-800',
+                'pending_fee': 'bg-pink-100 text-pink-800'
+            };
+            const displayStatus = status.replace(/_/g, ' ').toUpperCase();
+            return `<span class="status-tag ${classes[status] || 'bg-gray-100 text-gray-800'}">${displayStatus}</span>`;
+        }
+
+        function createApplicationRow(app) {
+            const row = document.createElement('tr');
+            row.className = 'border-t hover:bg-gray-50';
+            row.setAttribute('role', 'row');
+
+            const appData = app.application_data || {}; 
+            const actions = [];
+
+            // Helper for action buttons
+            const addButton = (icon, status, label, className = 'text-gray-600', actionFunc) => `
+                <button onclick="${actionFunc}('${app.id}', '${app.applicant_name}', '${status}')" 
+                        class="${className} hover:text-blue-800" 
+                        aria-label="${label}" 
+                        title="${label}"
+                        role="button"
+                        tabindex="0">
+                    <i class="fas fa-${icon}" aria-hidden="true"></i>
+                </button>`;
+
+            // 1. View Details (Always available)
+            actions.push(addButton('eye', app.admission_status, 'View Details', 'text-blue-600', 'reviewApplication'));
+
+            // 2. Schedule Assessment (Admin/Principal for 'under_review')
+            if ((currentUser.role === 'school_admin' || currentUser.role === 'principal') && app.admission_status === 'under_review') {
+                actions.push(addButton('calendar-check', 'assessment', 'Schedule Assessment', 'text-orange-600', 'scheduleAssessment'));
+            }
+            
+            // 3. Final Decision (Principal/Super Admin for 'approved' or 'assessment_passed')
+            if ((currentUser.role === 'principal' || currentUser.role === 'super_admin') && (app.admission_status === 'approved' || app.admission_status === 'assessment_passed')) {
+                actions.push(addButton('graduation-cap', app.admission_status, 'Final Decision/Admit', 'text-red-600', 'finalDecision'));
+            }
+
+            row.innerHTML = `
+                <td class="px-4 py-3 font-medium" role="cell">#${app.application_number}</td>
+                <td class="px-4 py-3" role="cell">${app.applicant_name || 'N/A'}</td>
+                <td class="px-4 py-3" role="cell">${appData.appliedForClass || '—'}</td>
+                <td class="px-4 py-3" role="cell">${getStatusTag(app.admission_status)}</td>
+                <td class="px-4 py-3" role="cell">${formatDate(app.created_at)}</td>
+                <td class="px-4 py-3" role="cell">
+                    <div class="flex space-x-2">${actions.join('')}</div>
+                </td>
+            `;
+            return row;
+        }
+
+
+        // --- Frontend API Interaction Functions (Using Abstraction) ---
+
+        async function scheduleAssessment(id, name, type) {
+             const action = type.charAt(0).toUpperCase() + type.slice(1);
+             if (!confirm(`Are you sure you want to schedule ${action} for application ${name}?`)) return;
+
+             showMessage(`Scheduling ${type}...`, 'info');
+             
+             try {
+                 const body = { scheduleType: type, date: new Date().toISOString().split('T')[0], time: '10:00' };
+                 await apiFetch(`${API_BASE_URL}/admission/applications/${id}/schedule`, 'POST', body);
+                 
+                 showMessage('Assessment scheduled and parent notified.', 'success');
+                 fetchApplications({ loadMore: false }); 
+             } catch (e) {
+                 showMessage(`Error scheduling: ${e.message}`, 'error');
+             }
+        }
+
+        async function reviewApplication(id, name) {
+             openModal('DetailView', `Reviewing Application: ${name}`, `
+                <div id="reviewContent"><i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i>Fetching detailed data...</div>
+             `);
+
+             try {
+                 const data = await apiFetch(`${API_BASE_URL}/admission/applications/${id}`);
+                 const app = data.application;
+                 // NOTE: Using fallback for nested data until full API implementation
+                 const assessment = app.application_data?.assessment || { percentage: 'N/A' }; 
+                 const documents = app.application_data?.documents || [];
+                 
+                 document.getElementById('reviewContent').innerHTML = `
+                    <div class="border-b pb-2 mb-4">
+                        <p class="text-sm font-semibold">Status History:</p>
+                        <p class="text-xs text-gray-600">${app.status_history?.map(h => `${h.status} at ${formatDate(h.timestamp)}`).join(' → ') || 'Applied'}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <p><strong>Class:</strong> ${app.appliedForClass}</p>
+                        <p><strong>DOB:</strong> ${formatDate(app.personalDetails?.dateOfBirth)}</p>
+                        <p><strong>Father Phone:</strong> ${app.parentDetails?.fatherPhone || 'N/A'}</p>
+                        <p><strong>Assessment Score:</strong> <span class="font-bold text-red-600">${assessment.percentage}%</span></p>
+                    </div>
+                    <h3 class="font-bold mt-4 mb-2 border-t pt-2">Document Verification</h3>
+                    <ul class="space-y-1 text-sm max-h-40 overflow-y-auto">
+                        ${documents.map(doc => `
+                            <li class="flex justify-between items-center p-1 bg-gray-50 rounded">
+                                <span><i class="fas fa-file-pdf mr-2 text-red-500"></i> ${doc.name}</span>
+                                <span class="${doc.verified ? 'text-green-600' : 'text-orange-600'} font-semibold">
+                                    ${doc.verified ? 'Verified' : 'Pending'}
+                                </span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                 `;
+             } catch (e) {
+                 document.getElementById('reviewContent').innerHTML = `<p class="text-red-600">Failed to load details: ${e.message}</p>`;
+             }
+        }
+
+        function finalDecision(id, name) {
+            openModal('DecisionModal', `Final Decision: ${name}`, `
+                <p class="mb-4 text-lg font-medium text-red-700">Warning: This action is irreversible and creates a student record.</p>
+                <div class="mt-6 space-y-4">
+                    <div>
+                        <label for="allocatedClass" class="block text-sm font-medium text-gray-700">Allocate Class/Section (e.g., 9A):</label>
+                        <input type="text" id="allocatedClass" placeholder="e.g., 9A" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" aria-required="true" aria-label="Allocate Class and Section">
+                        <p id="classError" class="text-xs text-red-500 mt-1 hidden">Class format is required (e.g., 9A).</p>
+                    </div>
+                    <div>
+                        <label for="finalRemarks" class="block text-sm font-medium text-gray-700">Remarks:</label>
+                        <textarea id="finalRemarks" rows="2" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" aria-label="Final Admission Remarks"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button onclick="processFinalDecision('${id}', 'admitted')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" aria-label="Admit Student">
+                        <i class="fas fa-check mr-2" aria-hidden="true"></i>Admit
+                    </button>
+                    <button onclick="processFinalDecision('${id}', 'rejected')" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700" aria-label="Reject Application">
+                        <i class="fas fa-times mr-2" aria-hidden="true"></i>Reject
+                    </button>
+                </div>
+            `);
+        }
+
+        async function processFinalDecision(id, decision) {
+             const allocatedClassInput = document.getElementById('allocatedClass');
+             const classError = document.getElementById('classError');
+             
+             // Client-side validation for Class/Section format (e.g., 9A, 10B)
+             const classRegex = /^\d+[A-Za-z]$/; // Number followed by a letter (e.g., 9A)
+             
+             if (decision === 'admitted') {
+                 if (!allocatedClassInput.value || !classRegex.test(allocatedClassInput.value.trim())) {
+                     classError.classList.remove('hidden');
+                     allocatedClassInput.focus();
+                     return;
+                 }
+             }
+             classError.classList.add('hidden');
+             
+             // Close modal and show processing message
+             closeModal('DecisionModal');
+             showMessage(`Processing final decision (${decision})...`, 'info');
+             
+             try {
+                 const body = {
+                     decision: decision,
+                     allocatedClass: allocatedClassInput.value,
+                     remarks: document.getElementById('finalRemarks').value
+                 };
+                 
+                 await apiFetch(`${API_BASE_URL}/admission/applications/${id}/admission-decision`, 'POST', body);
+
+                 showMessage(`Student ${decision} status finalized. Parent notified.`, 'success');
+                 fetchApplications({ loadMore: false }); 
+             } catch (e) {
+                 showMessage(`Error finalizing admission: ${e.message}`, 'error');
+             }
+        }
+
+        async function exportApplications() {
+             showMessage('Exporting all applications data...', 'info');
+             try {
+                const exportUrl = `${API_BASE_URL}/admission/bulk/download?format=csv`;
+                window.open(exportUrl, '_blank');
+                showMessage('Export queued and download initiated.', 'success');
+             } catch (e) {
+                 showMessage('Export failed.', 'error');
+             }
+        }
+
+
+        // --- Global Modal Utility ---
+
+        function openModal(id, title, content) {
+            const container = document.getElementById('modalContainer');
+            if (document.getElementById(id)) document.getElementById(id).remove();
+            
+            const modal = document.createElement('div');
+            modal.id = id;
+            modal.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', `${id}Title`);
+            modal.setAttribute('tabindex', '0'); // CRITICAL: Focus trap overlay
+
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-8 max-w-lg mx-4 shadow-2xl w-full" tabindex="-1" role="document">
+                    <div class="flex justify-between items-center border-b pb-3 mb-4">
+                        <h2 id="${id}Title" class="text-xl font-bold text-gray-800">${title}</h2>
+                        <button onclick="closeModal('${id}')" class="text-gray-500 hover:text-gray-900" aria-label="Close Modal" title="Close Modal">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div>
+                        ${content}
+                    </div>
+                    ${id !== 'DecisionModal' ? `<div class="mt-4 flex justify-end"><button onclick="closeModal('${id}')" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Close</button></div>` : ''}
+                </div>
+            `;
+            container.appendChild(modal);
+            const dialog = modal.querySelector('[role="document"]');
+            dialog.focus(); 
+            
+            // Allow ESC key to close modal
+            modal.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeModal(id);
+                }
+            });
+        }
+
+        function closeModal(id) {
+             const modal = document.getElementById(id);
+             if (modal) modal.remove();
         }
     </script>
 </body>
