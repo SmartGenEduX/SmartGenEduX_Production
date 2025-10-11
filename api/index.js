@@ -1,165 +1,264 @@
-// SmartGenEduX - Main API Server
+// SmartGenEduX - Main API Server - FINAL PRODUCTION VERSION (V1)
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
-// PostgreSQL connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+const jwt = require('jsonwebtoken'); 
+const rateLimit = require('express-rate-limit'); 
+const { performance } = require('perf_hooks'); 
+const helmet = require('helmet'); 
+const { v4: uuidv4 } = require('uuid'); // For generating trace IDs
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// PostgreSQL connection pool
+// Whitelist configuration for CORS (Add your Vercel domains here)
+const allowedOrigins = [
+    'http://localhost:3000', // Local Dev
+    'https://your-vercel-domain.vercel.app', // Your live domain
+    // Add other frontend domains if necessary
+];
+
+// --- 1. POSTGRESQL CONNECTION ---
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    connectionString: process.env.DATABASE_URL,
+    // Connection pool tuning for better scalability
+    max: 20, 
+    idleTimeoutMillis: 30000,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Middleware
-app.use(cors());
+// --- 2. SECURITY & PERFORMANCE MIDDLEWARE ---
+
+// Security Headers (CSP, XSS Protection)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            // CRITICAL: We enforce 'self' but use 'unsafe-inline' only for styles for current compatibility.
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "https://cdn.jsdelivr.net"], // Allow CDN scripts
+            styleSrc: ["'self'", "'unsafe-inline'"], // Keep inline styles for now (if FE requires)
+            imgSrc: ["'self'", "data:", "https://*"], // Allow data URIs and external images
+            connectSrc: ["'self'", "https://*.supabase.co"], // Allow API communication
+            frameAncestors: ["'self'"]
+        }
+    },
+    hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+    }
+})); 
+
+// Dynamic CORS Configuration
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    }
+}));
+
+// Global Rate Limiter Configuration (Applies to all endpoints unless sensitive limiter is used)
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, 
+    keyGenerator: (req) => req.ip,
+    message: { success: false, code: 'SEC_RATE_001', error: "Too many requests. Limit exceeded." }
+});
+app.use(globalLimiter);
+
+// Sensitive Endpoint Limiter (For high-risk operations like fee management)
+const sensitiveLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 300, // More restrictive
+    keyGenerator: (req) => req.ip,
+    message: { success: false, code: 'SEC_RATE_002', error: "Too many sensitive requests. Try again later." }
+});
+
+// --- ENHANCED JWT Authentication Middleware ---
+function authMiddleware(req, res, next) {
+    req.startTime = performance.now(); // Start performance measurement
+    req.traceId = uuidv4(); // Generate a unique ID for request tracing
+    
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Authorization header missing', code: 'AUTH_MISSING' });
+    
+    const token = authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Token missing', code: 'AUTH_MISSING' });
+
+    try {
+        // 1. Verify token using the secret key
+        const decoded = jwt.verify(token, process.env.SESSION_SECRET); 
+        
+        // 2. TOKEN REVOCATION CHECK HOOK (Future Implementation: Check JTI against DB blacklist)
+        // Check if token is revoked; if yes, return 401.
+        
+        // 3. REFRESH TOKEN HOOK (Future Implementation: Manage expiry and renewal logic)
+
+        // CRITICAL CHECK: Ensure essential claims exist for RBAC
+        if (!decoded.schoolId || !decoded.role || !decoded.userId) {
+             return res.status(401).json({ error: 'Token invalid: Missing context claims.', code: 'AUTH_INVALID_CLAIMS' });
+        }
+        
+        // Inject verified user context for RBAC checks in modules
+        req.user = decoded; 
+        
+        // --- ROLE-SPECIFIC AUTHORIZATION DEPTH HOOK ---
+        // Modules can now check required permissions via req.user.role (e.g., isLibrarian, isPrincipal).
+        
+        next();
+    } catch (err) {
+        console.error('JWT Verification Failed:', err.message);
+        return res.status(401).json({ error: 'Invalid or expired token', code: 'AUTH_EXPIRED' });
+    }
+}
+
+// Global middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from client/dist
-app.use(express.static(path.join(__dirname, '../client/dist')));
 
-// Import module routers
+// --- 3. MODULE IMPORTS ---
+
+// Core Academic/Operational Modules
 const timetableRoutes = require('./modules/timetable');
 const attendanceRoutes = require('./modules/attendance');
 const feeManagementRoutes = require('./modules/fee-management');
-const arattaiRoutes = require('./modules/whatsapp-alert'); // Assuming the file is still named this
-// NOTE: Please ensure you rename 'whatsapp-alert.js' file in modules/ to 'arattai-alerts.js' for consistency later!
+const substitutionRoutes = require('./modules/substitution-log');
+const reportTrackerRoutes = require('./modules/report-tracker');
+const admissionRoutes = require('./modules/admission-management');
+const qpgRoutes = require('./modules/questionpaper-generation');
+const qeRoutes = require('./modules/question-extractor');
+const idCardRoutes = require('./modules/id-card-generator');
+const cbseRoutes = require('./modules/cbse-registration');
 
-const idCardGenerator = require('./modules/id-card-generator');
-const cbseRegistration = require('./modules/cbse-registration');
+// Integrated Modules
+const libraryManager = require('./modules/library-manager');
+const transportManager = require('./modules/transport-manager');
+const leaveConfig = require('./modules/leave-config');
+const settingsManager = require('./modules/settings-manager');
+const vipuAi = require('./modules/vipu-ai');
+const arattaiManager = require('./modules/arattai-manager'); 
+const schoolEventLogRoutes = require('./modules/school-event-log');
 
-// JWT authentication middleware (template)
-const authenticate = (req, res, next) => {
-  // TODO: Implement JWT or Supabase Auth verification
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    // NOTE: This 401 response is correct but must be improved to extract user context from JWT
-    return res.status(401).json({ error: 'No authorization header' });
-  }
-  // Verify token here
-  next();
-};
 
-// API Routes
+// --- 4. API ROUTES (Authenticated & Public) ---
 
-// --- Authentication Endpoints (Client-side handled, API not fully implemented) ---
-app.post('/api/auth/login', async (req, res) => {
-  // Login is now handled via the client calling Supabase Auth directly.
-  return res.status(501).json({ message: 'Login authentication handled by client to Supabase Auth API.' });
-});
+// PUBLIC / UNPROTECTED ROUTES (for login/health checks)
+app.get('/api/health', (req, res) => res.json({ status: 'ok', database: process.env.DATABASE_URL ? 'configured' : 'unconfigured' }));
 
-app.post('/api/auth/logout', (req, res) => {
-  res.json({ message: 'Logout successful' });
-});
+// API Versioning and Authentication Guard
+// All operational endpoints are now mounted under /api/v1
+app.use('/api/v1', authMiddleware);
 
-app.get('/api/auth/user', authenticate, async (req, res) => {
-  res.json({ message: 'User info endpoint (not implemented)' });
-});
+// CORE MODULES - Mounted under /api/v1
+app.use('/api/v1/timetable', timetableRoutes);
+app.use('/api/v1/attendance', attendanceRoutes);
+app.use('/api/v1/fee-management', sensitiveLimiter, feeManagementRoutes); // Applying sensitive limit
+app.use('/api/v1/substitution', substitutionRoutes);
+app.use('/api/v1/reports', reportTrackerRoutes);
+app.use('/api/v1/admission', admissionRoutes);
+app.use('/api/v1/qpg', qpgRoutes);
+app.use('/api/v1/qe', qeRoutes);
+app.use('/api/v1/id-card', idCardRoutes);
+app.use('/api/v1/cbse', cbseRoutes);
+app.use('/api/v1/school-events', schoolEventLogRoutes); 
 
-// --- CRITICAL FIX 1: CONNECT TO LIVE DB FOR DASHBOARD STATS ---
-app.get('/api/dashboard-stats', authenticate, async (req, res) => {
+// NEW INTEGRATED MODULES
+app.use('/api/v1/library', libraryManager);
+app.use('/api/v1/transport', transportManager);
+app.use('/api/v1/leave-config', leaveConfig);
+app.use('/api/v1/vipu-ai', vipuAi);
+app.use('/api/v1/arattai', arattaiManager); // Unified communication service
+app.use('/api/v1/settings', settingsManager); // System settings management
+
+
+// Dashboard stats (Protected by authMiddleware, using live DB for essential checks)
+app.get('/api/v1/dashboard-stats', async (req, res) => {
   try {
-    // If this query succeeds, your DATABASE_URL is correct!
-    const result = await pool.query('SELECT COUNT(*) AS total_schools FROM schools');
-    
-    const stats = {
-        // Real query result
-        totalSchools: result.rows[0].count || 0,
-        // Mock data to ensure dashboard populates for now
-        totalStudents: 1247,
-        teachingStaff: 89,
-        feeCollection: '₹89,500'
-    };
+    const schoolsResult = await pool.query('SELECT COUNT(*) AS total_schools FROM schools');
+    const teachersResult = await pool.query('SELECT COUNT(*) AS total_teachers FROM teachers');
 
+    const stats = {
+        totalSchools: schoolsResult.rows[0].total_schools || 0,
+        totalTeachers: teachersResult.rows[0].total_teachers || 0,
+        totalStudents: 0, 
+        feeCollection: '₹0' 
+    };
     res.json(stats);
   } catch (err) {
-    console.error("CRITICAL DB ACCESS ERROR:", err);
-    res.status(500).json({ error: 'Failed to connect to PostgreSQL. Check Vercel DATABASE_URL and Supabase Firewall rules.' });
+    console.error("DASHBOARD DB ACCESS FAILURE:", err);
+    res.status(500).json({ error: 'Database initialization failed. Check Vercel DATABASE_URL.' });
   }
 });
 
-// --- FIX 2: IMPLEMENT LIVE DB QUERY FOR SCHOOLS (TEST RLS) ---
-app.get('/api/schools', authenticate, async (req, res) => {
-  try {
-    // This fetches schools. RLS should filter by user's school_id.
-    const result = await pool.query('SELECT id, name, subscription_plan FROM schools');
-    res.json({ success: true, schools: result.rows });
-  } catch (err) {
-    console.error("DB Query Error /api/schools:", err);
-    res.status(500).json({ error: 'Failed to fetch schools from DB. Check RLS policies.' });
-  }
+// Global post-request logging and error handling
+app.use((req, res, next) => {
+    // NOTE: This must be placed BEFORE the error handler to catch all successful responses.
+    if (req.startTime) {
+        const duration = performance.now() - req.startTime;
+        console.log(JSON.stringify({
+            // Integrates structured logging fields (compatible with ELK/Datadog)
+            level: res.statusCode >= 500 ? 'error' : 'info',
+            timestamp: new Date().toISOString(),
+            method: req.method,
+            url: req.originalUrl,
+            status: res.statusCode,
+            user: req.user?.userId || 'anon',
+            schoolId: req.user?.schoolId,
+            responseTimeMs: duration.toFixed(2),
+            traceId: req.traceId, // Added Trace ID for Distributed Tracing
+        }));
+    }
+    next();
 });
 
-// ... (other template endpoints left as mock/placeholder for now)
 
-// --- Module-specific routes ---
-app.use('/api/timetable', timetableRoutes);
-app.use('/api/attendance', attendanceRoutes);
-app.use('/api/fee-management', feeManagementRoutes);
-
-// --- CRITICAL FIX 3: MAP WHATSAPP TO ARATTAI ROUTE ---
-app.use('/api/arattai', arattaiRoutes); 
-
-// ID Card Generator routes (kept as is)
-app.get('/api/id-card-requests', idCardGenerator.getIdCardRequests);
-// ... (rest of ID Card routes)
-
-// CBSE Registration routes (kept as is)
-app.get('/api/cbse-registrations', cbseRegistration.getCbseRegistrations);
-// ... (rest of CBSE routes)
-
-// --- CRITICAL FIX 4: UPDATE MODULE STATUS LIST ---
-app.get('/api/modules/status', (req, res) => {
-  const modules = [
-    { id: 'timetable', name: 'Timetable Management', status: 'active', usage: 89, lastUpdated: '2024-12-29' },
-    { id: 'attendance', name: 'Attendance System', status: 'active', usage: 94, lastUpdated: '2024-12-29' },
-    { id: 'fee_management', name: 'Fee Management', status: 'active', usage: 78, lastUpdated: '2024-12-29' },
-    { id: 'substitution', name: 'Substitution Log', status: 'active', usage: 67, lastUpdated: '2024-12-28' },
-    { id: 'behavior', name: 'Behavior Tracker', status: 'active', usage: 73, lastUpdated: '2024-12-28' },
-    { id: 'invigilation', name: 'Invigilation Duty', status: 'active', usage: 45, lastUpdated: '2024-12-27' },
-    { id: 'distribution', name: 'Student Distribution', status: 'active', usage: 82, lastUpdated: '2024-12-29' },
-    { id: 'reports', name: 'Report Tracker', status: 'active', usage: 91, lastUpdated: '2024-12-29' },
-    { id: 'qp_generator', name: 'Question Paper Generator', status: 'active', usage: 56, lastUpdated: '2024-12-26' },
-    { id: 'q_extractor', name: 'Question Extractor', status: 'active', usage: 34, lastUpdated: '2024-12-25' },
-    { id: 'admission', name: 'Admission Management', status: 'active', usage: 23, lastUpdated: '2024-12-20' },
-    { id: 'pdf_tools', name: 'PDF Tools', status: 'active', usage: 67, lastUpdated: '2024-12-28' },
-    { id: 'events', name: 'Event Management', status: 'active', usage: 45, lastUpdated: '2024-12-24' },
-    { id: 'arattai', name: 'Arattai Communication', status: 'active', usage: 88, lastUpdated: '2024-12-29' }, // <-- RENAMED entry
-    { id: 'vipu_ai', name: 'Vipu AI Assistant', status: 'active', usage: 72, lastUpdated: '2024-12-29' },
-    { id: 'id_card_generator', name: 'ID Card Generator', status: 'active', usage: 45, lastUpdated: '2024-12-29' },
-    { id: 'cbse_registration', name: 'CBSE Registration Process', status: 'active', usage: 62, lastUpdated: '2024-12-29' },
-    { id: 'timesubbehave_ai', name: 'Timesubbehave AI Premium', status: 'premium', usage: 34, lastUpdated: '2024-12-28' },
-    { id: 'fee_tally', name: 'Fee Management with Tally', status: 'premium', usage: 23, lastUpdated: '2024-12-27' }
-  ];
-  res.json(modules);
-});
-
-// Catch-all route for SPA
+// Catch-all route for SPA (Serves the client frontend)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-// Error handling middleware
+// Global Error handling middleware (Final catch for unhandled errors)
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('GLOBAL APPLICATION ERROR:', err.stack);
   res.status(500).json({ 
-    error: 'Something went wrong!',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    error: 'Internal Server Error',
+    message: 'An unhandled exception occurred in the API server.',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    code: 'ERR_GLOBAL_500'
   });
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 SmartGenEduX Server running on port ${PORT}`);
-  console.log(`📊 Dashboard: http://localhost:${PORT}`);
-  console.log(`🔧 API Base: http://localhost:${PORT}/api`);
+  console.log(`🔧 API Base: http://localhost:${PORT}/api/v1`);
 });
+
+// Graceful Shutdown Hook
+const gracefulShutdown = () => {
+    console.log('\nShutting down gracefully...');
+    server.close(() => {
+        console.log('Express server closed.');
+        pool.end(() => {
+            console.log('PostgreSQL connection pool closed.');
+            process.exit(0);
+        });
+    });
+
+    // Force close after 10 seconds
+    setTimeout(() => {
+        console.error('Forcing shutdown after timeout.');
+        process.exit(1);
+    }, 10000);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 
 module.exports = app;
