@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management & Bulk Uploader (Admin Only)</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+        .container { max-width: 900px; margin-top: 30px; }
+        .tab-button.active { background-color: #0d47a1 !important; color: white !important; }
+        .card-header { background-color: #1565c0; color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .section-card { box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-radius: 0.5rem; margin-bottom: 20px; }
+        .warning-box { border: 1px dashed #ef4444; background-color: #fef2f2; color: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-gray-800 flex items-center justify-center">
+            <i class="fas fa-user-shield text-blue-700 mr-3"></i>User Management & Provisioning
+        </h1>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="fixed top-4 right-4 z-50"></div>
+        
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-md mb-4">
+            <div class="flex border-b border-gray-200">
+                <button class="tab-button px-4 py-3 text-sm font-medium active flex-1 text-gray-700" onclick="switchTab('single')" data-tab="single">
+                    <i class="fas fa-user-plus mr-2"></i>Create Single User
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('bulk')" data-tab="bulk">
+                    <i class="fas fa-file-upload mr-2"></i>Bulk CSV Upload
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContent">
+
+            <!-- 1. Single User Creation (POST /users) -->
+            <div data-tab-content="single" class="tab-pane active">
+                <div class="section-card bg-white">
+                    <div class="card-header">New User Details</div>
+                    <form id="createUserForm" onsubmit="handleCreateUser(event)" class="p-6 space-y-4">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input type="text" id="fullName" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Email (Login ID)</label>
+                                <input type="email" id="email" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Password (Min 6 Chars)</label>
+                                <input type="password" id="password" required minlength="6" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tenant (School Name)</label>
+                                <select id="tenant" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                    <option value="Delhi Public School">Delhi Public School</option>
+                                    <option value="Ryan International">Ryan International</option>
+                                    <option value="Global">Super Admin (Global)</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700">Role</label>
+                                <select id="role" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                    <option value="teacher">Teacher</option>
+                                    <option value="school_admin">School Admin</option>
+                                    <option value="ac_incharge">Accounts Incharge</option>
+                                    <option value="principal">Principal</option>
+                                    <option value="super_admin">Super Admin</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-150">
+                            <i class="fas fa-plus mr-2"></i>Create User Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 2. Bulk CSV Upload (POST /upload) -->
+            <div data-tab-content="bulk" class="tab-pane hidden">
+                <div class="section-card bg-white">
+                    <div class="card-header bg-purple-600">Bulk User Import via CSV</div>
+                    <form id="bulkUploadForm" onsubmit="handleBulkUpload(event)" class="p-6 space-y-6">
+                        
+                        <!-- CSV Template Warning -->
+                        <div class="p-4 rounded-lg text-sm warning-box">
+                            <h3 class="font-bold mb-2">CSV Format Requirements:</h3>
+                            <p>Your CSV must contain these five columns in any order: <code>email</code>, <code>fullName</code>, <code>role</code>, <code>password</code>, <code>tenant</code>.</p>
+                        </div>
+                        
+                        <!-- File Input -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Select CSV File</label>
+                            <input type="file" id="csvFile" name="file" accept=".csv" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+
+                        <!-- User Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Type of Users in File</label>
+                            <select id="userType" name="userType" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                <option value="teacher">Teachers & Staff</option>
+                                <option value="student">Students</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">This helps the system categorize the data correctly.</p>
+                        </div>
+
+                        <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition duration-150">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>Upload & Process Batch
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/admin'; 
+
+        // --- Utility Functions ---
+
+        function getAuthToken() {
+            // Retrieve JWT from session storage or local storage
+            return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        }
+
+        function showNotification(message, type = 'success') {
+            const colors = { success: 'bg-green-600', error: 'bg-red-600', info: 'bg-blue-600', warning: 'bg-yellow-600' };
+            const icons = { success: 'fas fa-check-circle', error: 'fas fa-exclamation-triangle', info: 'fas fa-info-circle', warning: 'fas fa-exclamation-triangle' };
+            const area = document.getElementById('notification-area');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-3 rounded-lg shadow-lg mb-2 text-white ${colors[type]}`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            area.appendChild(messageDiv);
+            setTimeout(() => messageDiv.remove(), 5000);
+        }
+
+        async function fetchAPI(endpoint, method = 'GET', body = null, isFormData = false) {
+            const token = getAuthToken();
+            if (!token) {
+                showNotification('Session expired. Please log in.', 'error');
+                // Redirect logic here if needed
+                throw new Error('Unauthorized');
+            }
+            
+            const options = {
+                method,
+                headers: {}
+            };
+            
+            if (isFormData) {
+                // If FormData, let the browser set the Content-Type automatically (needed for file upload boundary)
+                options.body = body;
+            } else {
+                options.headers['Content-Type'] = 'application/json';
+                if (body) options.body = JSON.stringify(body);
+            }
+            
+            options.headers['Authorization'] = `Bearer ${token}`;
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showNotification(data.error || `API Error: ${response.status}`, 'error');
+                    throw new Error(data.error || 'API request failed');
+                }
+                return data;
+            } catch (error) {
+                console.error(`Fetch error on ${endpoint}:`, error);
+                throw error; 
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+            });
+            document.querySelector(`[data-tab-content="${tabName}"]`).classList.remove('hidden');
+        }
+        
+        // --- Core User Functions ---
+
+        async function handleCreateUser(event) {
+            event.preventDefault();
+            const form = event.target;
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+
+            const payload = {
+                fullName: form.fullName.value,
+                email: form.email.value,
+                password: form.password.value,
+                tenant: form.tenant.value,
+                role: form.role.value
+            };
+
+            showNotification('Creating user...', 'info');
+
+            try {
+                const data = await fetchAPI('/users', 'POST', payload);
+                showNotification(data.message, 'success');
+                form.reset();
+            } catch (error) {
+                // Error handled by fetchAPI
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function handleBulkUpload(event) {
+            event.preventDefault();
+            const form = event.target;
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+
+            const fileInput = document.getElementById('csvFile');
+            const userType = document.getElementById('userType').value;
+
+            if (!fileInput.files.length) {
+                showNotification('Please select a CSV file.', 'warning');
+                btn.disabled = false;
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('userType', userType);
+            
+            showNotification('Uploading and processing batch...', 'info');
+
+            try {
+                const data = await fetchAPI('/upload', 'POST', formData, true); // Use isFormData = true
+                showNotification(`Batch successful! ${data.message}.`, 'success');
+                form.reset();
+            } catch (error) {
+                // Error handled by fetchAPI
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+             switchTab('single');
+        });
+    </script>
+</body>
+</html>
