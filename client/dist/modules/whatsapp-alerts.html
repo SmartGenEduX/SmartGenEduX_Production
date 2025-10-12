@@ -3,158 +3,549 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart WhatsApp Alerts - SmartGenEduX</title>
+    <title>Smart WhatsApp Alert Manager & Automation</title>
+    <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+        .container { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #25D366; color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .tab-button.active { background-color: #25D366 !important; color: white !important; }
+        .section-card { box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-radius: 0.5rem; margin-bottom: 20px; }
+        .status-badge { padding: 4px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/Smart WhatsApp Alert_20250621_160156_0000_1751087212464.png" alt="WhatsApp Alerts" class="w-12 h-12 mr-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Smart WhatsApp Alerts</h1>
-                        <p class="text-gray-600">Send automated WhatsApp notifications to parents and students</p>
-                    </div>
-                </div>
-                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    <i class="fas fa-times mr-2"></i>Close
+<body>
+
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-gray-800 flex items-center justify-center">
+            <i class="fab fa-whatsapp text-green-500 mr-3"></i>Smart WhatsApp Alert Center
+        </h1>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="fixed top-4 right-4 z-50"></div>
+        
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-md mb-4">
+            <div class="flex border-b border-gray-200">
+                <button class="tab-button px-4 py-3 text-sm font-medium active flex-1 text-gray-700" onclick="switchTab('templates')" data-tab="templates">
+                    <i class="fas fa-edit mr-2"></i>Template & Broadcast
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('automation')" data-tab="automation">
+                    <i class="fas fa-robot mr-2"></i>Automation Rules
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('contacts')" data-tab="contacts">
+                    <i class="fas fa-users mr-2"></i>Contact Preferences
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('analytics')" data-tab="analytics">
+                    <i class="fas fa-chart-bar mr-2"></i>Performance Analytics
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('settings')" data-tab="settings">
+                    <i class="fas fa-cog mr-2"></i>API & Compliance Config
                 </button>
             </div>
         </div>
 
-        <!-- Alert Configuration -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold mb-4">Configure WhatsApp Alerts</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Alert Types -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-3">Alert Types</h3>
-                    <div class="space-y-3">
-                        <label class="flex items-center">
-                            <input type="checkbox" class="mr-2" checked> Attendance Notifications
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" class="mr-2" checked> Fee Due Reminders
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" class="mr-2"> Exam Notifications
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" class="mr-2"> Event Announcements
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" class="mr-2"> Holiday Notifications
-                        </label>
-                    </div>
-                </div>
+        <!-- Tab Content -->
+        <div id="tabContent">
 
-                <!-- Timing Settings -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-3">Timing Settings</h3>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Daily Attendance Alert Time</label>
-                            <input type="time" value="15:30" class="w-full border rounded px-3 py-2">
+            <!-- 1. Templates & Broadcast (Template CRUD, Send Single/Broadcast) -->
+            <div data-tab-content="templates" class="tab-pane active">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Template List & Management -->
+                    <div class="lg:col-span-2 section-card bg-white">
+                        <div class="card-header">Template Gallery & Management (8 Templates Loaded)</div>
+                        <div class="p-4">
+                            <div id="templateList" class="space-y-3">
+                                <p class="text-gray-500">Loading templates...</p>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Fee Due Reminder (Days Before)</label>
-                            <input type="number" value="7" class="w-full border rounded px-3 py-2">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Bulk Message Time</label>
-                            <input type="time" value="09:00" class="w-full border rounded px-3 py-2">
+                    </div>
+
+                    <!-- Send/Broadcast Panel -->
+                    <div class="lg:col-span-1 section-card bg-white">
+                        <div class="card-header bg-blue-600">Send Single Message / Broadcast</div>
+                        <div class="p-4 space-y-4">
+                            <h3 class="font-bold text-gray-700">Message Parameters</h3>
+                            <select id="sendTemplateId" class="w-full p-2 border rounded-md text-sm" onchange="displayTemplateVariables()">
+                                <option value="">Select Template...</option>
+                            </select>
+                            <input type="text" id="recipientNumber" placeholder="Recipient Phone (+91...)" class="w-full p-2 border rounded-md text-sm">
+                            <div id="variableInputs" class="space-y-2 border p-2 rounded-md bg-gray-50">
+                                <p class="text-sm text-gray-600 italic">Variables will appear here once a template is selected.</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <input type="datetime-local" id="scheduledFor" class="flex-1 p-2 border rounded-md text-sm">
+                                <button onclick="sendSingleMessage(false)" class="bg-yellow-600 text-white px-4 py-2 rounded-md text-sm hover:bg-yellow-700">
+                                    <i class="fas fa-clock mr-2"></i>Schedule
+                                </button>
+                            </div>
+                            <button onclick="sendSingleMessage(true)" class="w-full bg-green-600 text-white px-4 py-3 rounded-md hover:bg-green-700">
+                                <i class="fas fa-paper-plane mr-2"></i>Send Now
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Send Custom Message -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold mb-4">Send Custom Message</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Select Recipients</label>
-                    <select class="w-full border rounded px-3 py-2 mb-4">
-                        <option>All Parents</option>
-                        <option>Class 1 Parents</option>
-                        <option>Class 2 Parents</option>
-                        <option>All Teachers</option>
-                        <option>Custom Group</option>
-                    </select>
-                    
-                    <label class="block text-sm font-medium mb-2">Message Template</label>
-                    <select class="w-full border rounded px-3 py-2 mb-4">
-                        <option>Custom Message</option>
-                        <option>Attendance Alert</option>
-                        <option>Fee Reminder</option>
-                        <option>Event Notification</option>
-                        <option>Holiday Notice</option>
-                    </select>
+            <!-- 2. Automation Rules (CRUD Automation) -->
+            <div data-tab-content="automation" class="tab-pane hidden">
+                <div class="section-card bg-white">
+                    <div class="card-header bg-purple-600">Automated Trigger Rules</div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-lg mb-3">Current Active Rules</h3>
+                        <div id="automationRuleList" class="space-y-4">
+                            <p class="text-gray-500">Loading rules...</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-2">Message Content</label>
-                    <textarea rows="6" class="w-full border rounded px-3 py-2" placeholder="Type your message here...">Dear Parent,
+            </div>
 
-This is to inform you about your child's attendance today.
+            <!-- 3. Contact Preferences (Consent, Opt-Out, Language) -->
+            <div data-tab-content="contacts" class="tab-pane hidden">
+                <div class="section-card bg-white">
+                    <div class="card-header bg-orange-600">Parent Contact & Consent Management</div>
+                    <div class="p-6">
+                        <div id="contactFilter" class="mb-4 flex space-x-4">
+                            <select id="contactVerifiedFilter" class="p-2 border rounded-md">
+                                <option value="">Verification Status</option>
+                                <option value="true">Verified (WhatsApp)</option>
+                                <option value="false">Unverified</option>
+                            </select>
+                            <select id="contactConsentFilter" class="p-2 border rounded-md">
+                                <option value="">Consent Status</option>
+                                <option value="true">Consent Given</option>
+                                <option value="false">Opted Out / No Consent</option>
+                            </select>
+                            <button onclick="fetchContacts()" class="bg-gray-200 p-2 rounded-md hover:bg-gray-300">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="contactList" class="space-y-4">
+                            <p class="text-gray-500">Loading contacts...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-Regards,
-SmartGenEduX Team</textarea>
-                    
-                    <div class="flex justify-between items-center mt-4">
-                        <span class="text-sm text-gray-500">Characters: 123/1000</span>
-                        <button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-                            <i class="fab fa-whatsapp mr-2"></i>Send Message
+            <!-- 4. Performance Analytics (Reporting & Oversight) -->
+            <div data-tab-content="analytics" class="tab-pane hidden">
+                <div class="section-card bg-white">
+                    <div class="card-header bg-red-600">Delivery & Performance Analytics</div>
+                    <div class="p-6 space-y-6">
+                        
+                        <!-- Overview Metrics -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                            <div class="p-4 bg-gray-100 rounded-lg">
+                                <div class="text-3xl font-bold text-blue-600" id="totalMessagesSent">0</div>
+                                <div class="text-sm text-gray-500">Total Sent (Monthly)</div>
+                            </div>
+                            <div class="p-4 bg-gray-100 rounded-lg">
+                                <div class="text-3xl font-bold text-green-600" id="deliveryRate">0%</div>
+                                <div class="text-sm text-gray-500">Delivery Rate</div>
+                            </div>
+                            <div class="p-4 bg-gray-100 rounded-lg">
+                                <div class="text-3xl font-bold text-purple-600" id="readRate">0%</div>
+                                <div class="text-sm text-gray-500">Read Rate</div>
+                            </div>
+                            <div class="p-4 bg-gray-100 rounded-lg">
+                                <div class="text-3xl font-bold text-red-600" id="totalCost">₹0.00</div>
+                                <div class="text-sm text-gray-500">Total Monthly Cost</div>
+                            </div>
+                        </div>
+
+                        <!-- Top Templates by Performance -->
+                        <div class="border p-4 rounded-lg bg-gray-50">
+                            <h3 class="font-semibold mb-2">Top Performing Templates (By Read Rate)</h3>
+                            <div id="topTemplates" class="space-y-2 text-sm">
+                                <p class="text-gray-500">Loading...</p>
+                            </div>
+                        </div>
+
+                        <!-- Engagement Breakdown -->
+                        <div class="border p-4 rounded-lg bg-gray-50">
+                            <h3 class="font-semibold mb-2">Engagement by Contact</h3>
+                            <div id="contactEngagementList" class="space-y-2 text-sm">
+                                <p class="text-gray-500">Loading...</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. API & Compliance Configuration -->
+            <div data-tab-content="settings" class="tab-pane hidden">
+                <div class="section-card bg-white">
+                    <div class="card-header bg-gray-800">API, Quota & Compliance Settings</div>
+                    <form id="settingsForm" onsubmit="updateSettings(event)" class="p-6 space-y-6">
+                        
+                        <!-- API and Quota -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-700">API & Daily Quota</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Business Phone Number</label>
+                                    <input type="text" id="businessNumber" class="mt-1 block w-full p-2 border rounded-md bg-gray-100" disabled>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Daily Message Limit</label>
+                                    <input type="number" id="dailyLimit" min="100" class="mt-1 block w-full p-2 border rounded-md">
+                                    <p class="text-xs text-gray-500 mt-1">Remaining: <span id="remainingQuota">...</span></p>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-3 bg-red-50 rounded-md">
+                                <label class="block text-sm font-medium text-red-700">Webhook URL (For Delivery/Read Receipts)</label>
+                                <input type="text" id="webhookUrl" class="mt-1 block w-full p-2 border border-red-300 rounded-md bg-white" placeholder="Requires secure URL for Tally/CRM Webhook">
+                            </div>
+                        </div>
+
+                        <!-- Compliance and Opt-Out -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-700">Compliance & Opt-Out Rules</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label class="flex items-center space-x-3">
+                                    <input type="checkbox" id="consentRequired" class="form-checkbox h-5 w-5 text-red-600">
+                                    <span class="text-gray-700">Mandate Prior Consent for Non-Transactional Messages</span>
+                                </label>
+                                <label class="flex items-center space-x-3">
+                                    <input type="checkbox" id="automaticOptOut" class="form-checkbox h-5 w-5 text-red-600">
+                                    <span class="text-gray-700">Automatic Opt-Out Handling (STOP response)</span>
+                                </label>
+                                <label class="flex items-center space-x-3">
+                                    <input type="checkbox" id="contentFiltering" class="form-checkbox h-5 w-5 text-red-600">
+                                    <span class="text-gray-700">Enable Strict Content Filtering/Moderation</span>
+                                </label>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Data Retention (Days)</label>
+                                    <input type="number" id="dataRetentionDays" min="30" class="mt-1 block w-full p-2 border rounded-md">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-150">
+                            <i class="fas fa-save mr-2"></i>Save All Settings
                         </button>
-                    </div>
+                    </form>
                 </div>
             </div>
-        </div>
 
-        <!-- Recent Messages -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-bold mb-4">Recent Messages</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Date</th>
-                            <th class="px-4 py-2 text-left">Type</th>
-                            <th class="px-4 py-2 text-left">Recipients</th>
-                            <th class="px-4 py-2 text-left">Message</th>
-                            <th class="px-4 py-2 text-left">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">2025-01-04 15:30</td>
-                            <td class="px-4 py-2">Attendance</td>
-                            <td class="px-4 py-2">Class 5 Parents (25)</td>
-                            <td class="px-4 py-2">Daily attendance report</td>
-                            <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Sent</span></td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">2025-01-04 09:00</td>
-                            <td class="px-4 py-2">Fee Reminder</td>
-                            <td class="px-4 py-2">All Parents (120)</td>
-                            <td class="px-4 py-2">Fee due in 7 days</td>
-                            <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Sent</span></td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">2025-01-03 18:00</td>
-                            <td class="px-4 py-2">Event</td>
-                            <td class="px-4 py-2">All Parents (120)</td>
-                            <td class="px-4 py-2">Annual Sports Day announcement</td>
-                            <td class="px-4 py-2"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Sent</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
+
+    <script>
+        const API_BASE = ''; // Assumed base path for API calls
+        let allTemplates = []; // Global store for templates
+
+        // --- Utility Functions ---
+
+        function showNotification(message, type = 'success') {
+            const colors = { success: 'bg-green-600', error: 'bg-red-600', info: 'bg-blue-600', warning: 'bg-yellow-600' };
+            const icons = { success: 'fas fa-check-circle', error: 'fas fa-exclamation-triangle', info: 'fas fa-info-circle', warning: 'fas fa-exclamation-triangle' };
+            const area = document.getElementById('notification-area');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-3 rounded-lg shadow-lg mb-2 text-white ${colors[type]}`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            area.appendChild(messageDiv);
+            setTimeout(() => messageDiv.remove(), 5000);
+        }
+
+        async function fetchAPI(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body && method !== 'GET') { options.body = JSON.stringify(body); }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showNotification(data.error || `API Error: ${response.status}`, 'error');
+                    throw new Error(data.error || 'API request failed');
+                }
+                return data;
+            } catch (error) {
+                console.error(`Fetch error on ${endpoint}:`, error);
+                throw error; 
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+            });
+            document.querySelector(`[data-tab-content="${tabName}"]`).classList.remove('hidden');
+
+            if (tabName === 'templates') fetchTemplates();
+            if (tabName === 'automation') fetchAutomationRules();
+            if (tabName === 'contacts') fetchContacts();
+            if (tabName === 'analytics') fetchAnalytics();
+            if (tabName === 'settings') fetchSettings();
+        }
+
+        // --- 1. Template Functions ---
+
+        async function fetchTemplates() {
+            const list = document.getElementById('templateList');
+            const sendSelect = document.getElementById('sendTemplateId');
+            list.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Loading templates...</p>';
+            sendSelect.innerHTML = '<option value="">Select Template...</option>';
+
+            try {
+                const data = await fetchAPI('/templates');
+                allTemplates = data;
+                
+                list.innerHTML = data.map(t => `
+                    <div class="p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg">${t.name}</span>
+                            <span class="status-badge ${t.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${t.active ? 'Active' : 'Inactive'}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1 italic">Trigger: ${t.triggerCondition} (${t.type})</p>
+                        <p class="text-xs text-purple-600 mt-2">Variables: ${t.variables.map(v => `{{${v}}}`).join(', ')}</p>
+                        <button class="mt-3 text-sm text-blue-600 hover:text-blue-800" onclick="editTemplate('${t.id}')">Edit / View Usage</button>
+                    </div>
+                `).join('');
+                
+                data.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t.id;
+                    option.textContent = `${t.name} (${t.category})`;
+                    sendSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                list.innerHTML = '<p class="text-red-600">Failed to load templates.</p>';
+            }
+        }
+        
+        function displayTemplateVariables() {
+            const templateId = document.getElementById('sendTemplateId').value;
+            const variableInputs = document.getElementById('variableInputs');
+            variableInputs.innerHTML = '';
+
+            if (!templateId) {
+                variableInputs.innerHTML = '<p class="text-sm text-gray-600 italic">Variables will appear here once a template is selected.</p>';
+                return;
+            }
+
+            const template = allTemplates.find(t => t.id === templateId);
+            if (template && template.variables) {
+                template.variables.forEach(v => {
+                    const label = v.replace(/_/g, ' ').toUpperCase();
+                    variableInputs.innerHTML += `
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700">${label}</label>
+                            <input type="text" data-variable="${v}" placeholder="Value for {{${v}}}" class="w-full p-2 border rounded-md text-sm">
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        async function sendSingleMessage(isImmediate) {
+            const templateId = document.getElementById('sendTemplateId').value;
+            const recipientNumber = document.getElementById('recipientNumber').value;
+            const scheduledFor = isImmediate ? null : document.getElementById('scheduledFor').value;
+            const variableInputs = document.querySelectorAll('#variableInputs input[data-variable]');
+            
+            if (!templateId || !recipientNumber) {
+                return showNotification('Please select a template and enter a recipient number.', 'warning');
+            }
+            if (!isImmediate && !scheduledFor) {
+                return showNotification('Please select a scheduled date and time.', 'warning');
+            }
+
+            const variables = {};
+            variableInputs.forEach(input => {
+                variables[input.dataset.variable] = input.value;
+            });
+            
+            const payload = { templateId, recipientNumber, variables };
+            if (!isImmediate) payload.scheduledFor = scheduledFor;
+
+            const endpoint = '/send';
+            showNotification(`Sending request to ${isImmediate ? 'send now' : 'schedule'}...`, 'info');
+
+            try {
+                const data = await fetchAPI(endpoint, 'POST', payload);
+                if (data.scheduled) {
+                    showNotification(`Message scheduled successfully for ${data.deliveryTime}!`, 'success');
+                } else {
+                    showNotification(`Message sent successfully! Estimated delivery: 30 seconds.`, 'success');
+                }
+            } catch (error) {
+                // Error notification handled by fetchAPI
+            }
+        }
+        
+        // --- 2. Automation Functions ---
+
+        async function fetchAutomationRules() {
+            const list = document.getElementById('automationRuleList');
+            list.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Loading rules...</p>';
+
+            try {
+                const data = await fetchAPI('/automation');
+                
+                list.innerHTML = data.map(r => `
+                    <div class="p-4 border rounded-lg bg-white">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-lg text-gray-800">${r.name}</span>
+                            <span class="status-badge ${r.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">Status: ${r.active ? 'Active' : 'Inactive'}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Trigger: <span class="font-medium">${r.trigger.toUpperCase().replace(/_/g, ' ')}</span></p>
+                        <p class="text-xs text-purple-600">Template: ${r.templateId} | Executed: ${r.executionCount} times</p>
+                        <p class="text-xs mt-2 italic">Conditions: ${r.conditions.map(c => `${c.field} ${c.operator} ${c.value}`).join(' AND ')}</p>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                list.innerHTML = '<p class="text-red-600">Failed to load automation rules.</p>';
+            }
+        }
+        
+        // --- 3. Contact Functions ---
+
+        async function fetchContacts() {
+            const verified = document.getElementById('contactVerifiedFilter').value;
+            const consent = document.getElementById('contactConsentFilter').value;
+            const list = document.getElementById('contactList');
+            list.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Loading contacts...</p>';
+
+            try {
+                const data = await fetchAPI(`/contacts?verified=${verified}&consent=${consent}`);
+                
+                list.innerHTML = data.map(c => `
+                    <div class="p-4 border rounded-lg bg-white">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-gray-800">${c.parentName} (${c.parentType})</span>
+                            <span class="text-sm text-blue-600">${c.phoneNumber}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Student: ${c.studentName} (${c.class})</p>
+                        <p class="text-xs mt-2">
+                            <span class="mr-3 ${c.whatsappVerified ? 'text-green-600' : 'text-red-600'}">
+                                <i class="fas fa-check-circle"></i> ${c.whatsappVerified ? 'Verified' : 'Unverified'}
+                            </span>
+                            <span class="mr-3 ${c.consentGiven ? 'text-green-600' : 'text-red-600'}">
+                                <i class="fas fa-handshake"></i> Consent: ${c.consentGiven ? 'Yes' : 'No'}
+                            </span>
+                            <span class="mr-3 text-purple-600">Read Rate: ${c.readRate}%</span>
+                            <button class="text-blue-600 text-xs hover:text-blue-800" onclick="updateContactPreferences('${c.id}')">Edit Preferences</button>
+                        </p>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                list.innerHTML = '<p class="text-red-600">Failed to load contacts.</p>';
+            }
+        }
+        
+        // --- 4. Analytics Functions ---
+
+        async function fetchAnalytics() {
+            const dashboard = document.getElementById('analyticsDashboard');
+            dashboard.innerHTML = '<p class="text-center text-gray-500"><i class="fas fa-spinner fa-spin"></i> Fetching analytics...</p>';
+
+            try {
+                const data = await fetchAPI('/analytics');
+                const stats = data.monthlyStats;
+                const perf = data.performanceMetrics;
+                const realtime = data.realtimeStats;
+                
+                document.getElementById('totalMessagesSent').textContent = stats.totalMessagesSent;
+                document.getElementById('deliveryRate').textContent = `${stats.deliveryRate}%`;
+                document.getElementById('readRate').textContent = `${stats.readRate}%`;
+                document.getElementById('totalCost').textContent = `₹${stats.totalCost.toFixed(2)}`;
+                
+                // Top Templates
+                const topTemplates = document.getElementById('topTemplates');
+                topTemplates.innerHTML = realtime.topPerformingTemplates.map(t => `
+                    <div class="flex justify-between text-gray-700">
+                        <span>${t.templateId}</span>
+                        <span class="font-bold text-purple-600">${t.readRate}% Read</span>
+                    </div>
+                `).join('');
+
+                // Contact Engagement
+                const contactEngagementList = document.getElementById('contactEngagementList');
+                contactEngagementList.innerHTML = realtime.contactEngagement.slice(0, 5).map(c => `
+                    <div class="flex justify-between text-gray-700">
+                        <span>${c.studentName}</span>
+                        <span class="font-bold">${c.readRate}% Read Rate</span>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                // Dashboard remains visible with loading message if API fails
+            }
+        }
+        
+        // --- 5. Settings Functions ---
+
+        async function fetchSettings() {
+            try {
+                const data = await fetchAPI('/settings');
+                const settings = data.settings || {};
+
+                document.getElementById('businessNumber').value = settings.businessNumber || '';
+                document.getElementById('dailyLimit').value = settings.dailyLimit || 1000;
+                document.getElementById('remainingQuota').textContent = settings.remainingQuota || 'N/A';
+                document.getElementById('webhookUrl').value = settings.webhookUrl || 'https://your-api.com/whatsapp/webhook';
+                document.getElementById('consentRequired').checked = settings.consentRequired !== false;
+                document.getElementById('automaticOptOut').checked = settings.automaticOptOut !== false;
+                document.getElementById('contentFiltering').checked = settings.contentFiltering !== false;
+                document.getElementById('dataRetentionDays').value = settings.dataRetentionDays || 90;
+
+            } catch (error) {
+                 showNotification('Could not load current settings.', 'error');
+            }
+        }
+
+        async function updateSettings(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button');
+            btn.disabled = true;
+
+            const payload = {
+                businessNumber: document.getElementById('businessNumber').value,
+                dailyLimit: parseInt(document.getElementById('dailyLimit').value),
+                webhookUrl: document.getElementById('webhookUrl').value,
+                consentRequired: document.getElementById('consentRequired').checked,
+                automaticOptOut: document.getElementById('automaticOptOut').checked,
+                contentFiltering: document.getElementById('contentFiltering').checked,
+                dataRetentionDays: parseInt(document.getElementById('dataRetentionDays').value),
+                // These are placeholder mock fields matching backend structure
+                apiProvider: 'whatsapp_business_api',
+                monthlyLimit: 25000 
+            };
+
+            try {
+                const data = await fetchAPI('/settings', 'PUT', payload);
+                showNotification(data.message, 'success');
+                fetchSettings(); // Refresh settings after update
+            } catch {
+                // Error notification handled by fetchAPI
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+
+        // --- Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchTemplates();
+        });
+    </script>
 </body>
 </html>
