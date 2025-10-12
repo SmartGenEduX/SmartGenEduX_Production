@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚌 Transportation Management System</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+        .container-fluid { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #4CAF50; color: white; font-weight: bold; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-radius: 0.5rem; }
+        .alert-fixed {
+            position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; border-radius: 0.5rem;
+        }
+        .route-stop {
+            padding: 5px 10px;
+            margin-right: 5px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            font-size: 0.85rem;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        .gps-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #17a2b8;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(23, 162, 184, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-success"><i class="bi bi-bus-fill"></i> Transport Operations Dashboard</h1>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="transportTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="routes-tab" data-bs-toggle="tab" data-bs-target="#routes-operations" type="button" role="tab"><i class="bi bi-geo-alt-fill"></i> Operations & Assets</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="assignment-attendance-tab" data-bs-toggle="tab" data-bs-target="#assignment-attendance" type="button" role="tab"><i class="bi bi-person-check"></i> Assignment & Attendance</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="billing-tab" data-bs-toggle="tab" data-bs-target="#billing" type="button" role="tab"><i class="bi bi-receipt"></i> Billing & Invoicing</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab"><i class="bi bi-sliders"></i> Configuration</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="oversight-tab" data-bs-toggle="tab" data-bs-target="#oversight" type="button" role="tab"><i class="bi bi-currency-dollar"></i> Financial Oversight</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content pt-3" id="transportTabContent">
+
+            <!-- 1. Operations & Assets Tab (Routes CRUD, Vehicle CRUD, Stop CRUD, Live GPS) -->
+            <div class="tab-pane fade show active" id="routes-operations" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-success">Route Operations & Asset Management</div>
+                    <div class="card-body">
+                        
+                        <!-- Route Listing -->
+                        <h5 class="mb-3"><i class="bi bi-list-columns"></i> Active Routes List</h5>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Route No.</th>
+                                        <th>Name</th>
+                                        <th>Distance (km)</th>
+                                        <th>Vehicle</th>
+                                        <th>Driver</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="routesTableBody">
+                                    <tr><td colspan="6" class="text-center">Loading routes...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Live Tracking & Manifest Export -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 class="text-info"><span class="gps-dot"></span> Live Vehicle Locations</h5>
+                                <div id="liveLocationData" class="p-3 border rounded bg-light" style="max-height: 200px; overflow-y: auto;">
+                                    <p class="text-muted">Loading GPS data...</p>
+                                </div>
+                                <button class="btn btn-sm btn-info mt-2" onclick="fetchLiveLocations()"><i class="bi bi-broadcast"></i> Refresh GPS</button>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Manifest Export</h5>
+                                <p class="text-muted">Select a route above and click Export to generate the printable student list.</p>
+                                <select class="form-select mb-2" id="manifestRouteId"></select>
+                                <button class="btn btn-warning" id="exportManifestBtn" disabled><i class="bi bi-file-earmark-arrow-down"></i> Export Manifest (CSV)</button>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+
+                        <!-- CRUD Forms (Accordions for cleaner view) -->
+                        <div class="accordion" id="assetCrudAccordion">
+                            
+                            <!-- Route Creation Form (POST /route) -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header"><button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRoute" aria-expanded="false">
+                                    <i class="bi bi-plus-circle me-2"></i> Add New Route
+                                </button></h2>
+                                <div id="collapseRoute" class="accordion-collapse collapse" data-bs-parent="#assetCrudAccordion">
+                                    <div class="accordion-body">
+                                        <form id="newRouteForm" class="row g-3">
+                                            <div class="col-md-4"><label for="routeName" class="form-label">Route Name</label><input type="text" class="form-control" id="newRouteName" name="name" required></div>
+                                            <div class="col-md-4"><label for="routeNumber" class="form-label">Route Number</label><input type="text" class="form-control" id="routeNumber" name="route_number" required></div>
+                                            <div class="col-md-4"><label for="routeDistance" class="form-label">Distance (km)</label><input type="number" class="form-control" id="routeDistance" name="route_distance_km" min="0" required></div>
+                                            <div class="col-md-6"><label for="startPoint" class="form-label">Start Point</label><input type="text" class="form-control" id="startPoint" name="start_point" required></div>
+                                            <div class="col-md-6"><label for="endPoint" class="form-label">End Point</label><input type="text" class="form-control" id="endPoint" name="end_point" required></div>
+                                            <div class="col-12"><button type="submit" class="btn btn-success" id="createRouteBtn">Create Route</button></div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vehicle CRUD (POST /vehicle, PUT/DELETE /vehicle/:id) -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header"><button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVehicle" aria-expanded="false">
+                                    <i class="bi bi-truck me-2"></i> Vehicle Management (CRUD)
+                                </button></h2>
+                                <div id="collapseVehicle" class="accordion-collapse collapse" data-bs-parent="#assetCrudAccordion">
+                                    <div class="accordion-body">
+                                        <h6 class="mb-3">Add/Update Vehicle</h6>
+                                        <form id="vehicleCrudForm" class="row g-3 mb-4">
+                                            <input type="hidden" id="vehicleIdToEdit">
+                                            <div class="col-md-4"><label for="vehicleNumber" class="form-label">Vehicle Number</label><input type="text" class="form-control" id="vehicleNumber" name="vehicle_number" required></div>
+                                            <div class="col-md-4"><label for="vehicleCapacity" class="form-label">Capacity</label><input type="number" class="form-control" id="vehicleCapacity" name="capacity" min="1" required></div>
+                                            <div class="col-md-4"><label for="vehicleDriverName" class="form-label">Driver Name</label><input type="text" class="form-control" id="vehicleDriverName" name="driver_name" required></div>
+                                            <div class="col-md-6"><label for="vehicleDriverPhone" class="form-label">Driver Phone</label><input type="text" class="form-control" id="vehicleDriverPhone" name="driver_phone" required></div>
+                                            <div class="col-md-6"><label for="vehicleRouteId" class="form-label">Assigned Route ID (Optional)</label><input type="text" class="form-control" id="vehicleRouteId" name="route_id"></div>
+                                            <div class="col-12"><button type="submit" class="btn btn-primary" id="saveVehicleBtn">Add New Vehicle</button></div>
+                                        </form>
+                                        <h6 class="mt-4">Existing Vehicles</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped">
+                                                <thead><tr><th>Number</th><th>Capacity</th><th>Driver</th><th>Route ID</th><th>Actions</th></tr></thead>
+                                                <tbody id="vehicleTableBody"><tr><td colspan="5" class="text-center">No vehicles loaded.</td></tr></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                             <!-- Stop CRUD (POST /stop, PUT/DELETE /stop/:id) -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header"><button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStop" aria-expanded="false">
+                                    <i class="bi bi-signpost-split me-2"></i> Stop Management (CRUD)
+                                </button></h2>
+                                <div id="collapseStop" class="accordion-collapse collapse" data-bs-parent="#assetCrudAccordion">
+                                    <div class="accordion-body">
+                                        <h6 class="mb-3">Add/Update Stop</h6>
+                                        <form id="stopCrudForm" class="row g-3 mb-4">
+                                            <input type="hidden" id="stopIdToEdit">
+                                            <div class="col-md-4"><label for="stopName" class="form-label">Stop Name</label><input type="text" class="form-control" id="stopName" name="stop_name" required></div>
+                                            <div class="col-md-4"><label for="stopRouteId" class="form-label">Route ID</label><input type="text" class="form-control" id="stopRouteId" name="route_id" required></div>
+                                            <div class="col-md-4"><label for="stopLatitude" class="form-label">Latitude</label><input type="number" class="form-control" id="stopLatitude" name="latitude" step="any" required></div>
+                                            <div class="col-md-4"><label for="stopLongitude" class="form-label">Longitude</label><input type="number" class="form-control" id="stopLongitude" name="longitude" step="any" required></div>
+                                            <div class="col-12"><button type="submit" class="btn btn-primary" id="saveStopBtn">Add New Stop</button></div>
+                                        </form>
+                                        <h6 class="mt-4">Existing Stops</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped">
+                                                <thead><tr><th>Name</th><th>Route ID</th><th>Lat/Lng</th><th>Actions</th></tr></thead>
+                                                <tbody id="stopTableBody"><tr><td colspan="4" class="text-center">No stops loaded.</td></tr></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Assignment & Attendance Tab (POST /assign, POST /attendance/barcode) -->
+            <div class="tab-pane fade" id="assignment-attendance" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card section-card">
+                            <div class="card-header bg-success"><i class="bi bi-person-plus"></i> Student Route Assignment</div>
+                            <div class="card-body">
+                                <p class="alert alert-info">Assign a student to a route, checking for existing assignments and capacity limits.</p>
+                                <form id="assignmentForm" class="row g-3">
+                                    <div class="col-md-6"><label for="assignStudentId" class="form-label">Student ID</label><input type="text" class="form-control" id="assignStudentId" required></div>
+                                    <div class="col-md-6"><label for="assignRouteId" class="form-label">Route ID</label><input type="text" class="form-control" id="assignRouteId" required></div>
+                                    <div class="col-md-6"><label for="assignPickupStopId" class="form-label">Pickup Stop ID</label><input type="text" class="form-control" id="assignPickupStopId" required></div>
+                                    <div class="col-md-6"><label for="assignDropoffStopId" class="form-label">Dropoff Stop ID (Optional)</label><input type="text" class="form-control" id="assignDropoffStopId"></div>
+                                    <div class="col-md-12">
+                                        <label for="assignFeePerTerm" class="form-label">Fee Per Term (INR)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">₹</span>
+                                            <input type="number" class="form-control" id="assignFeePerTerm" min="0" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-12"><button type="submit" class="btn btn-primary" id="assignStudentBtn"><i class="bi bi-check2-square"></i> Assign Student</button></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card section-card">
+                            <div class="card-header bg-warning text-dark"><i class="bi bi-barcode"></i> Transport Attendance Scanning</div>
+                            <div class="card-body">
+                                <p class="alert alert-warning">Use this form to mock a barcode scan event (On Board/Off Board) for real-time tracking.</p>
+                                <form id="attendanceForm" class="row g-3">
+                                    <div class="col-md-6"><label for="barcodeUid" class="form-label">Student Barcode UID</label><input type="text" class="form-control" id="barcodeUid" required></div>
+                                    <div class="col-md-6"><label for="attendanceVehicleId" class="form-label">Vehicle ID</label><input type="text" class="form-control" id="attendanceVehicleId" required></div>
+                                    <div class="col-md-6"><label for="attendanceStatus" class="form-label">Status</label>
+                                        <select class="form-select" id="attendanceStatus" required>
+                                            <option value="on_board">On Board (Pickup)</option>
+                                            <option value="off_board">Off Board (Dropoff)</option>
+                                            <option value="missed">Missed (Manual)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6"><label for="attendanceTimestamp" class="form-label">Timestamp</label><input type="datetime-local" class="form-control" id="attendanceTimestamp" required></div>
+                                    <div class="col-12"><button type="submit" class="btn btn-warning" id="recordAttendanceBtn"><i class="bi bi-cursor"></i> Record Scan</button></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 3. Billing & Invoicing Tab (POST /invoices/generate) -->
+            <div class="tab-pane fade" id="billing" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-primary">Monthly Invoice Generation</div>
+                    <div class="card-body">
+                        <p class="alert alert-info">Generate all student transportation invoices for the selected month based on assigned routes and configurations.</p>
+                        
+                        <form id="invoiceForm">
+                            <div class="mb-3">
+                                <label for="billingMonth" class="form-label">Billing Month</label>
+                                <input type="month" class="form-control" id="billingMonth" required>
+                                <div class="form-text">Format: YYYY-MM (e.g., 2024-05)</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="generateInvoiceBtn"><i class="bi bi-file-earmark-spreadsheet"></i> Generate Invoices</button>
+                        </form>
+
+                        <h5 class="mt-5">Last Invoice Summary (Mock)</h5>
+                        <div id="lastInvoiceSummary" class="p-3 border rounded bg-light">
+                            <p class="text-muted">Generate a batch to see the summary here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Configuration Tab (GET /config, PUT /config) -->
+            <div class="tab-pane fade" id="config" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-secondary">System Configuration (Manager Access)</div>
+                    <div class="card-body">
+                        <form id="configForm" class="row g-3">
+                            <!-- Max Capacity Buffer -->
+                            <div class="col-md-6">
+                                <label for="maxCapacityBuffer" class="form-label">Max Capacity Buffer (%)</label>
+                                <input type="number" class="form-control" id="maxCapacityBuffer" name="max_capacity_buffer" min="0" max="100" required>
+                                <div class="form-text">Buffer percentage when calculating maximum safe seating capacity (e.g., 10 for 10% buffer).</div>
+                            </div>
+
+                            <!-- Fuel Price Per Liter -->
+                            <div class="col-md-6">
+                                <label for="fuelPricePerLiter" class="form-label">Fuel Price Per Liter (INR)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" id="fuelPricePerLiter" name="fuel_price_per_liter" min="1" step="0.01" required>
+                                </div>
+                                <div class="form-text">Used for calculating operational cost estimates.</div>
+                            </div>
+                            
+                            <!-- Billing Cycle -->
+                            <div class="col-md-6">
+                                <label for="billingCycle" class="form-label">Billing Cycle</label>
+                                <select class="form-select" id="billingCycle" name="billing_cycle" required>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                </select>
+                                <div class="form-text">How often students are billed for transport services.</div>
+                            </div>
+
+                            <!-- Emergency Contact -->
+                            <div class="col-md-6">
+                                <label for="emergencyContact" class="form-label">Emergency Contact Number</label>
+                                <input type="text" class="form-control" id="emergencyContact" name="emergency_contact" placeholder="+91..." required>
+                                <div class="form-text">Primary contact for vehicle emergencies (Arattai/SMS target).</div>
+                            </div>
+                            
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-secondary" id="saveConfigBtn"><i class="bi bi-save"></i> Save Configuration</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Financial Oversight Tab (GET /invoices/overdue-summary) -->
+            <div class="tab-pane fade" id="oversight" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-danger">Financial Oversight (Principal/Admin Access)</div>
+                    <div class="card-body">
+                        <p class="alert alert-warning"><i class="bi bi-shield-fill-exclamation"></i> Only Principal or Super Admin can access this critical financial summary.</p>
+                        <div class="row text-center" id="oversightStats">
+                            
+                            <div class="col-md-4 mb-3">
+                                <div class="p-4 border rounded bg-light">
+                                    <h4 class="text-primary" id="statTotalRoutes">...</h4>
+                                    <p class="text-muted">Total Active Routes</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="p-4 border rounded bg-light">
+                                    <h4 class="text-danger" id="statOverdueAmount">...</h4>
+                                    <p class="text-muted">Total Overdue Fees</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="p-4 border rounded bg-light">
+                                    <h4 class="text-success" id="statSafetyCompliance">...</h4>
+                                    <p class="text-muted">Safety Compliance (%)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-danger mt-3" id="refreshOversightBtn"><i class="bi bi-arrow-clockwise"></i> Refresh Financial Summary</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_BASE = ''; 
+        let routesData = []; // Cache route data for manifest export dropdown
+
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => {
+                area.style.display = 'none';
+            }, 7000);
+        }
+        
+        // Helper function to replace window.confirm (as alerts are blocked)
+        function customConfirm(message) {
+            return window.prompt(message + " (Type 'YES' to proceed)") === 'YES';
+        }
+
+        /** Core Fetch Function with Error Handling. */
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
+
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error.', 'danger');
+                throw error;
+            }
+        }
+
+        // --- 1. OPERATIONS & ASSET LOGIC ---
+
+        // Fetch Routes (GET /routes)
+        async function fetchRoutes() {
+            const tableBody = document.getElementById('routesTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading Routes...</td></tr>';
+            
+            try {
+                const data = await apiFetch('/routes');
+                routesData = data.routes;
+                
+                tableBody.innerHTML = '';
+                if (routesData.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No active routes found.</td></tr>';
+                    document.getElementById('manifestRouteId').innerHTML = '<option value="">No Routes Available</option>';
+                    document.getElementById('exportManifestBtn').disabled = true;
+                    return;
+                }
+
+                // Populate Routes Table & Manifest Dropdown
+                const manifestSelect = document.getElementById('manifestRouteId');
+                manifestSelect.innerHTML = '<option value="">-- Select Route --</option>';
+
+                routesData.forEach(route => {
+                    const statusClass = route.vehicle_number ? 'bg-success' : 'bg-warning text-dark';
+                    const safetyStatus = 'N/A'; // Mock safety status for simplicity
+                    
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${route.route_number}</td>
+                        <td>${route.name}</td>
+                        <td>${route.route_distance_km || '0'}</td>
+                        <td><span class="badge ${statusClass}">${route.vehicle_number || 'Unassigned'}</span></td>
+                        <td>${route.driver_name || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning safety-check-btn" data-route-id="${route.id}" data-route-name="${route.name}" title="Record Safety Check" disabled><i class="bi bi-shield-check"></i></button>
+                            <button class="btn btn-sm btn-primary manifest-export-quick" data-route-id="${route.id}" title="Export Manifest"><i class="bi bi-download"></i></button>
+                        </td>
+                    `;
+                    manifestSelect.innerHTML += `<option value="${route.id}">${route.route_number} - ${route.name}</option>`;
+                });
+                
+                document.getElementById('exportManifestBtn').disabled = false;
+
+            } catch {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load routes.</td></tr>';
+            }
+        }
+        
+        // Fetch Vehicle CRUD List (Mocked) - Updated to include data-attributes for full CRUD
+        async function fetchVehicles() {
+            const tableBody = document.getElementById('vehicleTableBody');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading Vehicles...</td></tr>';
+            
+            // Mocking a fetch for the vehicle list
+            const mockVehicles = [
+                { id: 'v1', vehicle_number: 'TN01AZ1234', capacity: 40, driver_name: 'Rajesh K', driver_phone: '+919999912345', route_id: 'r1' },
+                { id: 'v2', vehicle_number: 'TN02BY5678', capacity: 30, driver_name: 'Priya S', driver_phone: '+919876554321', route_id: null },
+            ];
+            
+            tableBody.innerHTML = '';
+            mockVehicles.forEach(v => {
+                const row = tableBody.insertRow();
+                // Store the full vehicle object data as a string attribute for easy editing
+                const vehicleDataAttr = JSON.stringify(v);
+                
+                row.innerHTML = `
+                    <td>${v.vehicle_number}</td>
+                    <td>${v.capacity}</td>
+                    <td>${v.driver_name}</td>
+                    <td>${v.route_id || 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info edit-vehicle-btn" data-vehicle-data='${vehicleDataAttr}'><i class="bi bi-pencil"></i> Edit</button>
+                        <button class="btn btn-sm btn-danger delete-vehicle-btn" data-id="${v.id}" data-name="${v.vehicle_number}"><i class="bi bi-trash"></i> Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        // Fetch Stops CRUD List (Mocked) - Updated to include data-attributes for full CRUD
+        async function fetchStops() {
+            const tableBody = document.getElementById('stopTableBody');
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading Stops...</td></tr>';
+            
+            // Mocking stops
+            const mockStops = [
+                { id: 's1', stop_name: 'City Gate Park', route_id: 'r1', latitude: 13.0, longitude: 80.2 },
+                { id: 's2', stop_name: 'Main Street Crossing', route_id: 'r2', latitude: 13.1, longitude: 80.1 },
+            ];
+            
+            tableBody.innerHTML = '';
+            mockStops.forEach(s => {
+                const row = tableBody.insertRow();
+                const stopDataAttr = JSON.stringify(s);
+
+                row.innerHTML = `
+                    <td>${s.stop_name}</td>
+                    <td>${s.route_id}</td>
+                    <td>${s.latitude.toFixed(3)}, ${s.longitude.toFixed(3)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info edit-stop-btn" data-stop-data='${stopDataAttr}'><i class="bi bi-pencil"></i> Edit</button>
+                        <button class="btn btn-sm btn-danger delete-stop-btn" data-id="${s.id}" data-name="${s.stop_name}"><i class="bi bi-trash"></i> Delete</button>
+                    </td>
+                `;
+            });
+        }
+        
+        // Fetch Live Locations (GET /vehicles/location)
+        async function fetchLiveLocations() {
+            const liveDiv = document.getElementById('liveLocationData');
+            liveDiv.innerHTML = '<p class="text-center"><div class="spinner-border spinner-border-sm"></div> Fetching...</p>';
+            
+            try {
+                const data = await apiFetch('/vehicles/location');
+                
+                liveDiv.innerHTML = '';
+                if (data.liveLocations.length === 0) {
+                    liveDiv.innerHTML = '<p class="text-muted">No vehicle GPS data available.</p>';
+                    return;
+                }
+                
+                data.liveLocations.forEach(loc => {
+                    const time = new Date(loc.timestamp).toLocaleTimeString();
+                    liveDiv.innerHTML += `
+                        <p class="mb-1"><span class="gps-dot"></span> 
+                        <strong>${loc.vehicle_number}</strong> (Route: ${loc.route_id || 'N/A'}) - 
+                        Lat: ${loc.latitude.toFixed(4)}, Lng: ${loc.longitude.toFixed(4)} @ ${time}
+                        </p>
+                    `;
+                });
+            } catch {
+                liveDiv.innerHTML = '<p class="text-danger">Failed to connect to live GPS service.</p>';
+            }
+        }
+        
+        // --- 1.1 ROUTE CRUD HANDLERS ---
+        document.getElementById('newRouteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const payload = {
+                route_number: form.route_number.value,
+                name: form.name.value,
+                route_distance_km: parseFloat(form.route_distance_km.value),
+                start_point: form.start_point.value,
+                end_point: form.end_point.value
+            };
+            
+            const btn = document.getElementById('createRouteBtn');
+            btn.disabled = true;
+
+            try {
+                const data = await apiFetch('/route', 'POST', payload);
+                showNotification(data.message, 'success');
+                form.reset();
+                fetchRoutes();
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('refreshRoutesBtn').addEventListener('click', () => {
+            fetchRoutes();
+            fetchLiveLocations();
+        });
+        
+        // --- 1.2 MANIFEST EXPORT HANDLERS (GET /manifest/export/:routeId) ---
+        document.getElementById('exportManifestBtn').addEventListener('click', () => {
+            const routeId = document.getElementById('manifestRouteId').value;
+            if (!routeId) {
+                showNotification('Please select a route to export the manifest.', 'warning');
+                return;
+            }
+            // Directly trigger download via window location for CSV
+            window.location.href = `${API_BASE}/manifest/export/${routeId}?format=csv`;
+            showNotification(`Generating manifest for Route ${routeId}... Check your downloads.`, 'info');
+        });
+        
+        // Quick export from table row
+        document.getElementById('routesTableBody').addEventListener('click', (e) => {
+             if (e.target.classList.contains('manifest-export-quick')) {
+                const routeId = e.target.getAttribute('data-route-id');
+                window.location.href = `${API_BASE}/manifest/export/${routeId}?format=csv`;
+                showNotification(`Quick generating manifest for Route ${routeId}...`, 'info');
+             }
+        });
+
+        // --- 1.3 VEHICLE CRUD HANDLERS (POST/PUT/DELETE /vehicle) ---
+        document.getElementById('vehicleCrudForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const vehicleId = document.getElementById('vehicleIdToEdit').value;
+            const method = vehicleId ? 'PUT' : 'POST';
+            const endpoint = vehicleId ? `/vehicle/${vehicleId}` : '/vehicle';
+            
+            const payload = {
+                vehicle_number: form.vehicleNumber.value,
+                capacity: parseInt(form.vehicleCapacity.value),
+                driver_name: form.vehicleDriverName.value,
+                driver_phone: form.vehicleDriverPhone.value,
+                route_id: form.vehicleRouteId.value || null
+            };
+            
+            const btn = document.getElementById('saveVehicleBtn');
+            btn.disabled = true;
+            
+            try {
+                const data = await apiFetch(endpoint, method, payload);
+                showNotification(data.message, 'success');
+                
+                // --- Cleanup ---
+                form.reset();
+                document.getElementById('vehicleIdToEdit').value = '';
+                document.getElementById('saveVehicleBtn').textContent = 'Add New Vehicle'; // Reset button text
+                // --- End Cleanup ---
+                
+                fetchVehicles(); // Refresh list
+                fetchRoutes(); // Refresh routes list if route was assigned/unassigned
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        
+        // --- 1.4 STOP CRUD HANDLERS (POST/PUT/DELETE /stop) ---
+        document.getElementById('stopCrudForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const stopId = document.getElementById('stopIdToEdit').value;
+            const method = stopId ? 'PUT' : 'POST';
+            const endpoint = stopId ? `/stop/${stopId}` : '/stop';
+            
+            const payload = {
+                stop_name: form.stopName.value,
+                route_id: form.stopRouteId.value,
+                latitude: parseFloat(form.stopLatitude.value),
+                longitude: parseFloat(form.stopLongitude.value)
+            };
+            
+            const btn = document.getElementById('saveStopBtn');
+            btn.disabled = true;
+            
+            try {
+                const data = await apiFetch(endpoint, method, payload);
+                showNotification(data.message, 'success');
+                
+                // --- Cleanup ---
+                form.reset();
+                document.getElementById('stopIdToEdit').value = '';
+                document.getElementById('saveStopBtn').textContent = 'Add New Stop'; // Reset button text
+                // --- End Cleanup ---
+                
+                fetchStops(); // Refresh list
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+
+        // --- 2. ASSIGNMENT & ATTENDANCE LOGIC ---
+
+        // Student Assignment (POST /assign)
+        document.getElementById('assignmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const payload = {
+                studentId: form.assignStudentId.value,
+                routeId: form.assignRouteId.value,
+                pickupStopId: form.assignPickupStopId.value,
+                dropoffStopId: form.assignDropoffStopId.value || null,
+                feePerTerm: parseFloat(form.assignFeePerTerm.value)
+            };
+            
+            const btn = document.getElementById('assignStudentBtn');
+            btn.disabled = true;
+
+            try {
+                const data = await apiFetch('/assign', 'POST', payload);
+                showNotification(data.message, 'success');
+                form.reset();
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Attendance Scanning (POST /attendance/barcode)
+        document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            
+            // Format timestamp for ISO 8601
+            const timestamp = new Date(form.attendanceTimestamp.value).toISOString();
+
+            const payload = {
+                barcodeUid: form.barcodeUid.value,
+                vehicleId: form.attendanceVehicleId.value,
+                status: form.attendanceStatus.value,
+                timestamp: timestamp
+            };
+            
+            const btn = document.getElementById('recordAttendanceBtn');
+            btn.disabled = true;
+
+            try {
+                const data = await apiFetch('/attendance/barcode', 'POST', payload);
+                showNotification(data.message, 'success');
+                // Keep form values for rapid scanning, just clear barcode field
+                form.barcodeUid.value = ''; 
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+
+        // --- 3. BILLING & INVOICING LOGIC ---
+
+        // Invoice Generation (POST /invoices/generate - Mocked endpoint)
+        document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const month = document.getElementById('billingMonth').value;
+            const btn = document.getElementById('generateInvoiceBtn');
+            btn.disabled = true;
+            const summaryDiv = document.getElementById('lastInvoiceSummary');
+            summaryDiv.innerHTML = '<p class="text-center"><div class="spinner-border spinner-border-sm"></div> Generating batch...</p>';
+            
+            // NOTE: Mocking the endpoint response
+            await new Promise(r => setTimeout(r, 1000));
+            
+            showNotification(`Invoice generation triggered for ${month}.`, 'success');
+            
+            summaryDiv.innerHTML = `
+                <p><strong>Batch Status: Completed</strong></p>
+                <p>Month: ${month}</p>
+                <p>Total Invoices Generated: 450</p>
+                <p class="text-success">Total Billed Amount: ₹2,560,000</p>
+                <p class="text-muted">Notifications queued to 450 parents.</p>
+            `;
+            btn.disabled = false;
+        });
+
+        // --- 4. CONFIGURATION LOGIC (GET/PUT /config) ---
+
+        async function fetchConfig() {
+            try {
+                const data = await apiFetch('/config');
+                const settings = data.settings;
+
+                // Populate form fields, using default values if settings are missing
+                document.getElementById('maxCapacityBuffer').value = settings.max_capacity_buffer || 10;
+                document.getElementById('fuelPricePerLiter').value = settings.fuel_price_per_liter || 95.50;
+                document.getElementById('billingCycle').value = settings.billing_cycle || 'monthly';
+                document.getElementById('emergencyContact').value = settings.emergency_contact || '+919876543210';
+            } catch (error) {
+                // If 403 (Auth denied) or 500 (DB error), configuration page shows defaults/empty.
+            }
+        }
+
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveConfigBtn');
+            btn.disabled = true;
+            
+            const form = e.target;
+
+            const payload = {
+                max_capacity_buffer: parseInt(form.maxCapacityBuffer.value),
+                fuel_price_per_liter: parseFloat(form.fuelPricePerLiter.value),
+                billing_cycle: form.billingCycle.value,
+                emergency_contact: form.emergencyContact.value
+            };
+            
+            try {
+                // Real API call for PUT /config
+                const data = await apiFetch('/config', 'PUT', payload);
+                
+                showNotification(data.message || 'Configuration updated successfully.', 'success');
+                fetchConfig(); 
+
+            } catch (error) {
+                // Error handled by apiFetch and shown via notification
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // --- 5. OVERSIGHT LOGIC (GET /invoices/overdue-summary - Mocked endpoint) ---
+        
+        async function fetchOversightStats() {
+            document.getElementById('statTotalRoutes').textContent = '...';
+            document.getElementById('statOverdueAmount').textContent = '...';
+            document.getElementById('statSafetyCompliance').textContent = '...';
+
+            try {
+                // NOTE: This endpoint was not in the provided backend but derived from the previous context. Mocking stats.
+                await new Promise(r => setTimeout(r, 800)); 
+                
+                const stats = {
+                    totalActiveRoutes: routesData.length,
+                    totalOverdueAmount: 45000.75, // Mock value
+                    safetyCompliance: 92.5 // Mock value
+                };
+
+                document.getElementById('statTotalRoutes').textContent = stats.totalActiveRoutes;
+                document.getElementById('statOverdueAmount').textContent = `₹${stats.totalOverdueAmount.toFixed(2).toLocaleString()}`;
+                document.getElementById('statSafetyCompliance').textContent = `${stats.safetyCompliance.toFixed(1)}%`;
+                
+                showNotification('Financial oversight stats refreshed.', 'info');
+
+            } catch (error) {
+                document.getElementById('oversightStats').innerHTML = '<div class="alert alert-danger">Access denied or failed to load statistics.</div>';
+            }
+        }
+        
+        document.getElementById('refreshOversightBtn').addEventListener('click', fetchOversightStats);
+
+        // --- Delegation for Vehicle CRUD Actions ---
+        document.getElementById('vehicleTableBody').addEventListener('click', async (e) => {
+            if (e.target.closest('.edit-vehicle-btn')) {
+                const button = e.target.closest('.edit-vehicle-btn');
+                const vehicleData = JSON.parse(button.getAttribute('data-vehicle-data'));
+                
+                document.getElementById('vehicleIdToEdit').value = vehicleData.id;
+                document.getElementById('vehicleNumber').value = vehicleData.vehicle_number;
+                document.getElementById('vehicleCapacity').value = vehicleData.capacity;
+                document.getElementById('vehicleDriverName').value = vehicleData.driver_name;
+                document.getElementById('vehicleDriverPhone').value = vehicleData.driver_phone;
+                document.getElementById('vehicleRouteId').value = vehicleData.route_id || '';
+                document.getElementById('saveVehicleBtn').textContent = 'Update Vehicle';
+                
+                // Open the accordion
+                const collapseElement = document.getElementById('collapseVehicle');
+                const bsCollapse = new bootstrap.Collapse(collapseElement, { toggle: false });
+                bsCollapse.show();
+                collapseElement.scrollIntoView({ behavior: 'smooth' });
+
+            } else if (e.target.closest('.delete-vehicle-btn')) {
+                const button = e.target.closest('.delete-vehicle-btn');
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-name');
+                
+                if (customConfirm(`Are you sure you want to DELETE vehicle ${name}? This action cannot be undone and will unassign its route.`)) {
+                    try {
+                        await apiFetch(`/vehicle/${id}`, 'DELETE');
+                        showNotification(`Vehicle ${name} deleted successfully.`, 'success');
+                        fetchVehicles(); // Refresh list
+                        fetchRoutes();  // Refresh routes list
+                    } catch {
+                        // Error handled by apiFetch
+                    }
+                }
+            }
+        });
+
+        // --- Delegation for Stop CRUD Actions ---
+        document.getElementById('stopTableBody').addEventListener('click', async (e) => {
+            if (e.target.closest('.edit-stop-btn')) {
+                const button = e.target.closest('.edit-stop-btn');
+                const stopData = JSON.parse(button.getAttribute('data-stop-data'));
+                
+                document.getElementById('stopIdToEdit').value = stopData.id;
+                document.getElementById('stopName').value = stopData.stop_name;
+                document.getElementById('stopRouteId').value = stopData.route_id;
+                document.getElementById('stopLatitude').value = stopData.latitude;
+                document.getElementById('stopLongitude').value = stopData.longitude;
+                document.getElementById('saveStopBtn').textContent = 'Update Stop';
+                
+                // Open the accordion
+                const collapseElement = document.getElementById('collapseStop');
+                const bsCollapse = new bootstrap.Collapse(collapseElement, { toggle: false });
+                bsCollapse.show();
+                collapseElement.scrollIntoView({ behavior: 'smooth' });
+
+            } else if (e.target.closest('.delete-stop-btn')) {
+                const button = e.target.closest('.delete-stop-btn');
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-name');
+                
+                if (customConfirm(`Are you sure you want to DELETE stop "${name}"? This will affect routes and student assignments.`)) {
+                    try {
+                        await apiFetch(`/stop/${id}`, 'DELETE');
+                        showNotification(`Stop "${name}" deleted successfully.`, 'success');
+                        fetchStops(); // Refresh list
+                    } catch {
+                        // Error handled by apiFetch
+                    }
+                }
+            }
+        });
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default attendance timestamp to current time
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('attendanceTimestamp').value = now.toISOString().slice(0, 16);
+            
+            fetchRoutes();
+            fetchVehicles();
+            fetchStops();
+            fetchConfig();
+            fetchLiveLocations();
+
+            // Setup tab switch to load oversight on demand
+            document.getElementById('oversight-tab').addEventListener('shown.bs.tab', fetchOversightStats);
+        });
+    </script>
+</body>
+</html>
