@@ -1,278 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartGenEduX - Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .login-card {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .input-group {
-            position: relative;
-        }
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label {
-            transform: translateY(-1.5rem) scale(0.8);
-            color: #667eea;
-        }
-        .input-group label {
-            transition: all 0.3s ease;
-            position: absolute;
-            left: 1rem;
-            top: 1rem;
-            pointer-events: none;
-            color: #9ca3af;
-        }
-        .demo-credentials {
-            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-            border: 1px dashed #9ca3af;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SmartGenEduX - Login</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    .login-card {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .input-group {
+      position: relative;
+    }
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label {
+      transform: translateY(-1.5rem) scale(0.8);
+      color: #667eea;
+    }
+    .input-group label {
+      transition: all 0.3s ease;
+      position: absolute;
+      left: 1rem;
+      top: 1rem;
+      pointer-events: none;
+      color: #9caaf;
+    }
+    .error-message {
+      margin-bottom: 1rem;
+    }
+  </style>
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
-        <div class="absolute top-1/2 left-1/4 w-60 h-60 bg-white opacity-5 rounded-full"></div>
+  <!-- Background Patterns -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div
+      class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full"
+    ></div>
+    <div
+      class="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full"
+    ></div>
+    <div
+      class="absolute top-1/2 left-1/4 w-60 h-60 bg-white opacity-5 rounded-full"
+    ></div>
+  </div>
+
+  <div class="relative z-10 w-full max-w-md">
+    <!-- Logo and Title -->
+    <div class="text-center mb-8">
+      <div
+        class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4 overflow-hidden"
+      >
+        <img
+          src="assets/smartgenux-main-logo.jpg"
+          alt="SmartGenEduX"
+          class="w-full h-full object-cover"
+        />
+      </div>
+      <h1 class="text-4xl font-bold text-white mb-2">SmartGenEduX</h1>
+      <p class="text-blue-100">Complete School Management ERP</p>
     </div>
 
-    <div class="relative z-10 w-full max-w-md">
-        <!-- Logo and Title -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4 overflow-hidden">
-                <img src="assets/smartgenedux-main-logo.jpg" alt="SmartGenEduX" class="w-full h-full object-cover">
-            </div>
-            <h1 class="text-4xl font-bold text-white mb-2">SmartGenEduX</h1>
-            <p class="text-blue-100">Complete School Management ERP</p>
+    <!-- Login Card -->
+    <div class="login-card rounded-2xl shadow-2xl p-8">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+        <p class="text-gray-600">Sign in to access your dashboard</p>
+      </div>
+
+      <form id="loginForm" class="space-y-6">
+        <div class="error-message text-red-600 font-semibold" id="errorMsg"></div>
+
+        <!-- Email Input -->
+        <div class="input-group">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder=" "
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+            required
+          />
+          <label for="email">Email Address</label>
         </div>
 
-        <!-- Login Card -->
-        <div class="login-card rounded-2xl shadow-2xl p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-                <p class="text-gray-600">Sign in to access your dashboard</p>
-            </div>
-
-            <!-- Demo Credentials Box -->
-            <div class="demo-credentials rounded-lg p-4 mb-6">
-                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
-                    Demo Credentials
-                </h3>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Super Admin:</span>
-                        <span class="font-mono text-gray-800">super@smartgenedux.org</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">School Admin:</span>
-                        <span class="font-mono text-gray-800">admin@school.edu</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Teacher:</span>
-                        <span class="font-mono text-gray-800">teacher@school.edu</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Password:</span>
-                        <span class="font-mono text-gray-800">demo123</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" class="space-y-6">
-                <!-- Email Input -->
-                <div class="input-group">
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="email">Email Address</label>
-                </div>
-
-                <!-- Password Input -->
-                <div class="input-group">
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="password">Password</label>
-                </div>
-
-                <!-- Remember Me & Forgot Password -->
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center">
-                        <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                    </label>
-                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
-                </div>
-
-                <!-- Login Button -->
-                <button 
-                    type="submit" 
-                    class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
-                >
-                    <i class="fas fa-sign-in-alt mr-2"></i>
-                    Sign In
-                </button>
-
-                <!-- Quick Login Buttons -->
-                <div class="grid grid-cols-3 gap-2 mt-4">
-                    <button 
-                        type="button" 
-                        onclick="quickLogin('super@smartgenedux.org', 'demo123')"
-                        class="bg-blue-100 text-blue-700 py-2 px-3 rounded text-xs font-medium hover:bg-blue-200 transition-colors"
-                    >
-                        Super Admin
-                    </button>
-                    <button 
-                        type="button" 
-                        onclick="quickLogin('admin@school.edu', 'demo123')"
-                        class="bg-green-100 text-green-700 py-2 px-3 rounded text-xs font-medium hover:bg-green-200 transition-colors"
-                    >
-                        School Admin
-                    </button>
-                    <button 
-                        type="button" 
-                        onclick="quickLogin('teacher@school.edu', 'demo123')"
-                        class="bg-purple-100 text-purple-700 py-2 px-3 rounded text-xs font-medium hover:bg-purple-200 transition-colors"
-                    >
-                        Teacher
-                    </button>
-                </div>
-            </form>
-
-            <!-- Footer -->
-            <div class="text-center mt-6 pt-6 border-t border-gray-200">
-                <p class="text-sm text-gray-600">
-                    Don't have an account? 
-                    <a href="register.html" class="text-blue-600 hover:text-blue-800 font-medium">Create Account</a>
-                </p>
-                <p class="text-xs text-gray-500 mt-2">
-                    Or <a href="#" class="text-blue-600 hover:text-blue-800">Contact Administrator</a> for enterprise setup
-                </p>
-            </div>
+        <!-- Password Input -->
+        <div class="input-group">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder=" "
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+            required
+          />
+          <label for="password">Password</label>
         </div>
 
-        <!-- Footer -->
-        <div class="text-center mt-8 text-white text-sm">
-            <p>© 2024 SmartGenEduX. All rights reserved.</p>
-            <p class="mt-2 text-blue-200">Powered by Advanced School Management Technology</p>
+        <!-- Remember Me & Forgot Password -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              class="rounded border-gray-300 text-blue-600"
+              id="rememberMe"
+            />
+            <span class="ml-2 text-sm text-gray-600">Remember me</span>
+          </label>
+          <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
         </div>
+
+        <!-- Login Button -->
+        <button
+          type="submit"
+          class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+        >
+          <i class="fas fa-sign-in-alt mr-2"></i> Sign In
+        </button>
+      </form>
     </div>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg p-6 text-center">
-            <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p class="text-gray-600">Signing you in...</p>
-        </div>
+    <!-- Footer -->
+    <div class="text-center mt-8 text-white text-sm">
+      <p>© 2024 SmartGenEduX. All rights reserved.</p>
+      <p class="mt-2 text-blue-200">Powered by Advanced School Technology</p>
     </div>
+  </div>
 
-    <script>
-        // Demo user data
-        const demoUsers = {
-            'super@smartgenedux.org': {
-                password: 'demo123',
-                role: 'super_admin',
-                name: 'Super Administrator',
-                redirect: 'index.html'
-            },
-            'admin@school.edu': {
-                password: 'demo123',
-                role: 'school_admin',
-                name: 'School Administrator',
-                redirect: 'index.html'
-            },
-            'teacher@school.edu': {
-                password: 'demo123',
-                role: 'teacher',
-                name: 'Teacher',
-                redirect: 'index.html'
-            }
-        };
+  <!-- Loading Overlay -->
+  <div
+    id="loadingOverlay"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+  >
+    <div class="bg-white rounded-lg p-6 text-center">
+      <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+      <p class="text-gray-600">Signing in…</p>
+    </div>
+  </div>
 
-        // Quick login function
-        function quickLogin(email, password) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = password;
-        }
+  <script>
+    // Check if already logged in
+    if (localStorage.getItem("authToken")) {
+      window.location.href = "index.html";
+    }
 
-        // Handle form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Show loading
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            
-            // Simulate API call delay
-            setTimeout(() => {
-                // Check demo credentials
-                if (demoUsers[email] && demoUsers[email].password === password) {
-                    // Store user data for demo
-                    sessionStorage.setItem('currentUser', JSON.stringify({
-                        email: email,
-                        role: demoUsers[email].role,
-                        name: demoUsers[email].name,
-                        loginTime: new Date().toISOString()
-                    }));
-                    
-                    // Redirect to dashboard
-                    window.location.href = demoUsers[email].redirect;
-                } else {
-                    // Hide loading
-                    document.getElementById('loadingOverlay').classList.add('hidden');
-                    
-                    // Show error
-                    showError('Invalid email or password. Please use demo credentials.');
-                }
-            }, 1500);
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const rememberMe = document.getElementById("rememberMe").checked;
+      const errorMsg = document.getElementById("errorMsg");
+
+      // Clear previous error
+      errorMsg.textContent = "";
+      // Show loading
+      document.getElementById("loadingOverlay").classList.remove("hidden");
+
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
         });
 
-        // Show error message
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
-            errorDiv.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            const form = document.getElementById('loginForm');
-            form.insertBefore(errorDiv, form.firstChild);
-            
-            // Remove error after 5 seconds
-            setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Login failed");
         }
 
-        // Check if already logged in
-        if (sessionStorage.getItem('currentUser')) {
-            window.location.href = 'index.html';
+        const data = await response.json();
+        const token = data.token;
+
+        if (rememberMe) {
+          localStorage.setItem("authToken", token);
+        } else {
+          sessionStorage.setItem("authToken", token);
         }
-    </script>
+
+        // Redirect to main dashboard
+        window.location.href = "index.html";
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        document.getElementById("loadingOverlay").classList.add("hidden");
+      }
+    });
+  </script>
 </body>
 </html>
