@@ -3,588 +3,773 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admission Management - SmartGenEduX</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>🏫 Admission Management System</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        /* CSS from client/styles/admission.css */
-        .data-card { transition: transform 0.2s; }
-        .data-card:hover { transform: translateY(-3px); }
-        .status-tag { 
-            padding: 0.25rem 0.5rem; 
-            font-weight: 600; 
-            border-radius: 0.375rem; 
-            display: inline-block; 
+        body { background-color: #f0f4f8; font-family: 'Inter', sans-serif; }
+        .container-fluid { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #2c3e50; color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); border-radius: 0.5rem; }
+        .alert-fixed {
+            position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; border-radius: 0.5rem;
         }
-        .loading-shimmer {
-            background-color: #e2e8f0;
-            background: linear-gradient(to right, #f2f2f2 8%, #e0e0e0 18%, #f2f2f2 33%);
-            background-size: 800px 104px;
-            animation: shimmer 1.5s infinite linear;
+        .nav-tabs .nav-link.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
         }
-        @keyframes shimmer {
-            0% { background-position: -468px 0; }
-            100% { background-position: 468px 0; }
-        }
-        /* Custom accessibility focus styles */
-        :focus:not(:focus-visible) { outline: none; }
-        :focus-visible { outline: 2px solid #3b82f6; /* Tailwind blue-500 */ outline-offset: 2px; }
+        .status-applied { background-color: #3498db; color: white; }
+        .status-scheduled { background-color: #f1c40f; color: #333; }
+        .status-admitted { background-color: #27ae60; color: white; }
+        .status-rejected { background-color: #e74c3c; color: white; }
+        .status-default { background-color: #bdc3c7; color: #333; }
+        .history-item { font-size: 0.85rem; padding: 5px 0; border-bottom: 1px dashed #eee; }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
-        <!-- Header -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <header class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <i class="fas fa-user-graduate text-4xl text-blue-600 mr-4" aria-hidden="true"></i>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Admission Management</h1>
-                        <p class="text-gray-600">Complete student enrollment and verification workflow.</p>
+<body>
+
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-primary"><i class="bi bi-person-fill-add"></i> Admission Management Dashboard</h1>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="admissionTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button" role="tab"><i class="bi bi-list-check"></i> Application Review</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="decision-tab" data-bs-toggle="tab" data-bs-target="#decision" type="button" role="tab"><i class="bi bi-check2-circle"></i> Decision Workflow</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab"><i class="bi bi-bar-chart-line"></i> Statistics & Bulk</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab"><i class="bi bi-gear-fill"></i> Configuration</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="public-portal-tab" data-bs-toggle="tab" data-bs-target="#public-portal" type="button" role="tab"><i class="bi bi-door-open"></i> Public Status Check</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content pt-3" id="admissionTabContent">
+
+            <!-- 1. Application Review Tab (GET /applications, File Upload) -->
+            <div class="tab-pane fade show active" id="review" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Application List & Document Verification</div>
+                    <div class="card-body">
+                        
+                        <!-- Statistics Summary (Inline) -->
+                        <div id="review-stats-summary" class="row text-center mb-4">
+                            <!-- Stats loaded dynamically -->
+                        </div>
+
+                        <!-- Application Table -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>App No.</th>
+                                        <th>Applicant</th>
+                                        <th>Applied Class</th>
+                                        <th>Status</th>
+                                        <th>Submitted On</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="applicationsTableBody">
+                                    <tr><td colspan="6" class="text-center">Loading applications...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                <button onclick="window.location.href='../index.html'" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Back to Dashboard" title="Back to Dashboard" role="link">
-                    <i class="fas fa-arrow-left mr-2" aria-hidden="true"></i>Dashboard
-                </button>
-            </header>
-        </div>
+            </div>
 
-        <!-- Quick Stats (Dynamic Content) -->
-        <section id="statsContainer" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" role="region" aria-label="Admission Statistics">
-            <div id="statTotal" class="data-card bg-blue-600 text-white rounded-xl p-6">
-                <div class="text-xs text-blue-200">Total Applications</div>
-                <div class="stat-value text-3xl font-extrabold mt-1 loading-shimmer h-8 w-1/2 rounded" aria-live="polite"></div>
-            </div>
-            <div id="statApproved" class="data-card bg-green-600 text-white rounded-xl p-6">
-                <div class="text-xs text-green-200">Admitted (Finalized)</div>
-                <div class="stat-value text-3xl font-extrabold mt-1 loading-shimmer h-8 w-1/2 rounded" aria-live="polite"></div>
-            </div>
-            <div id="statPending" class="data-card bg-orange-600 text-white rounded-xl p-6">
-                <div class="text-xs text-orange-200">Pending Review</div>
-                <div class="stat-value text-3xl font-extrabold mt-1 loading-shimmer h-8 w-1/2 rounded" aria-live="polite"></div>
-            </div>
-            <div id="statIncomplete" class="data-card bg-purple-600 text-white rounded-xl p-6">
-                <div class="text-xs text-purple-200">Conversion Rate</div>
-                <div class="stat-value text-3xl font-extrabold mt-1 loading-shimmer h-8 w-1/2 rounded" aria-live="polite"></div>
-            </div>
-        </section>
+            <!-- 2. Decision Workflow Tab (Document Verification, Scheduling, Final Decision) -->
+            <div class="tab-pane fade" id="decision" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Application Workflow for: <span id="currentApplicantName" class="badge bg-light text-dark">Select Application</span></div>
+                    <div class="card-body">
+                        <div class="row">
+                            
+                            <!-- Document Verification Panel -->
+                            <div class="col-md-6 border-end">
+                                <h5>1. Document Verification & Upload</h5>
+                                <p class="text-muted">Review, upload, and verify required documents.</p>
+                                <div id="documentVerificationArea" class="mb-4">
+                                    <p class="alert alert-warning">Please select an application from the 'Application Review' tab to begin the workflow.</p>
+                                    <!-- Dynamic document list and verification buttons go here -->
+                                </div>
+                                
+                                <!-- Document Upload Form -->
+                                <h6 class="mt-4">Upload Supporting Document (Requires file selection)</h6>
+                                <form id="documentUploadForm" class="input-group">
+                                    <input type="hidden" id="uploadAppId">
+                                    <select class="form-select" id="documentTypeSelect" required>
+                                        <option value="">Select Document Type</option>
+                                        <!-- Document options dynamically generated from config -->
+                                    </select>
+                                    <input type="file" class="form-control" name="document" id="documentFileInput" required>
+                                    <button class="btn btn-secondary" type="submit" id="uploadDocBtn" disabled><i class="bi bi-upload"></i> Upload</button>
+                                </form>
+                            </div>
 
-        <!-- Admission Form Management / Configuration -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                            <!-- Scheduling & Final Decision Panel -->
+                            <div class="col-md-6">
+                                <h5>2. Scheduling & Final Decision</h5>
+                                
+                                <!-- Scheduling Form (POST /schedule) -->
+                                <h6 class="mt-3">Schedule Interview/Assessment</h6>
+                                <form id="scheduleForm" class="row g-2 mb-4">
+                                    <input type="hidden" id="scheduleAppId">
+                                    <div class="col-md-4"><select class="form-select" id="scheduleType" required><option value="interview">Interview</option><option value="assessment">Assessment</option></select></div>
+                                    <div class="col-md-4"><input type="date" class="form-control" id="scheduleDate" required></div>
+                                    <div class="col-md-4"><input type="time" class="form-control" id="scheduleTime" required></div>
+                                    <div class="col-12"><button type="submit" class="btn btn-warning w-100" id="scheduleBtn" disabled><i class="bi bi-calendar-plus"></i> Schedule & Notify Parent</button></div>
+                                </form>
+                                
+                                <hr>
+                                
+                                <!-- Final Decision Form (POST /admission-decision) -->
+                                <h5 class="text-danger">3. Final Approval (Principal Only)</h5>
+                                <form id="decisionForm" class="row g-3">
+                                    <input type="hidden" id="decisionAppId">
+                                    <div class="col-md-6"><label for="decisionClass" class="form-label">Allocated Class</label><input type="text" class="form-control" id="decisionClass" placeholder="e.g., 5th Grade" required></div>
+                                    <div class="col-md-6"><label for="decisionSection" class="form-label">Allocated Section</label><input type="text" class="form-control" id="decisionSection" placeholder="e.g., A" required></div>
+                                    <div class="col-12 d-flex justify-content-between mt-4">
+                                        <button type="button" class="btn btn-success btn-lg" id="admitBtn" data-decision="admitted" disabled><i class="bi bi-check-lg"></i> Admit</button>
+                                        <button type="button" class="btn btn-danger btn-lg" id="rejectBtn" data-decision="rejected" disabled><i class="bi bi-x-lg"></i> Reject</button>
+                                    </div>
+                                    <div class="col-12 mt-3"><p id="decisionWarning" class="text-danger small">Final approval is a permanent action that creates a student record if Admitted.</p></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Statistics & Bulk Operations Tab -->
+            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Admission Analytics & Bulk Tools</div>
+                    <div class="card-body">
+
+                        <!-- Statistics (GET /statistics) -->
+                        <h5 class="mb-3">Admission Funnel Summary</h5>
+                        <div id="statisticsArea" class="row text-center mb-5">
+                            <div class="col-md-4"><div class="p-3 border rounded bg-light"><h4 class="text-primary" id="statTotal">...</h4><p class="text-muted">Total Applications</p></div></div>
+                            <div class="col-md-4"><div class="p-3 border rounded bg-light"><h4 class="text-success" id="statAdmitted">...</h4><p class="text-muted">Admitted Students</p></div></div>
+                            <div class="col-md-4"><div class="p-3 border rounded bg-light"><h4 class="text-warning" id="statConversion">...</h4><p class="text-muted">Conversion Rate</p></div></div>
+                        </div>
+
+                        <hr>
+                        
+                        <!-- Bulk Operations (POST /bulk/upload, GET /bulk/download) -->
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <h5>Bulk Application Upload</h5>
+                                <p class="text-muted">Upload CSV/Excel file for batch application entry.</p>
+                                <form id="bulkUploadForm">
+                                    <div class="mb-3"><input type="file" class="form-control" name="file" id="bulkFileInput" accept=".csv, .xlsx" required></div>
+                                    <button type="submit" class="btn btn-primary" id="bulkUploadBtn"><i class="bi bi-file-earmark-arrow-up"></i> Start Bulk Upload</button>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Data Export & Reporting</h5>
+                                <p class="text-muted">Download comprehensive data sets for offline analysis.</p>
+                                <button class="btn btn-secondary" id="bulkDownloadBtn"><i class="bi bi-file-earmark-arrow-down"></i> Export All Data</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <!-- Configuration Panel -->
-            <nav id="configCard" class="bg-white rounded-xl shadow-lg p-6 lg:col-span-1 hidden" role="menu" aria-label="Module Configuration">
-                <h2 class="text-xl font-bold mb-4 text-gray-800"><i class="fas fa-cogs mr-2" aria-hidden="true"></i>Configuration & Setup</h2>
-                
-                <div class="space-y-4 border-t pt-4" role="group" aria-labelledby="workflow-settings">
-                    <h3 id="workflow-settings" class="font-bold text-gray-700 border-b pb-1">Workflow & Documents</h3>
-                    
-                    <div class="flex items-center justify-between">
-                        <label for="assessmentToggle" class="text-sm">Assessment Required</label>
-                        <input type="checkbox" id="assessmentToggle" class="form-checkbox h-5 w-5 text-blue-600 rounded-lg focus:ring-blue-500" aria-label="Toggle Assessment Required">
+            <!-- 4. Configuration Tab (Integrated GET/PUT /config) -->
+            <div class="tab-pane fade" id="config" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-secondary">System Configuration (Admission Manager Setup)</div>
+                    <div class="card-body">
+                        <p class="alert alert-info"><i class="bi bi-gear-fill"></i> Adjust key admission policies for the current academic cycle.</p>
+                        
+                        <form id="admissionConfigForm">
+                            <h5 class="mt-4">Intake Cycle Setup</h5>
+                            <div class="row g-3 mb-4 border p-3 rounded">
+                                <div class="col-md-4">
+                                    <label for="currentYear" class="form-label">Current Academic Year</label>
+                                    <input type="text" class="form-control" id="currentYear" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="maxIntake" class="form-label">Maximum Intake Capacity</label>
+                                    <input type="number" class="form-control" id="maxIntake" required min="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="admissionStatus" class="form-label">Global Admission Status</label>
+                                    <select class="form-select" id="admissionStatus">
+                                        <option value="open">Open for Applications</option>
+                                        <option value="closed">Closed for Applications</option>
+                                        <option value="waitlist_only">Waitlist Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Document Verification Checklist</h5>
+                            <div class="row g-3 mb-4 border p-3 rounded">
+                                <div class="col-md-6">
+                                    <label class="form-label">Required Documents (Checked = Mandatory):</label>
+                                    <div id="requiredDocsChecklist">
+                                        <!-- Checklist populated by JS from config -->
+                                        <p class="text-muted">Loading documents list...</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="verificationThreshold" class="form-label">Required Verification Threshold (%)</label>
+                                    <input type="number" class="form-control" id="verificationThreshold" min="0" max="100" required>
+                                    <div class="form-text">Percentage of documents that must be verified for workflow progression.</div>
+                                </div>
+                            </div>
+
+                            <h5 class="mt-4">Assessment & Notification Settings</h5>
+                            <div class="row g-3 mb-4 border p-3 rounded">
+                                <div class="col-md-6">
+                                    <label for="minAssessmentScore" class="form-label">Min Assessment Score (%)</label>
+                                    <input type="number" class="form-control" id="minAssessmentScore" min="0" max="100" required>
+                                    <div class="form-text">Score below which a candidate is flagged for review.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="defaultNotificationPhone" class="form-label">Default Admission Notification Phone</label>
+                                    <input type="text" class="form-control" id="defaultNotificationPhone" placeholder="+91..." required>
+                                    <div class="form-text">Primary number used for Arattai/WhatsApp integration tests.</div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-secondary mt-3" id="saveAdmissionConfigBtn"><i class="bi bi-save"></i> Save Configuration</button>
+                        </form>
+
                     </div>
-                    <div class="flex items-center justify-between">
-                        <label for="interviewToggle" class="text-sm">Interview Required</label>
-                        <input type="checkbox" id="interviewToggle" class="form-checkbox h-5 w-5 text-blue-600 rounded-lg focus:ring-blue-500" aria-label="Toggle Interview Required">
+                </div>
+            </div>
+
+            <!-- 5. Public Status Check Portal (GET /portal/:applicationNumber) -->
+            <div class="tab-pane fade" id="public-portal" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-info">Application Status Portal</div>
+                    <div class="card-body">
+                        <p class="alert alert-info">Enter the application number to check the current status and history.</p>
+                        
+                        <form id="statusCheckForm" class="input-group mb-4">
+                            <input type="text" class="form-control" id="checkAppNumber" placeholder="Enter Application Number (e.g., ADM20241234)" required>
+                            <button class="btn btn-info" type="submit" id="checkStatusBtn"><i class="bi bi-search"></i> Check Status</button>
+                        </form>
+
+                        <div id="portalResultArea" class="mt-4 p-3 border rounded bg-light" style="min-height: 150px;">
+                            <h5 id="portalStatusDisplay" class="mb-3"></h5>
+                            <p id="portalApplicantName"></p>
+                            <h6>Application History:</h6>
+                            <div id="portalHistoryList"></div>
+                        </div>
                     </div>
-
-                    <p class="text-sm font-medium pt-2">Compliance Documents</p>
-                    <button onclick="showMessage('Opening document list editor...', 'info')" class="w-full bg-yellow-100 text-yellow-700 px-4 py-3 rounded-lg hover:bg-yellow-200 text-left focus:outline-none focus:ring-2 focus:ring-yellow-500" title="Manage Document Requirements" aria-label="Manage Document Requirements" role="menuitem">
-                        <i class="fas fa-list-alt mr-2" aria-hidden="true"></i>Manage Required Documents
-                    </button>
                 </div>
+            </div>
 
-                <div class="space-y-3 border-t pt-4 mt-4" role="group" aria-labelledby="form-tools">
-                    <h3 id="form-tools" class="font-bold text-gray-700 border-b pb-1">Form Customization</h3>
-                    <button onclick="showMessage('Opening form builder utility...', 'info')" class="w-full bg-blue-100 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-200 text-left focus:outline-none focus:ring-2 focus:ring-blue-500" title="Customize Application Form" aria-label="Customize Application Form" role="menuitem">
-                        <i class="fas fa-file-invoice mr-2" aria-hidden="true"></i>Customize Form Fields
-                    </button>
-                    <button onclick="showMessage('Opening bulk upload utility...', 'info')" class="w-full bg-purple-100 text-purple-700 px-4 py-3 rounded-lg hover:bg-purple-200 text-left focus:outline-none focus:ring-2 focus:ring-purple-500" title="Bulk Upload Applications" aria-label="Bulk Upload Applications" role="menuitem">
-                        <i class="fas fa-upload mr-2" aria-hidden="true"></i>Bulk Upload Applications
-                    </button>
-                </div>
-            </nav>
-
-            <!-- Applications List -->
-            <section class="bg-white rounded-xl shadow-lg p-6 lg:col-span-3" role="region" aria-label="Application List">
-                <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-3 md:space-y-0">
-                    <h2 class="text-xl font-bold">Applications Awaiting Action</h2>
-                    
-                    <!-- Filters -->
-                    <div class="flex space-x-2 w-full md:w-auto">
-                        <select id="statusFilter" onchange="fetchApplications()" class="border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Filter by Admission Status">
-                            <option value="">All Statuses</option>
-                            <option value="under_review">Under Review</option>
-                            <option value="assessment_scheduled">Assessment</option>
-                            <option value="pending_fee">Pending Fee</option>
-                            <option value="admitted">Admitted</option>
-                        </select>
-                        <input id="searchFilter" type="search" placeholder="Search Student..." class="border rounded-lg p-2 text-sm w-full md:w-40 focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="debounce(fetchApplications, 300)()" aria-label="Search Applications" autocomplete="off">
-                        <button onclick="fetchApplications()" class="bg-gray-300 text-gray-800 px-3 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500" title="Refresh List" aria-label="Refresh List">
-                            <i class="fas fa-sync-alt" aria-hidden="true"></i>
-                        </button>
-                        <button onclick="exportApplications()" class="bg-green-600 text-white px-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500" title="Export All Data" aria-label="Export All Data">
-                            <i class="fas fa-download" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                </header>
-                
-                <!-- Application List Table -->
-                <div class="overflow-x-auto">
-                    <table id="applicationTable" class="min-w-full text-sm" role="table" aria-label="List of Student Applications">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th class="px-4 py-3 text-left">ID</th>
-                                <th class="px-4 py-3 text-left">Student Name</th>
-                                <th class="px-4 py-3 text-left">Applied Class</th>
-                                <th class="px-4 py-3 text-left">Status</th>
-                                <th class="px-4 py-3 text-left">Date</th>
-                                <th class="px-4 py-3 text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="applicationList" role="rowgroup">
-                            <!-- Loading Rows -->
-                            <tr><td colspan="6" class="text-center py-4"><div class="loading-shimmer h-6 w-full rounded"></div></td></tr>
-                            <tr><td colspan="6" class="text-center py-4"><div class="loading-shimmer h-6 w-full rounded"></div></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination/Load More -->
-                <div id="paginationControls" class="mt-4 flex justify-center space-x-4">
-                    <button onclick="fetchApplications({ loadMore: true })" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500" id="loadMoreBtn" disabled aria-label="Load More Applications">
-                        Load More Applications
-                    </button>
-                </div>
-            </section>
         </div>
     </div>
 
-    <!-- Modal Placeholder -->
-    <div id="modalContainer"></div>
-    <div id="ariaLiveRegion" role="status" aria-live="polite" class="sr-only" aria-atomic="true"></div>
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- CRITICAL FIX: Externalized JavaScript -->
     <script>
-        // JS from client/js/admission.js
-        const API_BASE_URL = window.SMARTGEN_CONFIG ? window.SMARTGEN_CONFIG.apiBaseUrl : '/api/v1';
-        let currentUser = {}; 
-        let applicationPage = 0;
-        const PAGE_SIZE = 10;
-        let debounceTimeout;
+        const API_BASE = ''; 
+        let currentSelectedApplication = null;
+        let globalAdmissionConfig = {}; // Stores fetched configuration
 
-        // --- Utility Functions (Error/Message/Debounce/ARIA) ---
-        function showMessage(message, type) {
-            const colors = { 'success': 'bg-green-600', 'error': 'bg-red-600', 'info': 'bg-blue-600' };
-            const icons = { 'success': 'check', 'error': 'exclamation-triangle', 'info': 'info-circle' };
-            const statusMap = { 'success': 'Success', 'error': 'Error', 'info': 'Information' };
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
-            messageDiv.innerHTML = `<i class="fas fa-${icons[type]} mr-2" aria-hidden="true"></i>${message}`;
-            document.body.appendChild(messageDiv);
-
-            // ARIA Live Region Announcement
-            const ariaLive = document.getElementById('ariaLiveRegion');
-            if (ariaLive) ariaLive.textContent = `${statusMap[type]}: ${message}`;
-            
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
             setTimeout(() => {
-                messageDiv.classList.add('opacity-0');
-                setTimeout(() => messageDiv.remove(), 300);
-            }, 4000);
+                area.style.display = 'none';
+            }, 7000);
+        }
+        
+        // Helper function to replace window.confirm (as alerts are blocked)
+        function customConfirm(message) {
+            return window.prompt(message + " (Type 'YES' to proceed)") === 'YES';
         }
 
-        function debounce(func, delay) {
-            return function() {
-                clearTimeout(debounceTimeout);
-                debounceTimeout = setTimeout(() => func.apply(this, arguments), delay);
-            };
-        }
-
-        function formatDate(isoString) {
-            if (!isoString) return '—';
-            // Use 'en-IN' locale for Indian context
-            return new Date(isoString).toLocaleDateString('en-IN', {
-                year: 'numeric', month: 'short', day: 'numeric'
-            });
-        }
-
-        // --- API Abstraction (Handles Auth/Errors) ---
-
-        async function apiFetch(url, method = 'GET', body = null) {
-            // NOTE: Tokens should ideally be stored in HttpOnly cookies for security
-            const token = localStorage.getItem('smartgenedux_token'); 
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
-            
+        /** Core Fetch Function with Error Handling. */
+        async function apiFetch(endpoint, method = 'GET', body = null, isFormData = false) {
             try {
-                const response = await fetch(url, {
-                    method,
-                    headers,
-                    body: body ? JSON.stringify(body) : null
-                });
-
-                if (response.status === 401 || response.status === 403) {
-                    showMessage('Session expired or unauthorized. Please log in again.', 'error');
-                    throw new Error('AUTH_FAILED');
+                const options = { method: method };
+                
+                if (!isFormData) {
+                    options.headers = { 'Content-Type': 'application/json' };
+                    if (body && method !== 'GET') { options.body = JSON.stringify(body); }
+                } else if (body && method !== 'GET') {
+                    options.body = body;
                 }
 
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
                 const data = await response.json();
-                if (!response.ok || data.success === false) {
-                    throw new Error(data.error || 'API call failed with unknown error.');
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
                 }
                 return data;
 
             } catch (error) {
-                console.error("API Fetch Error:", error);
-                return { success: false, error: error.message }; 
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error.', 'danger');
+                throw error;
             }
         }
 
+        // --- STATUS & HISTORY HELPERS ---
+        function getStatusBadge(status) {
+            const normalizedStatus = status.toLowerCase().replace(/[^a-z]/g, '');
+            const statusClass = normalizedStatus.includes('scheduled') ? 'scheduled' : 
+                                normalizedStatus.includes('admitted') ? 'admitted' :
+                                normalizedStatus.includes('rejected') ? 'rejected' : 
+                                normalizedStatus.includes('applied') ? 'applied' : 'default';
 
-        // --- Core Authentication and Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // NOTE: For final security, switch token storage to HttpOnly cookies.
-            currentUser.role = localStorage.getItem('smartgenedux_role') || 'school_admin';
-            currentUser.schoolId = localStorage.getItem('smartgenedux_schoolid') || '00000000-0000-0000-0000-000000000001';
+            return `<span class="badge status-${statusClass}">${status.toUpperCase()}</span>`;
+        }
+        
+        function formatHistory(historyJson) {
+            let history;
+            try {
+                history = JSON.parse(historyJson);
+            } catch (e) {
+                history = historyJson; 
+            }
             
-            checkRolePermissions();
-            fetchStatistics();
-            fetchApplications();
+            if (!Array.isArray(history)) return '<p class="text-muted">No history recorded.</p>';
+            
+            return history.map(item => {
+                const date = new Date(item.timestamp).toLocaleString();
+                let details = item.doc ? `(${item.doc})` : (item.date ? `(${item.date} @ ${item.time})` : '');
+                
+                return `<div class="history-item"><strong>${item.status.toUpperCase()}</strong> ${details} by ${item.actor} on ${date}</div>`;
+            }).join('');
+        }
+        
+        // --- CONFIGURATION LOGIC (GET/PUT /config) ---
+
+        async function fetchConfig() {
+            try {
+                const data = await apiFetch('/config');
+                const settings = data.settings;
+                globalAdmissionConfig = settings;
+
+                // 1. Populate form fields
+                document.getElementById('currentYear').value = settings.currentYear || '';
+                document.getElementById('maxIntake').value = settings.maxIntake || 0;
+                document.getElementById('admissionStatus').value = settings.admissionStatus || 'open';
+                document.getElementById('verificationThreshold').value = settings.verificationThreshold || 100;
+                document.getElementById('minAssessmentScore').value = settings.minAssessmentScore || 70;
+                document.getElementById('defaultNotificationPhone').value = settings.defaultNotificationPhone || '';
+                
+                // 2. Render Document Checklist
+                renderDocumentChecklist(settings.requiredDocs);
+                
+                // 3. Update Document Upload Select Options
+                renderDocumentUploadOptions(settings.requiredDocs);
+
+            } catch (error) {
+                 console.error("Configuration fetch failed:", error);
+                 showNotification("Failed to load configuration. Using defaults.", 'danger');
+            }
+        }
+        
+        function renderDocumentChecklist(requiredDocs) {
+            const listDiv = document.getElementById('requiredDocsChecklist');
+            listDiv.innerHTML = '';
+            
+            const standardDocs = [
+                { key: 'birth_certificate', label: 'Birth Certificate' },
+                { key: 'mark_sheet', label: 'Previous Mark Sheet' },
+                { key: 'photo', label: 'Passport Size Photo' },
+                { key: 'transfer_certificate', label: 'Transfer Certificate' }
+            ];
+
+            standardDocs.forEach(doc => {
+                const checked = requiredDocs.includes(doc.key) ? 'checked' : '';
+                listDiv.innerHTML += `
+                    <div class="form-check">
+                        <input class="form-check-input required-doc-checkbox" type="checkbox" id="doc-${doc.key}" value="${doc.key}" ${checked}>
+                        <label class="form-check-label" for="doc-${doc.key}">${doc.label}</label>
+                    </div>
+                `;
+            });
+        }
+        
+        function renderDocumentUploadOptions(requiredDocs) {
+            const select = document.getElementById('documentTypeSelect');
+            select.innerHTML = '<option value="">Select Document Type</option>';
+            
+            requiredDocs.forEach(docKey => {
+                select.innerHTML += `<option value="${docKey}">${docKey.replace(/_/g, ' ').toUpperCase()}</option>`;
+            });
+        }
+
+
+        document.getElementById('admissionConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('saveAdmissionConfigBtn');
+            btn.disabled = true;
+
+            // Collect required documents from checked boxes
+            const requiredDocs = Array.from(document.querySelectorAll('.required-doc-checkbox:checked')).map(cb => cb.value);
+
+            const payload = {
+                currentYear: form.currentYear.value,
+                maxIntake: parseInt(form.maxIntake.value),
+                admissionStatus: form.admissionStatus.value,
+                verificationThreshold: parseInt(form.verificationThreshold.value),
+                minAssessmentScore: parseInt(form.minAssessmentScore.value),
+                defaultNotificationPhone: form.defaultNotificationPhone.value,
+                requiredDocs: requiredDocs
+            };
+            
+            try {
+                const data = await apiFetch('/config', 'PUT', payload);
+                showNotification(data.message, 'success');
+                fetchConfig(); // Reload config to confirm changes
+            } catch (error) {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
         });
 
-        function checkRolePermissions() {
-            const configCard = document.getElementById('configCard');
-            // Principal/Super Admin/School Admin can manage configuration
-            if (currentUser.role === 'school_admin' || currentUser.role === 'principal' || currentUser.role === 'super_admin') {
-                configCard.classList.remove('hidden');
+
+        // --- 1. APPLICATION REVIEW LOGIC ---
+
+        async function fetchApplications() {
+            const tableBody = document.getElementById('applicationsTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading applications...</td></tr>';
+            
+            try {
+                const data = await apiFetch('/applications');
+                
+                tableBody.innerHTML = '';
+                if (data.applications.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No admission applications found.</td></tr>';
+                    return;
+                }
+                
+                data.applications.forEach(app => {
+                    const appliedClass = app.application_data?.appliedForClass || 'N/A';
+                    const createdAt = new Date(app.created_at).toLocaleDateString();
+
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${app.application_number}</td>
+                        <td>${app.applicant_name}</td>
+                        <td>${appliedClass}</td>
+                        <td>${getStatusBadge(app.admission_status)}</td>
+                        <td>${createdAt}</td>
+                        <td><button class="btn btn-sm btn-primary review-app-btn" data-id="${app.id}" data-app-data='${JSON.stringify(app)}'><i class="bi bi-arrow-right-circle"></i> Review</button></td>
+                    `;
+                });
+                
+                fetchStatistics(); // Update stats immediately after fetching apps
+
+            } catch {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load applications.</td></tr>';
             }
         }
+        
+        // Handle 'Review' button click to populate the Decision tab
+        document.getElementById('applicationsTableBody').addEventListener('click', (e) => {
+            const button = e.target.closest('.review-app-btn');
+            if (button) {
+                const appData = JSON.parse(button.getAttribute('data-app-data'));
+                currentSelectedApplication = appData;
+                
+                // Set UI context
+                document.getElementById('currentApplicantName').textContent = `${appData.applicant_name} (${appData.application_number})`;
+                document.getElementById('uploadAppId').value = appData.id;
+                document.getElementById('scheduleAppId').value = appData.id;
+                document.getElementById('decisionAppId').value = appData.id;
+                
+                // Enable forms
+                document.getElementById('uploadDocBtn').disabled = false;
+                document.getElementById('scheduleBtn').disabled = false;
+                document.getElementById('admitBtn').disabled = false;
+                document.getElementById('rejectBtn').disabled = false;
 
+                renderDocumentVerification(appData.id, appData.application_data);
 
-        // --- Data Fetching ---
+                // Switch to decision tab
+                const decisionTabBtn = document.getElementById('decision-tab');
+                const bsTab = new bootstrap.Tab(decisionTabBtn);
+                bsTab.show();
+            }
+        });
 
-        function setStatLoading(isLoading) {
-            document.querySelectorAll('#statsContainer .stat-value').forEach(el => {
-                if (isLoading) {
-                    el.classList.add('loading-shimmer', 'h-8', 'w-1/2');
-                    el.textContent = '';
-                } else {
-                    el.classList.remove('loading-shimmer', 'h-8', 'w-1/2');
-                }
+        // --- 2. DECISION WORKFLOW LOGIC ---
+
+        function renderDocumentVerification(appId, appData) {
+            const area = document.getElementById('documentVerificationArea');
+            const requiredDocs = globalAdmissionConfig.requiredDocs || [];
+            const documentMap = {};
+            
+            requiredDocs.forEach(docType => {
+                documentMap[docType] = appData?.application_data?.documents?.[docType] || {};
             });
+            
+            let html = '<ul class="list-group">';
+            
+            if (Object.keys(documentMap).length === 0) {
+                 html = '<p class="alert alert-warning">No mandatory documents defined in configuration.</p>';
+            } else {
+                 for (const docType in documentMap) {
+                    const doc = documentMap[docType];
+                    const uploaded = doc.uploaded || false;
+                    const verified = doc.verified || false;
+                    const statusText = uploaded ? (verified ? 'Verified' : 'Review Required') : 'Missing';
+                    const statusClass = verified ? 'text-success' : (uploaded ? 'text-warning' : 'text-danger');
+                    
+                    html += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${docType.replace(/_/g, ' ').toUpperCase()}
+                            <span class="${statusClass} small fw-bold">${statusText}</span>
+                            <div>
+                                ${uploaded ? `<button class="btn btn-sm btn-outline-success verify-doc-btn" data-id="${appId}" data-type="${docType}" data-verified="true" ${verified ? 'disabled' : ''}>Verify</button> ` : ''}
+                                ${uploaded && !verified ? `<button class="btn btn-sm btn-outline-danger verify-doc-btn" data-id="${appId}" data-type="${docType}" data-verified="false">Reject</button>` : ''}
+                                ${uploaded && doc.path ? `<a href="${doc.path}" target="_blank" class="btn btn-sm btn-info ms-2"><i class="bi bi-eye"></i> View</a>` : ''}
+                            </div>
+                        </li>
+                    `;
+                }
+                html += '</ul>';
+            }
+            area.innerHTML = html;
         }
+
+        // POST Document Upload
+        document.getElementById('documentUploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const appId = document.getElementById('uploadAppId').value;
+            const docType = document.getElementById('documentTypeSelect').value;
+            
+            const formData = new FormData(form);
+            formData.append('documentType', docType);
+
+            const btn = document.getElementById('uploadDocBtn');
+            btn.disabled = true;
+
+            try {
+                const data = await apiFetch(`/applications/${appId}/upload-document`, 'POST', formData, true);
+                showNotification(data.message, 'success');
+                fetchApplications(); // Refresh table to get updated app data
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        
+        // POST Document Verification
+        document.getElementById('documentVerificationArea').addEventListener('click', async (e) => {
+            const button = e.target.closest('.verify-doc-btn');
+            if (button) {
+                const appId = button.getAttribute('data-id');
+                const docType = button.getAttribute('data-type');
+                const isVerified = button.getAttribute('data-verified') === 'true';
+
+                try {
+                    const data = await apiFetch(`/applications/${appId}/verify-document`, 'POST', { documentType: docType, isVerified: isVerified });
+                    showNotification(data.message, 'success');
+                    fetchApplications(); // Refresh list to get updated status
+                } catch {
+                    // Error handled by apiFetch
+                }
+            }
+        });
+        
+        // POST Schedule Assessment/Interview
+        document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const appId = document.getElementById('scheduleAppId').value;
+
+            const payload = {
+                scheduleType: form.scheduleType.value,
+                date: form.scheduleDate.value,
+                time: form.scheduleTime.value
+            };
+            
+            const btn = document.getElementById('scheduleBtn');
+            btn.disabled = true;
+
+            try {
+                const data = await apiFetch(`/applications/${appId}/schedule`, 'POST', payload);
+                showNotification(data.message, 'success');
+                fetchApplications(); // Refresh list to see status change
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        
+        // POST Final Admission Decision (Admit/Reject)
+        document.getElementById('decisionForm').addEventListener('click', async (e) => {
+            const decisionBtn = e.target.closest('button[data-decision]');
+            if (!decisionBtn) return;
+            
+            const decision = decisionBtn.getAttribute('data-decision');
+            const appId = document.getElementById('decisionAppId').value;
+            const allocatedClass = document.getElementById('decisionClass').value;
+            const allocatedSection = document.getElementById('decisionSection').value;
+
+            if (decision === 'admitted' && (!allocatedClass || !allocatedSection)) {
+                showNotification("Allocated Class and Section are required for admission.", 'warning');
+                return;
+            }
+            
+            if (!customConfirm(`Confirm final decision: ${decision.toUpperCase()}? This action is permanent and creates a student record if Admitted.`)) return;
+
+            decisionBtn.disabled = true;
+
+            const payload = { decision, allocatedClass, allocatedSection };
+            
+            try {
+                const data = await apiFetch(`/applications/${appId}/admission-decision`, 'POST', payload);
+                showNotification(data.message, 'success');
+                fetchApplications(); // Refresh list
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                decisionBtn.disabled = false;
+            }
+        });
+
+
+        // --- 3. STATISTICS & BULK OPERATIONS LOGIC ---
 
         async function fetchStatistics() {
-            setStatLoading(true);
             try {
-                const data = await apiFetch(`${API_BASE_URL}/admission/statistics`);
+                const data = await apiFetch('/statistics');
+                const summary = data.summary;
+                
+                document.getElementById('statTotal').textContent = summary.totalApplications;
+                document.getElementById('statAdmitted').textContent = summary.admitted;
+                document.getElementById('statConversion').textContent = summary.conversionRate;
+                
+                // Update inline review stats summary (mocking a simple view here)
+                document.getElementById('review-stats-summary').innerHTML = `
+                    <div class="col-md-3"><div class="p-2 border rounded bg-light"><strong>Total:</strong> ${summary.totalApplications}</div></div>
+                    <div class="col-md-3"><div class="p-2 border rounded status-admitted"><strong>Admitted:</strong> ${summary.admitted}</div></div>
+                    <div class="col-md-3"><div class="p-2 border rounded status-rejected"><strong>Rejected:</strong> ${summary.rejected}</div></div>
+                    <div class="col-md-3"><div class="p-2 border rounded status-applied"><strong>Pending:</strong> ${summary.totalApplications - summary.admitted - summary.rejected}</div></div>
+                `;
 
-                if (data.success) {
-                    document.querySelector('#statTotal .text-3xl').textContent = data.summary.totalApplications || 0;
-                    document.querySelector('#statApproved .text-3xl').textContent = data.summary.admitted || 0;
-                    document.querySelector('#statPending .text-3xl').textContent = data.summary.pending || 0;
-                    document.querySelector('#statIncomplete .text-3xl').textContent = `${data.summary.conversionRate || 'N/A'}`;
-                } else {
-                    showMessage('Failed to load stats. Retrying.', 'error');
-                }
-                setStatLoading(false);
             } catch (error) {
-                setStatLoading(false);
+                console.error("Stats fetch error:", error);
             }
         }
 
-        async function fetchApplications(options = {}) {
-            const listBody = document.getElementById('applicationList');
-            const loadMoreBtn = document.getElementById('loadMoreBtn');
-            const status = document.getElementById('statusFilter').value;
-            const search = document.getElementById('searchFilter').value;
-
-            if (!options.loadMore) {
-                applicationPage = 0;
-                listBody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i>Loading applications...</td></tr>';
-            }
-            loadMoreBtn.disabled = true;
-
-
-            const url = new URL(`${API_BASE_URL}/admission/applications`);
-            url.searchParams.append('limit', PAGE_SIZE);
-            url.searchParams.append('offset', applicationPage * PAGE_SIZE);
-            if (status) url.searchParams.append('status', status);
-            if (search) url.searchParams.append('search', search);
-
+        // POST Bulk Upload
+        document.getElementById('bulkUploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const btn = document.getElementById('bulkUploadBtn');
+            btn.disabled = true;
 
             try {
-                const data = await apiFetch(url.toString());
+                const data = await apiFetch('/bulk/upload', 'POST', formData, true);
+                showNotification(data.message, 'success');
+                form.reset();
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        
+        // GET Bulk Download
+        document.getElementById('bulkDownloadBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('bulkDownloadBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Initiating...';
+            
+            try {
+                const data = await apiFetch('/bulk/download');
+                showNotification(data.message, 'info');
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
 
-                if (!options.loadMore) listBody.innerHTML = '';
-                    
-                if(data.success) {
-                    data.applications.forEach(app => listBody.appendChild(createApplicationRow(app)));
-                        
-                    if (data.applications.length < PAGE_SIZE) {
-                        loadMoreBtn.style.display = 'none';
-                    } else {
-                        loadMoreBtn.style.display = 'block';
-                        loadMoreBtn.disabled = false;
-                        applicationPage++;
-                    }
-
-                    if (listBody.children.length === 0) {
-                         listBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No applications match your criteria.</td></tr>';
-                    }
+        // --- 5. PUBLIC STATUS CHECK LOGIC ---
+        
+        document.getElementById('statusCheckForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const appNumber = document.getElementById('checkAppNumber').value;
+            const resultArea = document.getElementById('portalResultArea');
+            const statusDisplay = document.getElementById('portalStatusDisplay');
+            const historyList = document.getElementById('portalHistoryList');
+            
+            resultArea.classList.add('bg-light');
+            statusDisplay.textContent = 'Searching...';
+            historyList.innerHTML = '';
+            
+            try {
+                const data = await apiFetch(`/portal/${appNumber}`);
+                
+                const currentStatus = data.status || 'N/A';
+                const applicantName = data.details?.studentName || 'Applicant Details Unavailable';
+                
+                statusDisplay.innerHTML = `Current Status: ${getStatusBadge(currentStatus)}`;
+                document.getElementById('portalApplicantName').textContent = `Applicant: ${applicantName}`;
+                historyList.innerHTML = formatHistory(data.history);
+                
+                if (currentStatus === 'admitted') {
+                    resultArea.classList.remove('bg-light');
+                    resultArea.style.backgroundColor = '#ecf8e9'; // Light green for admitted
                 } else {
-                    // Error recovery with retry button
-                     listBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">${data.error || 'Failed to load data.'} <button onclick="fetchApplications()" class="text-blue-600 hover:underline" aria-label="Retry loading applications" role="button">Retry</button></td></tr>`;
+                    resultArea.style.backgroundColor = '';
                 }
+
             } catch (error) {
-                 // Catches AUTH_FAILED errors from apiFetch
-                 listBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Connection Error. <button onclick="fetchApplications()" class="text-blue-600 hover:underline" aria-label="Retry loading applications" role="button">Retry</button></td></tr>`;
+                statusDisplay.innerHTML = `<span class="badge bg-danger">Error / Not Found</span>`;
+                document.getElementById('portalApplicantName').textContent = `Error: ${error.message}`;
+                historyList.innerHTML = '<p class="text-muted">Could not retrieve application history.</p>';
             }
-        }
+        });
 
 
-        // --- UI Rendering ---
-
-        function getStatusTag(status) {
-            const classes = {
-                'applied': 'bg-blue-100 text-blue-800',
-                'under_review': 'bg-yellow-100 text-yellow-800',
-                'assessment_scheduled': 'bg-purple-100 text-purple-800',
-                'approved': 'bg-green-100 text-green-800',
-                'admitted': 'bg-indigo-100 text-indigo-800',
-                'rejected': 'bg-red-100 text-red-800',
-                'pending_fee': 'bg-pink-100 text-pink-800'
-            };
-            const displayStatus = status.replace(/_/g, ' ').toUpperCase();
-            return `<span class="status-tag ${classes[status] || 'bg-gray-100 text-gray-800'}">${displayStatus}</span>`;
-        }
-
-        function createApplicationRow(app) {
-            const row = document.createElement('tr');
-            row.className = 'border-t hover:bg-gray-50';
-            row.setAttribute('role', 'row');
-
-            const appData = app.application_data || {}; 
-            const actions = [];
-
-            // Helper for action buttons
-            const addButton = (icon, status, label, className = 'text-gray-600', actionFunc) => `
-                <button onclick="${actionFunc}('${app.id}', '${app.applicant_name}', '${status}')" 
-                        class="${className} hover:text-blue-800" 
-                        aria-label="${label}" 
-                        title="${label}"
-                        role="button"
-                        tabindex="0">
-                    <i class="fas fa-${icon}" aria-hidden="true"></i>
-                </button>`;
-
-            // 1. View Details (Always available)
-            actions.push(addButton('eye', app.admission_status, 'View Details', 'text-blue-600', 'reviewApplication'));
-
-            // 2. Schedule Assessment (Admin/Principal for 'under_review')
-            if ((currentUser.role === 'school_admin' || currentUser.role === 'principal') && app.admission_status === 'under_review') {
-                actions.push(addButton('calendar-check', 'assessment', 'Schedule Assessment', 'text-orange-600', 'scheduleAssessment'));
-            }
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date/time for scheduling form
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('scheduleDate').value = today;
+            document.getElementById('scheduleTime').value = '10:00';
             
-            // 3. Final Decision (Principal/Super Admin for 'approved' or 'assessment_passed')
-            if ((currentUser.role === 'principal' || currentUser.role === 'super_admin') && (app.admission_status === 'approved' || app.admission_status === 'assessment_passed')) {
-                actions.push(addButton('graduation-cap', app.admission_status, 'Final Decision/Admit', 'text-red-600', 'finalDecision'));
-            }
-
-            row.innerHTML = `
-                <td class="px-4 py-3 font-medium" role="cell">#${app.application_number}</td>
-                <td class="px-4 py-3" role="cell">${app.applicant_name || 'N/A'}</td>
-                <td class="px-4 py-3" role="cell">${appData.appliedForClass || '—'}</td>
-                <td class="px-4 py-3" role="cell">${getStatusTag(app.admission_status)}</td>
-                <td class="px-4 py-3" role="cell">${formatDate(app.created_at)}</td>
-                <td class="px-4 py-3" role="cell">
-                    <div class="flex space-x-2">${actions.join('')}</div>
-                </td>
-            `;
-            return row;
-        }
-
-
-        // --- Frontend API Interaction Functions (Using Abstraction) ---
-
-        async function scheduleAssessment(id, name, type) {
-             const action = type.charAt(0).toUpperCase() + type.slice(1);
-             if (!confirm(`Are you sure you want to schedule ${action} for application ${name}?`)) return;
-
-             showMessage(`Scheduling ${type}...`, 'info');
-             
-             try {
-                 const body = { scheduleType: type, date: new Date().toISOString().split('T')[0], time: '10:00' };
-                 await apiFetch(`${API_BASE_URL}/admission/applications/${id}/schedule`, 'POST', body);
-                 
-                 showMessage('Assessment scheduled and parent notified.', 'success');
-                 fetchApplications({ loadMore: false }); 
-             } catch (e) {
-                 showMessage(`Error scheduling: ${e.message}`, 'error');
-             }
-        }
-
-        async function reviewApplication(id, name) {
-             openModal('DetailView', `Reviewing Application: ${name}`, `
-                <div id="reviewContent"><i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i>Fetching detailed data...</div>
-             `);
-
-             try {
-                 const data = await apiFetch(`${API_BASE_URL}/admission/applications/${id}`);
-                 const app = data.application;
-                 // NOTE: Using fallback for nested data until full API implementation
-                 const assessment = app.application_data?.assessment || { percentage: 'N/A' }; 
-                 const documents = app.application_data?.documents || [];
-                 
-                 document.getElementById('reviewContent').innerHTML = `
-                    <div class="border-b pb-2 mb-4">
-                        <p class="text-sm font-semibold">Status History:</p>
-                        <p class="text-xs text-gray-600">${app.status_history?.map(h => `${h.status} at ${formatDate(h.timestamp)}`).join(' → ') || 'Applied'}</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <p><strong>Class:</strong> ${app.appliedForClass}</p>
-                        <p><strong>DOB:</strong> ${formatDate(app.personalDetails?.dateOfBirth)}</p>
-                        <p><strong>Father Phone:</strong> ${app.parentDetails?.fatherPhone || 'N/A'}</p>
-                        <p><strong>Assessment Score:</strong> <span class="font-bold text-red-600">${assessment.percentage}%</span></p>
-                    </div>
-                    <h3 class="font-bold mt-4 mb-2 border-t pt-2">Document Verification</h3>
-                    <ul class="space-y-1 text-sm max-h-40 overflow-y-auto">
-                        ${documents.map(doc => `
-                            <li class="flex justify-between items-center p-1 bg-gray-50 rounded">
-                                <span><i class="fas fa-file-pdf mr-2 text-red-500"></i> ${doc.name}</span>
-                                <span class="${doc.verified ? 'text-green-600' : 'text-orange-600'} font-semibold">
-                                    ${doc.verified ? 'Verified' : 'Pending'}
-                                </span>
-                            </li>
-                        `).join('')}
-                    </ul>
-                 `;
-             } catch (e) {
-                 document.getElementById('reviewContent').innerHTML = `<p class="text-red-600">Failed to load details: ${e.message}</p>`;
-             }
-        }
-
-        function finalDecision(id, name) {
-            openModal('DecisionModal', `Final Decision: ${name}`, `
-                <p class="mb-4 text-lg font-medium text-red-700">Warning: This action is irreversible and creates a student record.</p>
-                <div class="mt-6 space-y-4">
-                    <div>
-                        <label for="allocatedClass" class="block text-sm font-medium text-gray-700">Allocate Class/Section (e.g., 9A):</label>
-                        <input type="text" id="allocatedClass" placeholder="e.g., 9A" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" aria-required="true" aria-label="Allocate Class and Section">
-                        <p id="classError" class="text-xs text-red-500 mt-1 hidden">Class format is required (e.g., 9A).</p>
-                    </div>
-                    <div>
-                        <label for="finalRemarks" class="block text-sm font-medium text-gray-700">Remarks:</label>
-                        <textarea id="finalRemarks" rows="2" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" aria-label="Final Admission Remarks"></textarea>
-                    </div>
-                </div>
-                <div class="mt-6 flex justify-end space-x-3">
-                    <button onclick="processFinalDecision('${id}', 'admitted')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" aria-label="Admit Student">
-                        <i class="fas fa-check mr-2" aria-hidden="true"></i>Admit
-                    </button>
-                    <button onclick="processFinalDecision('${id}', 'rejected')" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700" aria-label="Reject Application">
-                        <i class="fas fa-times mr-2" aria-hidden="true"></i>Reject
-                    </button>
-                </div>
-            `);
-        }
-
-        async function processFinalDecision(id, decision) {
-             const allocatedClassInput = document.getElementById('allocatedClass');
-             const classError = document.getElementById('classError');
-             
-             // Client-side validation for Class/Section format (e.g., 9A, 10B)
-             const classRegex = /^\d+[A-Za-z]$/; // Number followed by a letter (e.g., 9A)
-             
-             if (decision === 'admitted') {
-                 if (!allocatedClassInput.value || !classRegex.test(allocatedClassInput.value.trim())) {
-                     classError.classList.remove('hidden');
-                     allocatedClassInput.focus();
-                     return;
-                 }
-             }
-             classError.classList.add('hidden');
-             
-             // Close modal and show processing message
-             closeModal('DecisionModal');
-             showMessage(`Processing final decision (${decision})...`, 'info');
-             
-             try {
-                 const body = {
-                     decision: decision,
-                     allocatedClass: allocatedClassInput.value,
-                     remarks: document.getElementById('finalRemarks').value
-                 };
-                 
-                 await apiFetch(`${API_BASE_URL}/admission/applications/${id}/admission-decision`, 'POST', body);
-
-                 showMessage(`Student ${decision} status finalized. Parent notified.`, 'success');
-                 fetchApplications({ loadMore: false }); 
-             } catch (e) {
-                 showMessage(`Error finalizing admission: ${e.message}`, 'error');
-             }
-        }
-
-        async function exportApplications() {
-             showMessage('Exporting all applications data...', 'info');
-             try {
-                const exportUrl = `${API_BASE_URL}/admission/bulk/download?format=csv`;
-                window.open(exportUrl, '_blank');
-                showMessage('Export queued and download initiated.', 'success');
-             } catch (e) {
-                 showMessage('Export failed.', 'error');
-             }
-        }
-
-
-        // --- Global Modal Utility ---
-
-        function openModal(id, title, content) {
-            const container = document.getElementById('modalContainer');
-            if (document.getElementById(id)) document.getElementById(id).remove();
-            
-            const modal = document.createElement('div');
-            modal.id = id;
-            modal.className = 'fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50';
-            modal.setAttribute('role', 'dialog');
-            modal.setAttribute('aria-modal', 'true');
-            modal.setAttribute('aria-labelledby', `${id}Title`);
-            modal.setAttribute('tabindex', '0'); // CRITICAL: Focus trap overlay
-
-            modal.innerHTML = `
-                <div class="bg-white rounded-xl p-8 max-w-lg mx-4 shadow-2xl w-full" tabindex="-1" role="document">
-                    <div class="flex justify-between items-center border-b pb-3 mb-4">
-                        <h2 id="${id}Title" class="text-xl font-bold text-gray-800">${title}</h2>
-                        <button onclick="closeModal('${id}')" class="text-gray-500 hover:text-gray-900" aria-label="Close Modal" title="Close Modal">
-                            <i class="fas fa-times" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                    <div>
-                        ${content}
-                    </div>
-                    ${id !== 'DecisionModal' ? `<div class="mt-4 flex justify-end"><button onclick="closeModal('${id}')" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Close</button></div>` : ''}
-                </div>
-            `;
-            container.appendChild(modal);
-            const dialog = modal.querySelector('[role="document"]');
-            dialog.focus(); 
-            
-            // Allow ESC key to close modal
-            modal.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    e.preventDefault();
-                    closeModal(id);
-                }
-            });
-        }
-
-        function closeModal(id) {
-             const modal = document.getElementById(id);
-             if (modal) modal.remove();
-        }
+            fetchConfig();
+            fetchApplications();
+        });
     </script>
 </body>
 </html>
