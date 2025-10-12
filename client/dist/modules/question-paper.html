@@ -3,415 +3,675 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Question Paper Generation - SmartGenEduX</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>📝 Question Paper Generator (QPG) & Approval</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #fafafa; font-family: 'Inter', sans-serif; }
+        .container-fluid { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #880e4f; /* Dark Maroon */ color: white; font-weight: bold; border-radius: 0.75rem 0.75rem 0 0; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border-radius: 0.75rem; }
+        .alert-fixed { position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; border-radius: 0.5rem; }
+        .nav-tabs .nav-link.active { background-color: #d81b60; color: white; border-color: #d81b60; }
+        .question-preview { border-left: 3px solid #ff4081; padding-left: 10px; margin-bottom: 5px; }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/question-paper.png" alt="Question Paper Generation" class="w-12 h-12 mr-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Question Paper Generation</h1>
-                        <p class="text-gray-600">AI-powered question paper creation with difficulty balancing</p>
-                    </div>
-                </div>
-                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    <i class="fas fa-times mr-2"></i>Close
-                </button>
-            </div>
-        </div>
+<body>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-blue-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-file-alt text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">47</div>
-                        <div class="text-blue-100">Papers Generated</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-green-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-database text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">2,340</div>
-                        <div class="text-green-100">Questions in Bank</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-purple-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-brain text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">AI</div>
-                        <div class="text-purple-100">Smart Generation</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-orange-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-balance-scale text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">95%</div>
-                        <div class="text-orange-100">Balance Accuracy</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-pink-900" style="color: #d81b60;"><i class="bi bi-magic"></i> Automated Question Paper Generator</h1>
 
-        <!-- Paper Generation Form -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">Generate Question Paper</h2>
-                <form id="paperForm" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Class</label>
-                            <select id="classSelect" class="w-full border rounded px-3 py-2" required>
-                                <option value="">Select Class</option>
-                                <option value="9">Class 9</option>
-                                <option value="10">Class 10</option>
-                                <option value="11">Class 11</option>
-                                <option value="12">Class 12</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Subject</label>
-                            <select id="subjectSelect" class="w-full border rounded px-3 py-2" required>
-                                <option value="">Select Subject</option>
-                                <option value="mathematics">Mathematics</option>
-                                <option value="science">Science</option>
-                                <option value="english">English</option>
-                                <option value="social">Social Studies</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Exam Type</label>
-                            <select id="examType" class="w-full border rounded px-3 py-2" required>
-                                <option value="">Select Type</option>
-                                <option value="unit_test">Unit Test</option>
-                                <option value="monthly">Monthly Exam</option>
-                                <option value="quarterly">Quarterly Exam</option>
-                                <option value="half_yearly">Half Yearly</option>
-                                <option value="annual">Annual Exam</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Duration (minutes)</label>
-                            <input type="number" id="duration" value="180" min="60" max="240" class="w-full border rounded px-3 py-2">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Total Marks</label>
-                        <input type="number" id="totalMarks" value="100" min="50" max="100" class="w-full border rounded px-3 py-2">
-                    </div>
+        <!-- Notification Area -->
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="qpgTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="generate-tab" data-bs-toggle="tab" data-bs-target="#generate-paper" type="button"><i class="bi bi-clipboard-plus"></i> Generate Paper</button></li>
+            <li class="nav-item"><button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#question-bank" type="button"><i class="bi bi-database-fill"></i> Question Bank</button></li>
+            <li class="nav-item"><button class="nav-link" id="approval-tab" data-bs-toggle="tab" data-bs-target="#paper-approval" type="button"><i class="bi bi-shield-lock-fill"></i> HOD Approval</button></li>
+            <li class="nav-item"><button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config-setup" type="button"><i class="bi bi-tools"></i> Configuration Hub</button></li>
+        </ul>
 
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Question Distribution</label>
-                        <div class="grid grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs text-gray-600 mb-1">MCQ (1 mark each)</label>
-                                <input type="number" id="mcqCount" value="20" min="0" class="w-full border rounded px-2 py-1 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-600 mb-1">Short (2-3 marks)</label>
-                                <input type="number" id="shortCount" value="10" min="0" class="w-full border rounded px-2 py-1 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-600 mb-1">Long (5-10 marks)</label>
-                                <input type="number" id="longCount" value="6" min="0" class="w-full border rounded px-2 py-1 text-sm">
-                            </div>
-                        </div>
-                    </div>
+        <!-- Tab Content -->
+        <div class="tab-content pt-3" id="qpgTabContent">
 
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Difficulty Level Distribution</label>
-                        <div class="grid grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-xs text-gray-600 mb-1">Easy (%)</label>
-                                <input type="number" id="easyPercent" value="40" min="0" max="100" class="w-full border rounded px-2 py-1 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-600 mb-1">Medium (%)</label>
-                                <input type="number" id="mediumPercent" value="40" min="0" max="100" class="w-full border rounded px-2 py-1 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-600 mb-1">Hard (%)</label>
-                                <input type="number" id="hardPercent" value="20" min="0" max="100" class="w-full border rounded px-2 py-1 text-sm">
-                            </div>
-                        </div>
-                    </div>
+            <!-- 1. Generate Paper Tab (POST /generate) -->
+            <div class="tab-pane fade show active" id="generate-paper" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-danger">Paper Generation Parameters</div>
+                    <div class="card-body">
+                        <p class="alert alert-warning small"><i class="bi bi-exclamation-triangle"></i> This tool automatically allocates questions from the verified bank based on Marks, Difficulty, and Chapter weightage set in the Configuration Hub.</p>
 
-                    <div class="flex space-x-4">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                            <i class="fas fa-magic mr-2"></i>Generate Paper
-                        </button>
-                        <button type="button" onclick="generateWithAI()" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">
-                            <i class="fas fa-robot mr-2"></i>AI Smart Generation
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Question Bank Manager -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">Question Bank</h2>
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="font-semibold mb-2">Add New Question</h3>
-                        <div class="space-y-3">
-                            <select class="w-full border rounded px-3 py-2 text-sm">
-                                <option>Select Question Type</option>
-                                <option>Multiple Choice</option>
-                                <option>Short Answer</option>
-                                <option>Long Answer</option>
-                                <option>Fill in the Blanks</option>
-                            </select>
-                            <textarea rows="3" placeholder="Enter question text..." class="w-full border rounded px-3 py-2 text-sm"></textarea>
-                            <div class="grid grid-cols-2 gap-2">
-                                <select class="border rounded px-3 py-2 text-sm">
-                                    <option>Easy</option>
-                                    <option>Medium</option>
-                                    <option>Hard</option>
+                        <form id="generatePaperForm" class="row g-3">
+                            <h5 class="text-primary mb-3">Core Paper Details</h5>
+                            <div class="col-md-6">
+                                <label for="paperTitle" class="form-label">Exam Title</label>
+                                <input type="text" class="form-control" id="paperTitle" placeholder="e.g., Mid-Term Examination" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="academicYear" class="form-label">Academic Year</label>
+                                <input type="text" class="form-control" id="academicYear" placeholder="2024-25">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="classIdGenerate" class="form-label">Class</label>
+                                <select class="form-select" id="classIdGenerate" required>
+                                    <option value="">Select Class</option>
+                                    <option value="X">Class X</option>
+                                    <option value="XII">Class XII</option>
                                 </select>
-                                <input type="number" placeholder="Marks" class="border rounded px-3 py-2 text-sm">
                             </div>
-                            <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 text-sm">
-                                <i class="fas fa-plus mr-2"></i>Add to Bank
-                            </button>
-                        </div>
-                    </div>
+                            <div class="col-md-6">
+                                <label for="subjectIdGenerate" class="form-label">Subject</label>
+                                <select class="form-select" id="subjectIdGenerate" required>
+                                    <option value="">Select Subject</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="chapters" class="form-label">Chapters Included (Select Multiple)</label>
+                                <select class="form-select" id="chapters" multiple required size="3">
+                                    <option value="Ch1">Chapter 1: Basics</option>
+                                    <option value="Ch2">Chapter 2: Advanced</option>
+                                    <option value="Ch3">Chapter 3: Revision</option>
+                                </select>
+                                <div class="form-text">Algorithm pulls questions only from selected chapters.</div>
+                            </div>
+                            
+                            <div class="col-12 mt-4">
+                                <label for="customInstructions" class="form-label">Custom Instructions / Header Text</label>
+                                <textarea class="form-control" id="customInstructions" rows="2" placeholder="Time allowed: 3 Hours. All questions are compulsory."></textarea>
+                            </div>
 
-                    <div class="border-t pt-4">
-                        <h3 class="font-semibold mb-2">Question Paper Bank Integration</h3>
-                        <div class="bg-blue-50 rounded-lg p-4 mb-4">
-                            <p class="text-sm text-blue-700 mb-3">Access your centralized question bank for importing questions</p>
-                            <button onclick="openQuestionBank()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-                                <i class="fas fa-database mr-2"></i>Open Question Bank
-                            </button>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-danger btn-lg w-100" id="generateBtn"><i class="bi bi-file-earmark-diff"></i> AUTO-GENERATE DRAFT PAPER</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Question Bank Tab (GET /questions, POST /questions, POST /questions/:id/media) -->
+            <div class="tab-pane fade" id="question-bank" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-info">View & Contribute to Question Bank</div>
+                    <div class="card-body">
+                        
+                        <h5 class="text-info">Search Verified Questions</h5>
+                        <form id="searchQuestionsForm" class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <select class="form-select" id="searchSubjectId" required>
+                                    <option value="">Select Subject</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="searchClassId" required>
+                                    <option value="">Select Class</option>
+                                    <option value="X">Class X</option>
+                                    <option value="XII">Class XII</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-info w-100"><i class="bi bi-search"></i> Load Questions</button>
+                            </div>
+                        </form>
+                        
+                        <div id="bankList" class="my-3">
+                            <p class="text-muted text-center">Use the search above to filter and load verified questions.</p>
                         </div>
                         
-                        <h3 class="font-semibold mb-2">Import Questions</h3>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                            <input type="file" id="importFile" accept=".xlsx,.csv,.json" class="hidden" onchange="handleImport(this)">
-                            <label for="importFile" class="cursor-pointer">
-                                <i class="fas fa-cloud-upload-alt text-2xl text-gray-400 mb-2"></i>
-                                <p class="text-gray-600 text-sm">Upload Excel/CSV file</p>
-                            </label>
-                        </div>
-                        <button onclick="downloadTemplate()" class="w-full mt-2 bg-blue-100 text-blue-700 py-2 rounded hover:bg-blue-200 text-sm">
-                            <i class="fas fa-download mr-2"></i>Download Template
-                        </button>
+                        <hr>
+                        <h5 class="text-success">Add New Question (Manual Contribution)</h5>
+                        <form id="newQuestionForm" class="row g-3">
+                            <div class="col-md-4"><input type="text" class="form-control" id="newQChapterId" placeholder="Chapter ID" required></div>
+                            <div class="col-md-4"><input type="number" class="form-control" id="newQMarks" placeholder="Marks (1-10)" min="1" max="10" required></div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="newQDifficulty" required>
+                                    <option value="">Difficulty</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <textarea class="form-control" id="newQText" rows="3" placeholder="Enter Question Text..." required></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select" id="newQType" required>
+                                    <option value="">Type</option><option value="mcq">MCQ</option><option value="short_answer">Short Answer</option><option value="long_answer">Long Answer</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="newQAnswer" placeholder="Correct Answer (Optional)">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success" id="addNewQBtn"><i class="bi bi-plus-circle"></i> Add Question to Bank</button>
+                                <button type="button" class="btn btn-outline-primary ms-2" id="uploadMediaBtn" disabled><i class="bi bi-camera"></i> Upload Media</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Recent Papers -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Recently Generated Papers</h2>
-                <button onclick="manageTemplates()" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-                    <i class="fas fa-cog mr-2"></i>Manage Templates
-                </button>
+            <!-- 3. Approval Workflow Tab (GET /papers, POST /papers/:id/submit-for-approval, POST /papers/:id/approve, GET /papers/:id/export) -->
+            <div class="tab-pane fade" id="paper-approval" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-success">Generated Papers & Approval Status</div>
+                    <div class="card-body">
+                        <p class="alert alert-info small"><i class="bi bi-info-circle"></i> Only papers with **APPROVED** status can be printed/exported. Approving triggers a notification to the originating teacher.</p>
+                        
+                        <div class="d-flex justify-content-end mb-3">
+                            <button class="btn btn-sm btn-outline-success" id="refreshPapersBtn"><i class="bi bi-arrow-clockwise"></i> Refresh Papers List</button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Paper ID</th>
+                                        <th>Exam Name</th>
+                                        <th>Generated By</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="papersTableBody">
+                                    <tr><td colspan="5" class="text-center">Loading generated papers...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Configuration Hub Tab (GET/PUT /config) -->
+            <div class="tab-pane fade" id="config-setup" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-primary">QPG Configuration & Layout Settings (Manager Only)</div>
+                    <div class="card-body">
+                        <p class="alert alert-danger small"><i class="bi bi-lock-fill"></i> Manager/Admin access required to modify core paper settings.</p>
+                        
+                        <form id="configForm" class="row g-3">
+                            <h5 class="text-primary">A. Core Generation Settings</h5>
+                            <div class="col-md-4">
+                                <label for="defaultTemplateId" class="form-label">Default Paper Template ID</label>
+                                <input type="text" class="form-control" id="defaultTemplateId" required placeholder="e.g., TPL-MIDTERM-1">
+                                <div class="form-text">Must match a valid entry in the `paper_templates` table.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="defaultTotalMarks" class="form-label">Default Total Marks</label>
+                                <input type="number" class="form-control" id="defaultTotalMarks" min="10" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="defaultDuration" class="form-label">Default Duration (Mins)</label>
+                                <input type="number" class="form-control" id="defaultDuration" min="30" max="240" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="passingMarksPercentage" class="form-label">Passing Marks (%)</label>
+                                <input type="number" class="form-control" id="passingMarksPercentage" min="0" max="100" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="approvalRoles" class="form-label">Required Approval Roles (Comma separated)</label>
+                                <input type="text" class="form-control" id="approvalRoles" placeholder="principal, hod_maths" required>
+                            </div>
+
+                            <hr class="my-3">
+                            
+                            <h5 class="text-primary">B. Layout & Compliance (Watermark)</h5>
+                            <div class="col-md-4">
+                                <label for="paperSize" class="form-label">Paper Size</label>
+                                <select class="form-select" id="paperSize" required>
+                                    <option value="A4">A4</option>
+                                    <option value="Legal">Legal</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="orientation" class="form-label">Orientation</label>
+                                <select class="form-select" id="orientation" required>
+                                    <option value="Portrait">Portrait</option>
+                                    <option value="Landscape">Landscape</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="watermarkEnabled" checked>
+                                    <label class="form-check-label" for="watermarkEnabled">Enable School Watermark</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 mt-3">
+                                <label class="form-label">Page Margins (mm)</label>
+                                <div class="row g-2">
+                                    <div class="col-md-3"><input type="number" class="form-control" id="marginTop" placeholder="Top" min="0" required></div>
+                                    <div class="col-md-3"><input type="number" class="form-control" id="marginBottom" placeholder="Bottom" min="0" required></div>
+                                    <div class="col-md-3"><input type="number" class="form-control" id="marginLeft" placeholder="Left" min="0" required></div>
+                                    <div class="col-md-3"><input type="number" class="form-control" id="marginRight" placeholder="Right" min="0" required></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Template Structure Placeholder (JSON input for complex structures) -->
+                            <div class="col-12 mt-3">
+                                <label for="templateStructures" class="form-label">Template Structure JSON</label>
+                                <textarea class="form-control" id="templateStructures" rows="3" required placeholder='[{"name": "Section A", "marks": 2, "count": 10}, ...] - Must be valid JSON'></textarea>
+                                <div class="form-text">Defines question types and difficulty distribution rules.</div>
+                            </div>
+
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg w-100" id="saveConfigBtn"><i class="bi bi-save"></i> Save Configuration & Layout</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Paper ID</th>
-                            <th class="px-4 py-2 text-left">Subject</th>
-                            <th class="px-4 py-2 text-left">Class</th>
-                            <th class="px-4 py-2 text-left">Type</th>
-                            <th class="px-4 py-2 text-left">Questions</th>
-                            <th class="px-4 py-2 text-left">Generated</th>
-                            <th class="px-4 py-2 text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">#QP-2025-001</td>
-                            <td class="px-4 py-2">Mathematics</td>
-                            <td class="px-4 py-2">Class 10</td>
-                            <td class="px-4 py-2">Half Yearly</td>
-                            <td class="px-4 py-2">36 questions</td>
-                            <td class="px-4 py-2">Jan 4, 2025</td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="text-green-600 hover:text-green-800" title="Download PDF">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="text-purple-600 hover:text-purple-800" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-orange-600 hover:text-orange-800" title="Duplicate">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">#QP-2025-002</td>
-                            <td class="px-4 py-2">Science</td>
-                            <td class="px-4 py-2">Class 9</td>
-                            <td class="px-4 py-2">Unit Test</td>
-                            <td class="px-4 py-2">25 questions</td>
-                            <td class="px-4 py-2">Jan 3, 2025</td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="View">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="text-green-600 hover:text-green-800" title="Download PDF">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="text-purple-600 hover:text-purple-800" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-orange-600 hover:text-orange-800" title="Duplicate">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        </div>
+    </div>
+
+    <!-- Print/Export Data Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Paper Export View (Gated)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="alert alert-success small fw-bold">Status: <span id="exportStatus"></span> | Watermark: <span id="watermarkStatus"></span></p>
+                    <h6>Layout & Metadata:</h6>
+                    <ul id="exportMetadata" class="list-unstyled small"></ul>
+                    <hr>
+                    <h6>Paper Content (Simulated Printable View)</h6>
+                    <div id="printableContent" class="p-3 border rounded">
+                        <p class="text-muted text-center">The final, formatted question paper content would be rendered here, ready for printing, including header/footer and the school watermark.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success"><i class="bi bi-download"></i> Download Final PDF</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Form submission
-        document.getElementById('paperForm').addEventListener('submit', function(e) {
+        const API_BASE = ''; 
+        const MOCK_JWT_TOKEN = 'mock.jwt.token.for.auth'; 
+        
+        let mockSubjects = [ { id: 'MATH', name: 'Mathematics' }, { id: 'PHY', name: 'Physics' }, { id: 'HIS', name: 'History' } ];
+        let currentPapers = [];
+        let currentBankQuestions = [];
+
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => { area.style.display = 'none'; }, 7000);
+        }
+
+        /** Core Fetch Function with JWT Auth Header. */
+        async function apiFetch(endpoint, method = 'GET', body = null, isFormData = false) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Authorization': `Bearer ${MOCK_JWT_TOKEN}` },
+                };
+                
+                if (body && method !== 'GET') {
+                    if (!isFormData) {
+                        options.headers['Content-Type'] = 'application/json';
+                        options.body = JSON.stringify(body);
+                    } else { options.body = body; }
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
+
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error. Check console for details.', 'danger');
+                throw error;
+            }
+        }
+        
+        // --- Shared Utilities ---
+        function populateSubjectDropdowns() {
+            const dropdowns = ['subjectIdGenerate', 'searchSubjectId', 'newQSubjectId'];
+            dropdowns.forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                // Clear existing, keep "Select Subject" option
+                Array.from(select.options).slice(1).forEach(opt => select.removeChild(opt));
+                
+                mockSubjects.forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub.id;
+                    option.textContent = sub.name;
+                    select.appendChild(option);
+                });
+            });
+        }
+        // NOTE: In a real system, you would fetch subjects via GET /subjects
+        // async function fetchSubjects() { try { const data = await apiFetch('/subjects'); mockSubjects = data.subjects; populateSubjectDropdowns(); } catch (e) {} }
+
+        // --- 1. GENERATE PAPER LOGIC (POST /generate) ---
+
+        document.getElementById('generatePaperForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            generatePaper();
+            const form = e.target;
+            const btn = document.getElementById('generateBtn');
+
+            // Collect selected chapter IDs
+            const chaptersSelect = document.getElementById('chapters');
+            const selectedChapters = Array.from(chaptersSelect.selectedOptions).map(option => option.value);
+
+            const payload = {
+                title: form.paperTitle.value,
+                subjectId: form.subjectIdGenerate.value,
+                classId: form.classIdGenerate.value,
+                academicYear: form.academicYear.value || undefined,
+                chapters: selectedChapters,
+                customInstructions: form.customInstructions.value || undefined
+            };
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Allocating Questions...';
+
+            try {
+                const data = await apiFetch('/generate', 'POST', payload);
+                showNotification(data.message + ` Paper ID: ${data.paperId}`, 'success');
+                form.reset();
+                fetchGeneratedPapers(); // Refresh the approval workflow list
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-file-earmark-diff"></i> AUTO-GENERATE DRAFT PAPER';
+            }
         });
 
-        function generatePaper() {
-            const formData = {
-                class: document.getElementById('classSelect').value,
-                subject: document.getElementById('subjectSelect').value,
-                examType: document.getElementById('examType').value,
-                duration: document.getElementById('duration').value,
-                totalMarks: document.getElementById('totalMarks').value,
-                mcqCount: document.getElementById('mcqCount').value,
-                shortCount: document.getElementById('shortCount').value,
-                longCount: document.getElementById('longCount').value
+        // --- 2. QUESTION BANK LOGIC (GET /questions, POST /questions) ---
+        
+        // Load questions for the bank view
+        document.getElementById('searchQuestionsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const container = document.getElementById('bankList');
+            container.innerHTML = '<p class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading questions...</p>';
+
+            const query = `subject=${form.searchSubjectId.value}&class=${form.searchClassId.value}`;
+
+            try {
+                const data = await apiFetch(`/questions?${query}`);
+                currentBankQuestions = data.questions;
+
+                if (data.questions.length === 0) {
+                    container.innerHTML = '<p class="text-center text-warning">No verified questions found for this criteria.</p>';
+                    return;
+                }
+
+                let html = '<ul class="list-unstyled">';
+                data.questions.forEach((q, index) => {
+                    html += `
+                        <li class="question-preview p-2 border rounded mb-2">
+                            <span class="fw-bold text-danger">Q${index + 1}.</span> 
+                            ${q.question_text.substring(0, 100)}... 
+                            <span class="badge bg-primary ms-3">Marks: ${q.marks}</span>
+                            <span class="badge bg-dark">Difficulty: ${q.difficulty}</span>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+                container.innerHTML = html;
+
+            } catch (error) {
+                container.innerHTML = '<p class="text-danger text-center">Failed to load questions. Check console.</p>';
+            }
+        });
+
+        // Add new question to bank
+        document.getElementById('newQuestionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('addNewQBtn');
+
+            const payload = {
+                subjectId: document.getElementById('subjectIdGenerate').value, // Using the generate dropdown subject for context
+                chapterId: form.newQChapterId.value,
+                classId: document.getElementById('classIdGenerate').value, // Using the generate dropdown class for context
+                marks: parseInt(form.newQMarks.value),
+                difficulty: form.newQDifficulty.value,
+                type: form.newQType.value,
+                questionText: form.newQText.value,
+                correctAnswer: form.newQAnswer.value
             };
+
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+
+            try {
+                const data = await apiFetch('/questions', 'POST', payload);
+                showNotification(data.message + ` ID: ${data.questionId}`, 'success');
+                form.reset();
+                document.getElementById('uploadMediaBtn').disabled = false; // Enable media upload for the new ID
+                document.getElementById('uploadMediaBtn').setAttribute('data-question-id', data.questionId);
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Question to Bank';
+            }
+        });
+
+        // --- 3. APPROVAL WORKFLOW LOGIC (GET /papers, POST /papers/:id/approve) ---
+
+        async function fetchGeneratedPapers() {
+            const tableBody = document.getElementById('papersTableBody');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading papers...</td></tr>';
+            currentPapers = [];
+
+            try {
+                const data = await apiFetch('/papers');
+                currentPapers = data.papers;
+
+                tableBody.innerHTML = '';
+                if (currentPapers.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No generated papers found.</td></tr>';
+                    return;
+                }
+
+                currentPapers.forEach(paper => {
+                    const status = paper.status;
+                    const statusClass = {
+                        'draft': 'bg-secondary',
+                        'pending_hod_approval': 'bg-warning text-dark',
+                        'approved': 'bg-success',
+                        'rejected': 'bg-danger'
+                    }[status] || 'bg-light text-dark';
+                    
+                    const actions = [];
+                    if (status === 'draft') {
+                        actions.push(`<button class="btn btn-sm btn-outline-primary submit-btn" data-paper-id="${paper.id}">Submit to HOD</button>`);
+                    } else if (status === 'pending_hod_approval') {
+                        actions.push(`<button class="btn btn-sm btn-success approve-btn" data-paper-id="${paper.id}">Approve</button>`);
+                    } else if (status === 'approved') {
+                        actions.push(`<button class="btn btn-sm btn-danger export-btn" data-paper-id="${paper.id}"><i class="bi bi-file-earmark-pdf-fill"></i> Export/Print</button>`);
+                    }
+
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td class="small">${paper.id.substring(0, 8)}...</td>
+                        <td>${paper.exam_name || 'N/A'}</td>
+                        <td>${paper.generated_by_user_profile_id.substring(0, 8)}...</td>
+                        <td><span class="badge ${statusClass}">${status.toUpperCase()}</span></td>
+                        <td>${actions.join(' ')}</td>
+                    `;
+                });
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load papers.</td></tr>';
+            }
+        }
+
+        document.getElementById('refreshPapersBtn').addEventListener('click', fetchGeneratedPapers);
+
+        // Delegation for workflow buttons
+        document.getElementById('papersTableBody').addEventListener('click', async (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            const paperId = target.getAttribute('data-paper-id');
+
+            if (target.classList.contains('submit-btn')) {
+                // Submit for Approval
+                target.disabled = true;
+                target.textContent = 'Submitting...';
+                try {
+                    const data = await apiFetch(`/papers/${paperId}/submit-for-approval`, 'POST', {});
+                    showNotification(data.message, 'success');
+                    fetchGeneratedPapers();
+                } catch (e) {
+                    target.disabled = false;
+                    target.textContent = 'Submit to HOD';
+                }
+            } else if (target.classList.contains('approve-btn')) {
+                // HOD/Principal Approval
+                target.disabled = true;
+                target.textContent = 'Approving...';
+                try {
+                    const data = await apiFetch(`/papers/${paperId}/approve`, 'POST', {});
+                    showNotification(data.message, 'success');
+                    fetchGeneratedPapers();
+                } catch (e) {
+                    target.disabled = false;
+                    target.textContent = 'Approve';
+                }
+            } else if (target.classList.contains('export-btn')) {
+                // Export/Print Gated Endpoint
+                target.disabled = true;
+                target.textContent = 'Exporting...';
+                try {
+                    const data = await apiFetch(`/papers/${paperId}/export`);
+                    
+                    document.getElementById('exportStatus').textContent = data.status.toUpperCase();
+                    document.getElementById('watermarkStatus').textContent = data.layout.watermarkEnabled ? 'ENABLED' : 'DISABLED';
+                    
+                    document.getElementById('exportMetadata').innerHTML = `
+                        <li><strong>School:</strong> ${data.watermark.name || 'N/A'}</li>
+                        <li><strong>Size:</strong> ${data.layout.paperSize} (${data.layout.orientation})</li>
+                        <li><strong>Margins:</strong> T:${data.layout.marginTop}mm, B:${data.layout.marginBottom}mm, L:${data.layout.marginLeft}mm, R:${data.layout.marginRight}mm</li>
+                    `;
+                    
+                    const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+                    exportModal.show();
+                    
+                    showNotification('Paper data fetched successfully for printing.', 'success');
+                } catch (e) {
+                    // Handled by apiFetch (Will show 403 error if not approved)
+                } finally {
+                    target.disabled = false;
+                    target.innerHTML = '<i class="bi bi-file-earmark-pdf-fill"></i> Export/Print';
+                }
+            }
+        });
+
+        // --- 4. CONFIGURATION LOGIC (GET/PUT /config) ---
+
+        async function fetchConfig() {
+            try {
+                const data = await apiFetch('/config');
+                const settings = data.settings || {};
+                const s = settings.settings_json || {};
+                const l = settings.layout_settings || {};
+                
+                // Core Settings
+                document.getElementById('defaultTemplateId').value = s.defaultTemplateId || 'TPL-MIDTERM-1';
+                document.getElementById('defaultTotalMarks').value = s.defaultTotalMarks || 50;
+                document.getElementById('defaultDuration').value = s.defaultDuration || 120;
+                document.getElementById('passingMarksPercentage').value = s.passingMarksPercentage || 35;
+                document.getElementById('approvalRoles').value = (s.approvalRoles || ['principal', 'hod']).join(', ');
+                document.getElementById('templateStructures').value = JSON.stringify(s.templateStructures || [], null, 2);
+                
+                // Layout Settings
+                document.getElementById('paperSize').value = l.paperSize || 'A4';
+                document.getElementById('orientation').value = l.orientation || 'Portrait';
+                document.getElementById('watermarkEnabled').checked = l.watermarkEnabled !== false; // Default true
+                document.getElementById('marginTop').value = l.marginTop || 10;
+                document.getElementById('marginBottom').value = l.marginBottom || 10;
+                document.getElementById('marginLeft').value = l.marginLeft || 10;
+                document.getElementById('marginRight').value = l.marginRight || 10;
+
+            } catch (error) {
+                showNotification('Configuration loaded with default fallback values (or access denied).', 'warning');
+            }
+        }
+        
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('saveConfigBtn');
             
-            if (!formData.class || !formData.subject || !formData.examType) {
-                showMessage('Please fill all required fields', 'error');
+            // --- Parse and Validate Inputs ---
+            let templateStructuresArray;
+            try {
+                templateStructuresArray = JSON.parse(form.templateStructures.value);
+                if (!Array.isArray(templateStructuresArray)) throw new Error("Must be an array.");
+            } catch (e) {
+                showNotification('Template Structure must be valid JSON array.', 'danger');
                 return;
             }
-            
-            const btn = document.querySelector('#paperForm button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
-            btn.disabled = true;
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                showMessage('Question paper generated successfully!', 'success');
-                document.getElementById('paperForm').reset();
-            }, 4000);
-        }
 
-        function generateWithAI() {
-            const classVal = document.getElementById('classSelect').value;
-            const subject = document.getElementById('subjectSelect').value;
-            
-            if (!classVal || !subject) {
-                showMessage('Please select class and subject first', 'error');
-                return;
-            }
-            
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>AI Processing...';
-            btn.disabled = true;
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                showMessage('AI-optimized question paper generated with perfect difficulty balance!', 'success');
-            }, 6000);
-        }
+            const layoutSettings = {
+                paperSize: form.paperSize.value,
+                orientation: form.orientation.value,
+                watermarkEnabled: form.watermarkEnabled.checked,
+                marginTop: parseInt(form.marginTop.value),
+                marginBottom: parseInt(form.marginBottom.value),
+                marginLeft: parseInt(form.marginLeft.value),
+                marginRight: parseInt(form.marginRight.value),
+            };
 
-        function handleImport(input) {
-            const file = input.files[0];
-            if (file) {
-                showMessage(`Importing questions from ${file.name}...`, 'info');
-                setTimeout(() => {
-                    showMessage(`Successfully imported ${Math.floor(Math.random() * 50) + 10} questions`, 'success');
-                }, 2000);
-            }
-        }
-
-        function downloadTemplate() {
-            showMessage('Question bank template downloaded', 'success');
-        }
-
-        function manageTemplates() {
-            showMessage('Opening template manager...', 'info');
-        }
-
-        function showMessage(message, type) {
-            const colors = {
-                'success': 'bg-green-600',
-                'error': 'bg-red-600',
-                'info': 'bg-blue-600'
+            const payload = {
+                defaultTemplateId: form.defaultTemplateId.value,
+                defaultTotalMarks: parseInt(form.defaultTotalMarks.value),
+                defaultDuration: parseInt(form.defaultDuration.value),
+                passingMarksPercentage: parseInt(form.passingMarksPercentage.value),
+                approvalRoles: form.approvalRoles.value.split(',').map(s => s.trim()),
+                templateStructures: templateStructuresArray,
+                layoutSettings: layoutSettings
             };
             
-            const icons = {
-                'success': 'fas fa-check',
-                'error': 'fas fa-exclamation-triangle',
-                'info': 'fas fa-info-circle'
-            };
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
-        }
-        
-        // Question Bank Integration
-        function openQuestionBank() {
-            const questionBankUrl = 'https://docs.google.com/spreadsheets/d/1Lt_3DUapER4EcpymCkZne-8AeKShLyhGgvmBi0K7bao/edit';
-            window.open(questionBankUrl, '_blank');
-            showMessage('Question Bank opened successfully! You can now import questions from the centralized database.', 'success');
-        }
-        
-        function generateWithAI() {
-            showMessage('AI is generating optimal question paper based on your specifications...', 'info');
-            setTimeout(() => {
-                showMessage('Question paper generated successfully with AI optimization!', 'success');
-            }, 4000);
-        }
-        
-        function handleImport(input) {
-            if (input.files.length > 0) {
-                showMessage('Questions imported successfully from file!', 'success');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+            try {
+                const data = await apiFetch('/config', 'PUT', payload);
+                showNotification(data.message, 'success');
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save"></i> Save Configuration & Layout';
             }
-        }
+        });
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            populateSubjectDropdowns();
+            fetchConfig();
+            fetchGeneratedPapers();
+        });
+
     </script>
 </body>
 </html>
