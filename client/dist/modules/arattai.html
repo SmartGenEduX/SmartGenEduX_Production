@@ -1,285 +1,1050 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Smart Arattai Alerts - SmartGenEduX</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-</head>
-<body class="bg-gray-100">
-  <div class="container mx-auto px-4 py-8">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center">
-          <img src="../assets/Smart_Arattai_Alert.png" alt="Arattai Alerts" class="w-12 h-12 mr-4" />
-          <div>
-            <h1 class="text-2xl font-bold text-gray-800">Smart Arattai Alerts</h1>
-            <p class="text-gray-600">Send automated Arattai notifications to parents and students</p>
-          </div>
-        </div>
-        <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-          <i class="fas fa-times mr-2"></i>Close
-        </button>
-      </div>
-    </div>
-
-    <!-- Alert Configuration -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-xl font-bold mb-4">Configure Arattai Alerts</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Alert Types -->
-        <div>
-          <h3 class="text-lg font-semibold mb-3">Alert Types</h3>
-          <div class="space-y-3">
-            <label class="flex items-center">
-              <input type="checkbox" class="mr-2" checked /> Attendance Notifications
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="mr-2" checked /> Fee Due Reminders
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="mr-2" /> Exam Notifications
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="mr-2" /> Event Announcements
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="mr-2" /> Holiday Notifications
-            </label>
-          </div>
-        </div>
-        <!-- Timing Settings -->
-        <div>
-          <h3 class="text-lg font-semibold mb-3">Timing Settings</h3>
-          <div class="space-y-3">
-            <div>
-              <label class="block text-sm font-medium mb-1">Daily Attendance Alert Time</label>
-              <input type="time" value="15:30" class="w-full border rounded px-3 py-2" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">Fee Due Reminder (Days Before)</label>
-              <input type="number" value="7" class="w-full border rounded px-3 py-2" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">Bulk Message Time</label>
-              <input type="time" value="09:00" class="w-full border rounded px-3 py-2" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Send Custom Message -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 class="text-xl font-bold mb-4">Send Custom Message</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-medium mb-2">Select Recipients</label>
-          <select id="recipientSelect" class="w-full border rounded px-3 py-2 mb-4">
-            <option value="">Loading recipients...</option>
-          </select>
-
-          <label class="block text-sm font-medium mb-2">Message Template</label>
-          <select id="templateSelect" class="w-full border rounded px-3 py-2 mb-4">
-            <option value="">Loading templates...</option>
-          </select>
-
-          <!-- Container for Template Variable Inputs -->
-          <div id="templateVariablesContainer" class="mb-4"></div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-2">Message Content</label>
-          <textarea id="messageContent" rows="6" class="w-full border rounded px-3 py-2" placeholder="Type your message here..."></textarea>
-
-          <div class="flex justify-between items-center mt-4">
-            <span id="charCount" class="text-sm text-gray-500">Characters: 0/1000</span>
-            <button id="sendButton" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-              <i class="fab fa-whatsapp mr-2"></i>Send Message
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Messages -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-bold mb-4">Recent Messages</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-4 py-2 text-left">Date</th>
-              <th class="px-4 py-2 text-left">Type</th>
-              <th class="px-4 py-2 text-left">Recipients</th>
-              <th class="px-4 py-2 text-left">Message</th>
-              <th class="px-4 py-2 text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody id="recentMessagesBody">
-            <!-- Dynamically filled -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const ARATTAI_API_BASE = '/api/arattai-alert';
-
-    // Cache for templates and variables
-    let templateVariablesMap = {};
-
-    // Fetch recipients to populate dropdown
-    async function fetchRecipients() {
-      const res = await fetch(`${ARATTAI_API_BASE}/contacts`);
-      if (!res.ok) throw new Error('Failed to fetch recipients');
-      return await res.json();
-    }
-
-    // Fetch templates to populate dropdown
-    async function fetchTemplates() {
-      const res = await fetch(`${ARATTAI_API_BASE}/templates`);
-      if (!res.ok) throw new Error('Failed to fetch templates');
-      return await res.json();
-    }
-
-    // Fetch recent messages for table
-    async function fetchRecentMessages() {
-      const res = await fetch(`${ARATTAI_API_BASE}/scheduled`);
-      if (!res.ok) throw new Error('Failed to fetch recent messages');
-      return await res.json();
-    }
-
-    // Send message via API
-    async function sendMessage(payload) {
-      const res = await fetch(`${ARATTAI_API_BASE}/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      return await res.json();
-    }
-
-    // Update character count for textarea
-    const messageContent = document.getElementById('messageContent');
-    const charCount = document.getElementById('charCount');
-    messageContent.addEventListener('input', () => {
-      const length = messageContent.value.length;
-      charCount.textContent = `Characters: ${length}/1000`;
-    });
-
-    // Populate recipient and template dropdowns and recent messages on page load
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        // Load recipients
-        const recipients = await fetchRecipients();
-        const recipientSelect = document.getElementById('recipientSelect');
-        recipientSelect.innerHTML = '<option value="">Select a recipient</option>';
-        recipients.forEach(rec => {
-          const option = document.createElement('option');
-          option.value = rec.phoneNumber;
-          option.textContent = `${rec.parentName} (${rec.studentName})`;
-          recipientSelect.appendChild(option);
-        });
-
-        // Load templates
-        const templates = await fetchTemplates();
-        const templateSelect = document.getElementById('templateSelect');
-        templateSelect.innerHTML = '<option value="">Select a template</option>';
-        templates.forEach(tmpl => {
-          templateVariablesMap[tmpl.id] = tmpl.variables || [];
-          const option = document.createElement('option');
-          option.value = tmpl.id;
-          option.textContent = tmpl.name;
-          templateSelect.appendChild(option);
-        });
-
-        // Add listener to dynamically add inputs for variables
-        templateSelect.addEventListener('change', e => {
-          const variablesContainer = document.getElementById('templateVariablesContainer');
-          variablesContainer.innerHTML = '';
-          const selectedId = e.target.value;
-          if (!selectedId || !templateVariablesMap[selectedId]) return;
-
-          templateVariablesMap[selectedId].forEach(variableName => {
-            const label = document.createElement('label');
-            label.textContent = `${variableName.charAt(0).toUpperCase() + variableName.slice(1)}:`;
-            label.className = 'block text-sm font-medium mb-1';
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.id = `var_${variableName}`;
-            input.className = 'w-full border rounded px-3 py-2 mb-3';
-
-            variablesContainer.appendChild(label);
-            variablesContainer.appendChild(input);
-          });
-        });
-
-        // Load recent messages
-        const recentMessages = await fetchRecentMessages();
-        const recentMessagesBody = document.getElementById('recentMessagesBody');
-        recentMessagesBody.innerHTML = recentMessages.map(msg => `
-          <tr class="border-t">
-            <td class="px-4 py-2">${new Date(msg.scheduledFor || msg.sentAt).toLocaleString()}</td>
-            <td class="px-4 py-2">${msg.category || 'N/A'}</td>
-            <td class="px-4 py-2">${msg.recipientNumber}</td>
-            <td class="px-4 py-2">${msg.message}</td>
-            <td class="px-4 py-2">
-              <span class="${msg.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} px-2 py-1 rounded text-xs">
-                ${msg.status || 'pending'}
-              </span>
-            </td>
-          </tr>
-        `).join('');
-
-      } catch (error) {
-        console.error('Error loading data:', error);
-      }
-    });
-
-    // Send button event
-    document.getElementById('sendButton').addEventListener('click', async () => {
-      const recipientNumber = document.getElementById('recipientSelect').value;
-      const templateId = document.getElementById('templateSelect').value;
-      const message = messageContent.value.trim();
-
-      if (!recipientNumber) return alert('Please select a recipient');
-      if (!templateId) return alert('Please select a template');
-      if (!message) return alert('Message cannot be empty');
-
-      // Collect template variable inputs
-      const variables = {};
-      (templateVariablesMap[templateId] || []).forEach(variableName => {
-        const input = document.getElementById(`var_${variableName}`);
-        if (input) variables[variableName] = input.value.trim();
-      });
-
-      const payload = {
-        recipientNumber,
-        templateId,
-        variables,
-        message
-      };
-
-      try {
-        const response = await sendMessage(payload);
-        if (response.success) {
-          alert('Message sent successfully');
-          messageContent.value = '';
-          charCount.textContent = 'Characters: 0/1000';
-          // Optionally reload recent messages after sending
-        } else {
-          alert('Failed to send message');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 Arattai Integration Dashboard</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #e8f5e9; font-family: 'Inter', sans-serif; }
+        .container-fluid { max-width: 1300px; margin-top: 20px; }
+        .card-header { background-color: #38a169; color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0, 50, 0, 0.1); border-radius: 0.5rem; }
+        .alert-fixed {
+            position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; border-radius: 0.5rem;
         }
-      } catch (err) {
-        alert('Error sending message');
-        console.error(err);
-      }
-    });
-  </script>
+        .nav-tabs .nav-link.active {
+            background-color: #38a169;
+            color: white;
+            border-color: #38a169;
+        }
+        .stat-box { transition: transform 0.2s; cursor: default; }
+        .stat-box:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-success"><i class="bi bi-whatsapp"></i> Arattai Communication Hub</h1>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="arattaiTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button"><i class="bi bi-speedometer2"></i> Dashboard & Analytics</button></li>
+            <li class="nav-item"><button class="nav-link" id="composer-tab" data-bs-toggle="tab" data-bs-target="#composer" type="button"><i class="bi bi-send"></i> Message Composer & Schedule</button></li>
+            <li class="nav-item"><button class="nav-link" id="broadcast-tab" data-bs-toggle="tab" data-bs-target="#broadcast" type="button"><i class="bi bi-megaphone"></i> Broadcast Campaigns</button></li>
+            <li class="nav-item"><button class="nav-link" id="automation-tab" data-bs-toggle="tab" data-bs-target="#automation" type="button"><i class="bi bi-robot"></i> Automation Rules</button></li>
+            <li class="nav-item"><button class="nav-link" id="contacts-tab" data-bs-toggle="tab" data-bs-target="#contacts" type="button"><i class="bi bi-people"></i> Contacts & Preferences</button></li>
+            <li class="nav-item"><button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button"><i class="bi bi-gear"></i> System Configuration</button></li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content pt-3" id="arattaiTabContent">
+
+            <!-- 1. Dashboard & Analytics Tab -->
+            <div class="tab-pane fade show active" id="analytics" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Communication Analytics & Reporting</div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-3"><button class="btn btn-outline-success w-100" id="refreshAnalyticsBtn"><i class="bi bi-arrow-clockwise"></i> Refresh Analytics</button></div>
+                            <div class="col-md-9"><p class="alert alert-info py-2 m-0 small">Data below is simulated to represent the aggregation performed by the backend's `/analytics` endpoint, including real-time status distribution and cost calculation.</p></div>
+                        </div>
+
+                        <!-- Key Stats Row -->
+                        <div class="row text-center g-3 mb-4" id="keyStatsArea">
+                            <!-- Stats dynamically loaded -->
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- Category Breakdown -->
+                            <div class="col-md-6">
+                                <div class="card card-body h-100">
+                                    <h6>Message Breakdown by Category</h6>
+                                    <ul class="list-group list-group-flush" id="categoryBreakdownList"></ul>
+                                </div>
+                            </div>
+
+                            <!-- Top Templates -->
+                            <div class="col-md-6">
+                                <div class="card card-body h-100">
+                                    <h6>Top 5 Templates by Read Rate</h6>
+                                    <table class="table table-sm table-striped">
+                                        <thead><tr><th>Template ID</th><th>Sent</th><th>Delivered Rate</th><th>Read Rate</th></tr></thead>
+                                        <tbody id="topTemplatesTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 2. Message Composer & Schedule Tab -->
+            <div class="tab-pane fade" id="composer" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Immediate & Scheduled Messaging</div>
+                    <div class="card-body">
+                        
+                        <!-- Immediate Send Form (POST /send) -->
+                        <h5 class="mb-3">New Message Composer</h5>
+                        <form id="sendMessageForm" class="row g-3 border p-3 rounded mb-4">
+                            <div class="col-md-4">
+                                <label for="sendTemplateId" class="form-label">Template</label>
+                                <select class="form-select" id="sendTemplateId" required>
+                                    <option value="">Select Template</option>
+                                    <!-- Templates loaded dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="recipientNumber" class="form-label">Recipient Phone</label>
+                                <input type="text" class="form-control" id="recipientNumber" placeholder="+91..." required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="sendVariables" class="form-label">Variables (JSON)</label>
+                                <input type="text" class="form-control" id="sendVariables" placeholder='{"studentname": "Aarav"}' required>
+                                <div class="form-text" id="templateVariablesHint">Variables required by template: N/A</div>
+                            </div>
+                            <div class="col-md-8">
+                                <label for="scheduledFor" class="form-label">Scheduled For (Optional)</label>
+                                <input type="datetime-local" class="form-control" id="scheduledFor">
+                            </div>
+                            <div class="col-md-4 d-grid">
+                                <label class="form-label d-none d-md-block">&nbsp;</label>
+                                <button type="submit" class="btn btn-success" id="sendMsgBtn"><i class="bi bi-arrow-right-circle"></i> Send/Schedule Message</button>
+                            </div>
+                        </form>
+
+                        <hr>
+                        
+                        <!-- Scheduled Messages List (GET /scheduled, DELETE /scheduled/:id) -->
+                        <h5 class="mb-3">Active Scheduled Messages</h5>
+                        <button class="btn btn-sm btn-outline-info mb-3" id="refreshScheduledBtn"><i class="bi bi-arrow-clockwise"></i> Refresh List</button>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>ID</th><th>Recipient</th><th>Scheduled Time</th><th>Category</th><th>Message Preview</th><th>Action</th></tr></thead>
+                                <tbody id="scheduledMessagesTableBody"><tr><td colspan="6" class="text-center">No messages scheduled.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Broadcast Campaigns Tab -->
+            <div class="tab-pane fade" id="broadcast" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Bulk Broadcast Management</div>
+                    <div class="card-body">
+                        
+                        <h5 class="mb-3">Create New Broadcast Campaign (POST /broadcast)</h5>
+                        <form id="broadcastForm" class="row g-3 border p-3 rounded mb-4">
+                            <div class="col-md-6">
+                                <label for="campaignName" class="form-label">Campaign Name</label>
+                                <input type="text" class="form-control" id="campaignName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="broadcastTemplateId" class="form-label">Template</label>
+                                <select class="form-select" id="broadcastTemplateId" required>
+                                    <option value="">Select Template</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="targetAudience" class="form-label">Target Audience</label>
+                                <select class="form-select" id="targetAudience" required>
+                                    <option value="all_parents">All Parents (System Default)</option>
+                                    <option value="fee_pending_parents">Fee Pending Parents (System Default)</option>
+                                    <option value="custom_list">Custom Phone List</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="recipientList" class="form-label">Custom Recipient List (Comma Separated)</label>
+                                <textarea class="form-control" id="recipientList" rows="2" placeholder="+91..., +91..."></textarea>
+                                <div class="form-text">Required only if 'Custom Phone List' is selected.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="broadcastScheduledFor" class="form-label">Scheduled Time (Leave blank for immediate)</label>
+                                <input type="datetime-local" class="form-control" id="broadcastScheduledFor">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary" id="createBroadcastBtn"><i class="bi bi-broadcast"></i> Initiate Broadcast</button>
+                            </div>
+                        </form>
+
+                        <hr>
+                        
+                        <h5 class="mb-3">Current & Past Campaigns</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>Name</th><th>Status</th><th>Total Sent</th><th>Delivery Rate</th><th>Read Rate</th><th>Cost</th></tr></thead>
+                                <tbody id="broadcastCampaignsTableBody"><tr><td colspan="6" class="text-center">No campaigns recorded.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Automation Rules Tab -->
+            <div class="tab-pane fade" id="automation" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Event-Triggered Automation</div>
+                    <div class="card-body">
+                        
+                        <h5 class="mb-3">Create/Update Automation Rule (POST/PUT /automation)</h5>
+                        <form id="automationForm" class="row g-3 border p-3 rounded mb-4">
+                            <input type="hidden" id="automationRuleId">
+                            <div class="col-md-4">
+                                <label for="ruleName" class="form-label">Rule Name</label>
+                                <input type="text" class="form-control" id="ruleName" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="triggerEvent" class="form-label">Trigger Event</label>
+                                <select class="form-select" id="triggerEvent" required>
+                                    <option value="attendance_absent">Attendance: Student Absent</option>
+                                    <option value="fee_due">Finance: Fee Due Date Hit</option>
+                                    <option value="transport_onboard">Transport: Onboard Scan</option>
+                                    <option value="exam_schedule_release">Academics: Exam Schedule Release</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="automationTemplateId" class="form-label">Template</label>
+                                <select class="form-select" id="automationTemplateId" required>
+                                    <option value="">Select Template</option>
+                                </select>
+                            </div>
+                            <div class="col-md-10">
+                                <label for="ruleConditions" class="form-label">Conditions (JSON Array)</label>
+                                <textarea class="form-control" id="ruleConditions" rows="2" placeholder='[{"field": "class_name", "operator": "eq", "value": "10-A"}]'></textarea>
+                                <div class="form-text">e.g., Only run for 'Class 10-A' students.</div>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <div class="form-check form-switch w-100">
+                                    <input class="form-check-input" type="checkbox" id="ruleActive" checked>
+                                    <label class="form-check-label" for="ruleActive">Active</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success" id="saveAutomationRuleBtn"><i class="bi bi-save"></i> Save Rule</button>
+                                <button type="button" class="btn btn-outline-danger" id="cancelEditAutomationBtn" style="display: none;">Cancel Edit</button>
+                            </div>
+                        </form>
+
+                        <hr>
+                        
+                        <h5 class="mb-3">Existing Automation Rules (GET /automation)</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead><tr><th>Rule Name</th><th>Trigger</th><th>Template ID</th><th>Status</th><th>Action</th></tr></thead>
+                                <tbody id="automationRulesTableBody"><tr><td colspan="5" class="text-center">No automation rules defined.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Contacts & Preferences Tab -->
+            <div class="tab-pane fade" id="contacts" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Contact Management & Opt-Outs</div>
+                    <div class="card-body">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <input type="text" class="form-control" id="contactSearch" placeholder="Search by Student/Parent Name or Phone...">
+                            </div>
+                            <div class="col-md-4 d-flex justify-content-end">
+                                <button class="btn btn-outline-primary me-2" id="searchContactsBtn"><i class="bi bi-search"></i> Search</button>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#contactModal"><i class="bi bi-plus-circle"></i> Add Contact</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead><tr><th>Student/Parent</th><th>Phone</th><th>Verified</th><th>Consent</th><th>Preferences</th><th>Action</th></tr></thead>
+                                <tbody id="contactsTableBody"><tr><td colspan="6" class="text-center">Loading contacts...</td></tr></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Opt-Out Section (POST /optout, GET /optout/:phone) -->
+                        <h5 class="mt-4">Parent Opt-Out Management</h5>
+                        <form id="optOutForm" class="input-group mb-3" style="max-width: 400px;">
+                            <input type="text" class="form-control" id="optOutPhone" placeholder="Enter phone number to Opt-Out (+91...)" required>
+                            <button class="btn btn-danger" type="submit" id="optOutBtn"><i class="bi bi-slash-circle"></i> Permanently Opt-Out</button>
+                        </form>
+                        <div id="optOutStatus"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. System Configuration Tab (Comprehensive Setup) -->
+            <div class="tab-pane fade" id="config" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-secondary">Global Arattai Settings & Governance</div>
+                    <div class="card-body">
+                        <form id="systemConfigForm">
+                            <h5 class="mt-4">General Settings & Business Info</h5>
+                            <div class="row g-3 mb-4 border p-3 rounded">
+                                <div class="col-md-4">
+                                    <label for="businessNumber" class="form-label">Business Phone Number</label>
+                                    <input type="text" class="form-control" id="businessNumber" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="businessName" class="form-label">Business Name (School)</label>
+                                    <input type="text" class="form-control" id="businessName" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="apiProvider" class="form-label">API Provider</label>
+                                    <input type="text" class="form-control" id="apiProvider" disabled>
+                                </div>
+                            </div>
+                            
+                            <h5 class="mt-4">Usage Limits & Quota</h5>
+                            <div class="row g-3 mb-4 border p-3 rounded">
+                                <div class="col-md-4">
+                                    <label for="dailyLimit" class="form-label">Daily Message Limit</label>
+                                    <input type="number" class="form-control" id="dailyLimit" required min="100">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="monthlyLimit" class="form-label">Monthly Message Limit</label>
+                                    <input type="number" class="form-control" id="monthlyLimit" required min="1000">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="currentUsage" class="form-label">Current Usage (Monthly)</label>
+                                    <input type="text" class="form-control" id="currentUsage" disabled>
+                                    <div class="form-text">Remaining Quota: <span id="remainingQuotaText">...</span></div>
+                                </div>
+                            </div>
+
+                            <h5 class="mt-4">Rate Limiting Controls</h5>
+                            <div class="row g-3 mb-4 border p-3 rounded">
+                                <div class="col-md-6">
+                                    <label for="messagesPerMinute" class="form-label">Messages Per Minute (API Level)</label>
+                                    <input type="number" class="form-control" id="messagesPerMinute" required min="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="messagesPerHour" class="form-label">Messages Per Hour (System Level)</label>
+                                    <input type="number" class="form-control" id="messagesPerHour" required min="1">
+                                </div>
+                            </div>
+
+                            <h5 class="mt-4">Governance & Webhook Setup</h5>
+                            <div class="row g-3 mb-4 border p-3 rounded">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="consentRequired">
+                                        <label class="form-check-label" for="consentRequired">Require Parent Consent before messaging</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="automaticOptOut">
+                                        <label class="form-check-label" for="automaticOptOut">Automatic Opt-Out Handling</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="contentFiltering">
+                                        <label class="form-check-label" for="contentFiltering">Enable Content Filtering</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="deliveryReports">
+                                        <label class="form-check-label" for="deliveryReports">Enable Delivery Reports</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="readReceipts">
+                                        <label class="form-check-label" for="readReceipts">Enable Read Receipts</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="webhookUrl" class="form-label">Webhook URL (For Delivery/Read Status)</label>
+                                    <input type="url" class="form-control" id="webhookUrl" required>
+                                    <label for="webhookSecret" class="form-label mt-2">Webhook Secret</label>
+                                    <input type="text" class="form-control" id="webhookSecret" required>
+                                    <label for="dataRetentionDays" class="form-label mt-2">Data Retention Days</label>
+                                    <input type="number" class="form-control" id="dataRetentionDays" required min="30">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-secondary mt-3" id="saveSystemConfigBtn"><i class="bi bi-save"></i> Save Global Settings</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Contact Modal for Add/Edit -->
+    <div class="modal fade" id="contactModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactModalTitle">Add New Contact</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="contactForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="contactId">
+                        <div class="mb-3">
+                            <label for="studentId" class="form-label">Student ID</label>
+                            <input type="text" class="form-control" id="studentId" placeholder="e.g., STUDENT_001" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="parentName" class="form-label">Parent Name</label>
+                            <input type="text" class="form-control" id="parentName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phoneNumber" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="phoneNumber" placeholder="+91..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="preferredLanguage" class="form-label">Preferred Language</label>
+                            <select class="form-select" id="preferredLanguage">
+                                <option value="english">English</option>
+                                <option value="tamil">Tamil</option>
+                                <option value="hindi">Hindi</option>
+                            </select>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="consentGiven">
+                            <label class="form-check-label" for="consentGiven">Consent Given</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="arattaiVerified">
+                            <label class="form-check-label" for="arattaiVerified">Arattai Verified</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notification Preferences</label>
+                            <div id="preferenceCheckboxes">
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="pref" value="attendance" checked><label class="form-check-label">Attendance</label></div>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="pref" value="academic" checked><label class="form-check-label">Academic</label></div>
+                                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" name="pref" value="events" checked><label class="form-check-label">Events</label></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="saveContactBtn">Save Contact</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_BASE = ''; // Base path for the API
+        let globalTemplates = [];
+        let globalContacts = [];
+
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => {
+                area.style.display = 'none';
+            }, 7000);
+        }
+
+        /** Core Fetch Function with Error Handling. */
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
+
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error.', 'danger');
+                throw error;
+            }
+        }
+        
+        // --- TEMPLATE LOGIC ---
+        async function fetchTemplates() {
+            try {
+                const data = await apiFetch('/templates');
+                globalTemplates = data;
+                
+                const selectIds = ['sendTemplateId', 'broadcastTemplateId', 'automationTemplateId'];
+                
+                selectIds.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = '<option value="">Select Template</option>';
+                    data.forEach(t => {
+                        select.innerHTML += `<option value="${t.id}" data-variables='${JSON.stringify(t.variables || [])}'>${t.name} (${t.id})</option>`;
+                    });
+                });
+                
+                // Set listener for Composer variables hint
+                document.getElementById('sendTemplateId').addEventListener('change', updateComposerHint);
+            } catch (error) {
+                console.error("Failed to load templates:", error);
+                showNotification("Failed to load templates for composer.", 'danger');
+            }
+        }
+        
+        function updateComposerHint(e) {
+            const select = e.target;
+            const hint = document.getElementById('templateVariablesHint');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (selectedOption && selectedOption.value) {
+                try {
+                    const variables = JSON.parse(selectedOption.getAttribute('data-variables'));
+                    hint.textContent = `Variables required: {${variables.join('}, {')}}`;
+                } catch {
+                    hint.textContent = 'Variables required: N/A';
+                }
+            } else {
+                hint.textContent = 'Variables required: N/A';
+            }
+        }
+
+        // --- 1. ANALYTICS & DASHBOARD LOGIC (MOCKED DATA) ---
+        async function fetchAnalytics() {
+            const keyStatsArea = document.getElementById('keyStatsArea');
+            keyStatsArea.innerHTML = '<div class="col-12 text-center text-muted">Fetching analysis...</div>';
+
+            // MOCK DATA structure reflecting the backend's expected output
+            const mockAnalyticsData = {
+                totalMessagesSent: 1500,
+                deliveryRate: '98.5',
+                readRate: '82.3',
+                totalCost: 750.00,
+                avgCostPerMessage: 0.50,
+                categoryBreakdown: { attendance: 600, academic: 400, events: 300, finance: 200 },
+                topPerformingTemplates: [
+                    { templateId: 'template_001', sent: 600, deliveryRate: '99.0', readRate: '88.5' },
+                    { templateId: 'fee_alert', sent: 200, deliveryRate: '98.0', readRate: '85.1' },
+                ]
+            };
+            
+            // NOTE: In a real environment, you would use: 
+            // const data = await apiFetch('/analytics');
+            // const analytics = data;
+            const analytics = mockAnalyticsData;
+
+
+            keyStatsArea.innerHTML = `
+                <div class="col-md-3"><div class="p-3 border rounded bg-light stat-box"><h4 class="text-primary">${analytics.totalMessagesSent.toLocaleString()}</h4><p class="text-muted">Total Messages Sent</p></div></div>
+                <div class="col-md-3"><div class="p-3 border rounded bg-light stat-box"><h4 class="text-success">${analytics.deliveryRate}%</h4><p class="text-muted">Delivery Rate</p></div></div>
+                <div class="col-md-3"><div class="p-3 border rounded bg-light stat-box"><h4 class="text-info">${analytics.readRate}%</h4><p class="text-muted">Read Rate</p></div></div>
+                <div class="col-md-3"><div class="p-3 border rounded bg-light stat-box"><h4 class="text-danger">₹${analytics.totalCost.toFixed(2)}</h4><p class="text-muted">Total Messaging Cost</p></div></div>
+            `;
+            
+            // Category Breakdown
+            const breakdownList = document.getElementById('categoryBreakdownList');
+            breakdownList.innerHTML = '';
+            Object.entries(analytics.categoryBreakdown).forEach(([category, count]) => {
+                breakdownList.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">${category.toUpperCase()} <span class="badge bg-primary rounded-pill">${count}</span></li>`;
+            });
+            
+            // Top Templates
+            const templatesTable = document.getElementById('topTemplatesTableBody');
+            templatesTable.innerHTML = '';
+            analytics.topPerformingTemplates.forEach(t => {
+                templatesTable.innerHTML += `<tr><td>${t.templateId}</td><td>${t.sent}</td><td>${t.deliveryRate}%</td><td>${t.readRate}%</td></tr>`;
+            });
+
+            document.getElementById('refreshAnalyticsBtn').addEventListener('click', fetchAnalytics);
+        }
+
+
+        // --- 2. MESSAGE COMPOSER LOGIC ---
+        
+        document.getElementById('sendMessageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('sendMsgBtn');
+            btn.disabled = true;
+
+            const isScheduled = form.scheduledFor.value !== '';
+            
+            let variables;
+            try {
+                variables = JSON.parse(form.sendVariables.value);
+            } catch {
+                showNotification("Variables must be valid JSON object.", 'warning');
+                btn.disabled = false;
+                return;
+            }
+
+            const payload = {
+                templateId: form.sendTemplateId.value,
+                recipientNumber: form.recipientNumber.value,
+                variables: variables,
+                scheduledFor: isScheduled ? new Date(form.scheduledFor.value).toISOString() : undefined
+            };
+            
+            const endpoint = isScheduled ? '/schedule' : '/send';
+
+            try {
+                const data = await apiFetch(endpoint, 'POST', payload);
+                showNotification(data.message || `Message successfully ${isScheduled ? 'scheduled.' : 'sent.'}`, 'success');
+                form.reset();
+                if (isScheduled) fetchScheduledMessages();
+
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Fetch Scheduled Messages
+        async function fetchScheduledMessages() {
+            const tableBody = document.getElementById('scheduledMessagesTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading scheduled messages...</td></tr>';
+            
+            try {
+                const messages = await apiFetch('/scheduled');
+                
+                tableBody.innerHTML = '';
+                if (messages.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No messages scheduled.</td></tr>';
+                    return;
+                }
+                
+                messages.forEach(msg => {
+                    const scheduledTime = new Date(msg.scheduledFor).toLocaleString();
+                    const messagePreview = msg.message.substring(0, 50) + '...';
+
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${msg.id.substring(0, 10)}...</td>
+                        <td>${msg.recipientNumber} (${msg.recipientName || 'N/A'})</td>
+                        <td>${scheduledTime}</td>
+                        <td><span class="badge bg-secondary">${msg.category.toUpperCase()}</span></td>
+                        <td>${messagePreview}</td>
+                        <td><button class="btn btn-sm btn-danger cancel-schedule-btn" data-id="${msg.id}" ${msg.status !== 'scheduled' ? 'disabled' : ''}><i class="bi bi-x-circle"></i> Cancel</button></td>
+                    `;
+                });
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load scheduled messages.</td></tr>';
+            }
+        }
+
+        // Cancel Scheduled Message
+        document.getElementById('scheduledMessagesTableBody').addEventListener('click', async (e) => {
+            const btn = e.target.closest('.cancel-schedule-btn');
+            if (btn) {
+                const messageId = btn.getAttribute('data-id');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                try {
+                    const data = await apiFetch(`/scheduled/${messageId}`, 'DELETE');
+                    showNotification(data.message, 'success');
+                    fetchScheduledMessages();
+                } catch {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-x-circle"></i> Cancel';
+                }
+            }
+        });
+
+        // --- 3. BROADCAST LOGIC ---
+        async function fetchBroadcastCampaigns() {
+            // NOTE: The backend only stores data in memory, so we simulate a fetch here
+            const mockCampaigns = [{
+                id: 'campaign_1', name: 'Fee Reminder Q3', status: 'completed', totalRecipients: 500, sentCount: 500,
+                deliveredCount: 490, readCount: 400, cost: 250.00
+            },
+            {
+                id: 'campaign_2', name: 'School Day Invite', status: 'processing', totalRecipients: 1200, sentCount: 800,
+                deliveredCount: 780, readCount: 0, cost: 400.00
+            }];
+
+            const tableBody = document.getElementById('broadcastCampaignsTableBody');
+            tableBody.innerHTML = '';
+            
+            mockCampaigns.forEach(c => {
+                const deliveryRate = c.sentCount > 0 ? ((c.deliveredCount / c.sentCount) * 100).toFixed(1) : '0.0';
+                const readRate = c.deliveredCount > 0 ? ((c.readCount / c.deliveredCount) * 100).toFixed(1) : '0.0';
+                const statusClass = c.status === 'completed' ? 'bg-success' : (c.status === 'processing' ? 'bg-warning text-dark' : 'bg-secondary');
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${c.name}</td>
+                        <td><span class="badge ${statusClass}">${c.status.toUpperCase()}</span></td>
+                        <td>${c.sentCount} / ${c.totalRecipients}</td>
+                        <td>${deliveryRate}%</td>
+                        <td>${readRate}%</td>
+                        <td>₹${c.cost.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            // NOTE: In production, fetchBroadcastCampaigns would hit GET /broadcasts (needs implementation)
+        }
+
+        document.getElementById('broadcastForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const target = form.targetAudience.value;
+            const btn = document.getElementById('createBroadcastBtn');
+            btn.disabled = true;
+
+            let recipientList = [];
+            if (target === 'custom_list') {
+                const list = form.recipientList.value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+                if (list.length === 0) {
+                    showNotification("Custom list is empty.", 'warning');
+                    btn.disabled = false; return;
+                }
+                recipientList = list;
+            }
+
+            const payload = {
+                name: form.campaignName.value,
+                templateId: form.broadcastTemplateId.value,
+                targetAudience: target,
+                recipientList: recipientList,
+                scheduledFor: form.broadcastScheduledFor.value || undefined,
+                variables: {} // Simplified for the frontend demo
+            };
+
+            try {
+                const data = await apiFetch('/broadcast', 'POST', payload);
+                showNotification(data.message, 'success');
+                form.reset();
+                fetchBroadcastCampaigns();
+            } catch {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // --- 4. AUTOMATION LOGIC ---
+        async function fetchAutomationRules() {
+            const tableBody = document.getElementById('automationRulesTableBody');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading automation rules...</td></tr>';
+            
+            try {
+                const rules = await apiFetch('/automation');
+                
+                tableBody.innerHTML = '';
+                if (rules.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No automation rules found.</td></tr>';
+                    return;
+                }
+                
+                rules.forEach(rule => {
+                    const statusClass = rule.active ? 'bg-success' : 'bg-danger';
+
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${rule.name}</td>
+                        <td>${rule.trigger.replace(/_/g, ' ')}</td>
+                        <td>${rule.templateId}</td>
+                        <td><span class="badge ${statusClass}">${rule.active ? 'Active' : 'Inactive'}</span></td>
+                        <td><button class="btn btn-sm btn-info edit-rule-btn me-2" data-rule='${JSON.stringify(rule)}'><i class="bi bi-pencil"></i> Edit</button></td>
+                    `;
+                });
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load automation rules.</td></tr>';
+            }
+        }
+
+        document.getElementById('automationRulesTableBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('.edit-rule-btn');
+            if (btn) {
+                const rule = JSON.parse(btn.getAttribute('data-rule'));
+                document.getElementById('automationRuleId').value = rule.id;
+                document.getElementById('ruleName').value = rule.name;
+                document.getElementById('triggerEvent').value = rule.trigger;
+                document.getElementById('automationTemplateId').value = rule.templateId;
+                document.getElementById('ruleConditions').value = JSON.stringify(rule.conditions, null, 2);
+                document.getElementById('ruleActive').checked = rule.active;
+                document.getElementById('saveAutomationRuleBtn').textContent = 'Update Rule';
+                document.getElementById('cancelEditAutomationBtn').style.display = 'inline-block';
+            }
+        });
+
+        document.getElementById('cancelEditAutomationBtn').addEventListener('click', () => {
+            document.getElementById('automationForm').reset();
+            document.getElementById('automationRuleId').value = '';
+            document.getElementById('saveAutomationRuleBtn').textContent = 'Save Rule';
+            document.getElementById('cancelEditAutomationBtn').style.display = 'none';
+        });
+
+        document.getElementById('automationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const ruleId = form.automationRuleId.value;
+            const btn = document.getElementById('saveAutomationRuleBtn');
+            btn.disabled = true;
+            
+            let conditions;
+            try {
+                conditions = JSON.parse(form.ruleConditions.value);
+                if (!Array.isArray(conditions)) throw new Error("Conditions must be an array.");
+            } catch {
+                showNotification("Conditions must be a valid JSON array.", 'warning');
+                btn.disabled = false; return;
+            }
+
+            const payload = {
+                name: form.ruleName.value,
+                trigger: form.triggerEvent.value,
+                templateId: form.automationTemplateId.value,
+                conditions: conditions,
+                active: form.ruleActive.checked,
+                createdBy: 'admin_user'
+            };
+            
+            const method = ruleId ? 'PUT' : 'POST';
+            const endpoint = ruleId ? `/automation/${ruleId}` : '/automation';
+
+            try {
+                const data = await apiFetch(endpoint, method, payload);
+                showNotification(data.message || `Rule ${method === 'POST' ? 'created' : 'updated'} successfully.`, 'success');
+                form.reset();
+                document.getElementById('automationRuleId').value = '';
+                document.getElementById('saveAutomationRuleBtn').textContent = 'Save Rule';
+                document.getElementById('cancelEditAutomationBtn').style.display = 'none';
+                fetchAutomationRules();
+            } catch {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // --- 5. CONTACTS & PREFERENCES LOGIC ---
+        async function fetchContacts() {
+            const tableBody = document.getElementById('contactsTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading contacts...</td></tr>';
+            
+            const search = document.getElementById('contactSearch').value;
+            
+            try {
+                // NOTE: Search functionality requires backend implementation. Frontend only uses base GET /contacts.
+                const contacts = await apiFetch('/contacts'); 
+                globalContacts = contacts;
+                
+                tableBody.innerHTML = '';
+                if (contacts.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No contacts found.</td></tr>';
+                    return;
+                }
+                
+                contacts.forEach(c => {
+                    const verifiedBadge = c.arattaiVerified ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-danger">No</span>';
+                    const consentBadge = c.consentGiven ? '<span class="badge bg-primary">Yes</span>' : '<span class="badge bg-warning text-dark">No</span>';
+                    const prefs = (c.notificationPreferences || []).map(p => p.substring(0, 1).toUpperCase()).join(', ');
+
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${c.studentName} / ${c.parentName}</td>
+                        <td>${c.phoneNumber}</td>
+                        <td>${verifiedBadge}</td>
+                        <td>${consentBadge}</td>
+                        <td>${prefs}</td>
+                        <td><button class="btn btn-sm btn-warning edit-contact-btn" data-id="${c.id}"><i class="bi bi-pencil"></i> Edit</button></td>
+                    `;
+                });
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load contacts.</td></tr>';
+            }
+        }
+        
+        document.getElementById('searchContactsBtn').addEventListener('click', fetchContacts);
+
+        // Populate modal for editing
+        document.getElementById('contactsTableBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('.edit-contact-btn');
+            if (btn) {
+                const contactId = btn.getAttribute('data-id');
+                const contact = globalContacts.find(c => c.id === contactId);
+
+                document.getElementById('contactModalTitle').textContent = `Edit Contact: ${contact.parentName}`;
+                document.getElementById('contactId').value = contact.id;
+                document.getElementById('studentId').value = contact.studentId || '';
+                document.getElementById('parentName').value = contact.parentName || '';
+                document.getElementById('phoneNumber').value = contact.phoneNumber || '';
+                document.getElementById('preferredLanguage').value = contact.preferredLanguage || 'english';
+                document.getElementById('consentGiven').checked = contact.consentGiven || false;
+                document.getElementById('arattaiVerified').checked = contact.arattaiVerified || false;
+                
+                // Preferences
+                const preferences = contact.notificationPreferences || [];
+                document.querySelectorAll('#preferenceCheckboxes input').forEach(input => {
+                    input.checked = preferences.includes(input.value);
+                });
+
+                const modal = new bootstrap.Modal(document.getElementById('contactModal'));
+                modal.show();
+            }
+        });
+        
+        // Handle Contact Form Submission (POST /contacts or PUT /contacts/:id)
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const contactId = form.contactId.value;
+            const btn = document.getElementById('saveContactBtn');
+            btn.disabled = true;
+
+            const preferences = Array.from(document.querySelectorAll('#preferenceCheckboxes input:checked')).map(input => input.value);
+            
+            const payload = {
+                studentId: form.studentId.value,
+                parentName: form.parentName.value,
+                phoneNumber: form.phoneNumber.value,
+                preferredLanguage: form.preferredLanguage.value,
+                consentGiven: form.consentGiven.checked,
+                arattaiVerified: form.arattaiVerified.checked,
+                notificationPreferences: preferences
+            };
+
+            const method = contactId ? 'PUT' : 'POST';
+            const endpoint = contactId ? `/contacts/${contactId}` : '/contacts';
+
+            try {
+                const data = await apiFetch(endpoint, method, payload);
+                showNotification(data.message || `Contact successfully ${contactId ? 'updated' : 'added'}.`, 'success');
+                
+                // Close modal and refresh
+                bootstrap.Modal.getInstance(document.getElementById('contactModal')).hide();
+                form.reset();
+                fetchContacts();
+
+            } catch {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Opt-Out Logic
+        document.getElementById('optOutForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('optOutPhone').value;
+            const btn = document.getElementById('optOutBtn');
+            btn.disabled = true;
+
+            try {
+                const data = await apiFetch('/optout', 'POST', { phoneNumber: phone });
+                showNotification(data.message, 'success');
+                document.getElementById('optOutStatus').innerHTML = `<p class="text-danger fw-bold">Number ${phone} is now permanently Opted-Out.</p>`;
+            } catch {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // --- 6. CONFIGURATION LOGIC ---
+        async function fetchSystemConfig() {
+            try {
+                const settings = await apiFetch('/settings');
+                
+                document.getElementById('businessNumber').value = settings.businessNumber || '';
+                document.getElementById('businessName').value = settings.businessName || '';
+                document.getElementById('apiProvider').value = settings.apiProvider || 'arattai_business_api';
+                
+                // Limits
+                document.getElementById('dailyLimit').value = settings.dailyLimit || 0;
+                document.getElementById('monthlyLimit').value = settings.monthlyLimit || 0;
+                document.getElementById('currentUsage').value = settings.currentUsage || 0;
+                document.getElementById('remainingQuotaText').textContent = settings.remainingQuota || 0;
+                
+                // Rate Limiting
+                document.getElementById('messagesPerMinute').value = settings.rateLimiting.messagesPerMinute || 0;
+                document.getElementById('messagesPerHour').value = settings.rateLimiting.messagesPerHour || 0;
+                
+                // Governance
+                document.getElementById('consentRequired').checked = settings.consentRequired || false;
+                document.getElementById('automaticOptOut').checked = settings.automaticOptOut || false;
+                document.getElementById('contentFiltering').checked = settings.contentFiltering || false;
+                document.getElementById('deliveryReports').checked = settings.deliveryReports || false;
+                document.getElementById('readReceipts').checked = settings.readReceipts || false;
+
+                // Webhooks
+                document.getElementById('webhookUrl').value = settings.webhookUrl || '';
+                document.getElementById('webhookSecret').value = settings.webhookSecret || '';
+                document.getElementById('dataRetentionDays').value = settings.dataRetentionDays || 90;
+
+            } catch (error) {
+                showNotification("Failed to load system settings. Using defaults.", 'danger');
+            }
+        }
+
+        document.getElementById('systemConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('saveSystemConfigBtn');
+            btn.disabled = true;
+            
+            const payload = {
+                businessNumber: form.businessNumber.value,
+                businessName: form.businessName.value,
+                dailyLimit: parseInt(form.dailyLimit.value),
+                monthlyLimit: parseInt(form.monthlyLimit.value),
+                rateLimiting: {
+                    messagesPerMinute: parseInt(form.messagesPerMinute.value),
+                    messagesPerHour: parseInt(form.messagesPerHour.value)
+                },
+                consentRequired: form.consentRequired.checked,
+                automaticOptOut: form.automaticOptOut.checked,
+                contentFiltering: form.contentFiltering.checked,
+                deliveryReports: form.deliveryReports.checked,
+                readReceipts: form.readReceipts.checked,
+                webhookUrl: form.webhookUrl.value,
+                webhookSecret: form.webhookSecret.value,
+                dataRetentionDays: parseInt(form.dataRetentionDays.value)
+            };
+            
+            try {
+                const data = await apiFetch('/settings', 'PUT', payload);
+                showNotification(data.message, 'success');
+                fetchSystemConfig();
+            } catch {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default time for scheduling
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 15); // Default 15 mins in future
+            document.getElementById('scheduledFor').value = now.toISOString().substring(0, 16);
+            document.getElementById('broadcastScheduledFor').value = now.toISOString().substring(0, 16);
+
+
+            fetchTemplates();
+            fetchSystemConfig();
+            fetchAnalytics();
+            fetchScheduledMessages();
+            fetchBroadcastCampaigns();
+            fetchAutomationRules();
+            fetchContacts();
+        });
+    </script>
 </body>
 </html>
