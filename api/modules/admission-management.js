@@ -1,7 +1,7 @@
-// Admission Management Module - Production Ready API (Final Enterprise Edition)
 const express = require('express');
 const { Pool } = require('pg');
-const multer = require('multer'); 
+const multer = require('multer');
+const Joi = require('joi'); // Explicitly imported Joi for validation
 const router = express.Router();
 
 const pool = new Pool({
@@ -11,30 +11,42 @@ const pool = new Pool({
 // --- CORE R.B.A.C. & CONTEXT HELPERS (Simulated JWT Extraction) ---
 
 const getRequestContext = (req) => ({
-    schoolId: req.user?.schoolId || '00000000-0000-0000-0000-000000000001', 
-    userId: req.user?.userId || '11111111-1111-1111-1111-111111111111',   
-    userRole: req.user?.role || 'school_admin' 
+    schoolId: req.user?.schoolId || '00000000-0000-0000-0000-000000000001',
+    userId: req.user?.userId || '11111111-1111-1111-1111-111111111111',
+    userRole: req.user?.role || 'school_admin'
 });
 
 // Permissions
-const isAdmissionManager = (role) => 
+const isAdmissionManager = (role) =>
     role === 'super_admin' || role === 'school_admin' || role === 'principal';
 
 const isFinalApprover = (role) =>
     role === 'super_admin' || role === 'principal';
 
-const isStaff = (role) => 
+const isStaff = (role) =>
     role === 'super_admin' || role === 'school_admin' || role === 'teacher';
 
 // Placeholder for Arattai/WhatsApp integration
 async function sendNotification(recipientPhone, templateId, variables) {
-    // NOTE: In production, this would use a robust system that logs failures.
     console.log(`[Notification Hook] Sending ${templateId} to ${recipientPhone}`);
-    return true; 
+    return true;
 }
 
 // --- FILE UPLOAD SETUP (MOCK STORAGE - REPLACE WITH SUPABASE/S3 LOGIC) ---
 const upload = multer({ dest: 'uploads/admission_temp/' });
+
+
+// --- NEW: CONFIGURATION SCHEMAS ---
+const configUpdateSchema = Joi.object({
+    currentYear: Joi.string().required(),
+    maxIntake: Joi.number().integer().min(1).required(),
+    admissionStatus: Joi.string().valid('open', 'closed', 'waitlist_only').required(),
+    verificationThreshold: Joi.number().integer().min(0).max(100).required(),
+    minAssessmentScore: Joi.number().integer().min(0).max(100).required(),
+    defaultNotificationPhone: Joi.string().optional().allow(null, ''),
+    // requiredDocs is expected as a JSON array string from the frontend for easy insertion into JSONB
+    requiredDocs: Joi.array().items(Joi.string()).required(),
+});
 
 
 // --- CORE API ENDPOINTS ---
@@ -45,7 +57,7 @@ router.get('/applications', async (req, res) => {
     if (!isStaff(userRole)) {
         return res.status(403).json({ success: false, error: 'Access denied. Requires Staff access.' });
     }
-    
+
     try {
         const result = await pool.query(`
             SELECT id, application_number, applicant_name, admission_status, application_data, created_at
@@ -53,7 +65,7 @@ router.get('/applications', async (req, res) => {
             WHERE school_id = $1
             ORDER BY created_at DESC;
         `, [schoolId]);
-        
+
         res.json({ success: true, applications: result.rows });
     } catch (err) {
         console.error("DB Error fetching applications:", err.message);
@@ -65,7 +77,7 @@ router.get('/applications', async (req, res) => {
 router.post('/applications', async (req, res) => {
     const { schoolId, userId } = getRequestContext(req);
     const { studentName, appliedForClass, applicationData } = req.body;
-    
+
     if (!studentName || !appliedForClass) {
         return res.status(400).json({ success: false, error: 'Student name and class are required.' });
     }
@@ -73,14 +85,14 @@ router.post('/applications', async (req, res) => {
     try {
         const applicationNumber = `ADM${new Date().getFullYear()}${String(Math.random()).slice(-4)}`;
         const initialStatusHistory = JSON.stringify([{ status: 'applied', timestamp: new Date().toISOString(), actor: 'applicant' }]);
-        
+
         const result = await pool.query(
-            `INSERT INTO admission_management 
-            (school_id, application_number, applicant_name, admission_status, application_data, created_by_user_id, status_history)
-            VALUES ($1, $2, $3, 'applied', $4, $5, $6) RETURNING *`,
+            `INSERT INTO admission_management
+             (school_id, application_number, applicant_name, admission_status, application_data, created_by_user_id, status_history)
+             VALUES ($1, $2, $3, 'applied', $4, $5, $6) RETURNING *`,
             [schoolId, applicationNumber, studentName, applicationData, userId, initialStatusHistory]
         );
-        
+
         res.status(201).json({ success: true, application: result.rows[0], message: 'Application submitted successfully.' });
     } catch (err) {
         console.error("DB Error submitting application:", err.message);
@@ -95,21 +107,20 @@ router.post('/applications/:id/upload-document', upload.single('document'), asyn
     const { id } = req.params;
     const { documentType } = req.body; // e.g., 'birth_certificate', 'mark_sheet'
     const { userId, schoolId } = getRequestContext(req);
-    
+
     if (!req.file) { return res.status(400).json({ success: false, error: 'No file uploaded.' }); }
     if (!documentType) { return res.status(400).json({ success: false, error: 'Document type is required.' }); }
 
     // NOTE: In production, filePath is replaced by a secure S3/Supabase Storage URL.
-    const secureFileUrl = `https://supabase.storage.url/${schoolId}/${id}/${documentType}.pdf`; 
+    const secureFileUrl = `https://supabase.storage.url/${schoolId}/${id}/${documentType}.pdf`;
 
     try {
         // 1. Update the document status within the application_data JSONB field dynamically.
-        // We assume application_data stores a map of documents like { birth_certificate: { path: "..." } }
         await pool.query(
             "UPDATE admission_management SET application_data = jsonb_set(application_data, $1, $2, true) WHERE id = $3",
             [`{documents, ${documentType}}`, JSON.stringify({ path: secureFileUrl, uploaded: true, verified: false, uploaded_by: userId, uploaded_at: new Date() }), id]
         );
-        
+
         res.json({ success: true, message: `${documentType} uploaded successfully.`, url: secureFileUrl });
     } catch (err) {
         console.error("DB Error uploading document:", err.message);
@@ -130,11 +141,11 @@ router.post('/applications/:id/verify-document', async (req, res) => {
 
     try {
         const verificationStatus = isVerified ? 'verified' : 'rejected';
-        
+
         // 1. Update the document verification status in JSONB (Simulated)
         // 2. Add an entry to the status_history JSONB array
         await pool.query(
-            `UPDATE admission_management 
+            `UPDATE admission_management
              SET status_history = status_history || $1
              WHERE id = $2`,
             [JSON.stringify([{ status: `document_${verificationStatus}`, doc: documentType, timestamp: new Date().toISOString(), actor: userRole }]), id]
@@ -158,16 +169,15 @@ router.post('/applications/:id/schedule', async (req, res) => {
     if (!isAdmissionManager(userRole)) {
         return res.status(403).json({ success: false, error: 'Manager access required to schedule events.' });
     }
-    
-    // NOTE: Fetch student data to get parent phone number
-    const mockParentPhone = '+919876543210'; 
+
+    const mockParentPhone = '+919876543210';
     const mockStudentName = 'Aadhya Verma';
 
     // Update status and history
     await pool.query(
-        `UPDATE admission_management 
-         SET admission_status = $1, status_history = status_history || $2
-         WHERE id = $3`,
+        `UPDATE admission_management
+          SET admission_status = $1, status_history = status_history || $2
+          WHERE id = $3`,
         [`${scheduleType}_scheduled`, JSON.stringify([{ status: `${scheduleType}_scheduled`, date, time, timestamp: new Date().toISOString(), actor: userRole }]), id]
     );
 
@@ -187,11 +197,11 @@ router.post('/applications/:id/admission-decision', async (req, res) => {
     if (!isFinalApprover(userRole)) {
         return res.status(403).json({ success: false, error: 'Only Principal/Super Admin can make final decisions.' });
     }
-    
+
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        
+
         let studentId = null;
 
         if (decision === 'admitted') {
@@ -206,15 +216,15 @@ router.post('/applications/:id/admission-decision', async (req, res) => {
 
         // 2. Update Admission Management Record (Final Status and History)
         await client.query(
-            `UPDATE admission_management 
-             SET admission_status = $1, 
+            `UPDATE admission_management
+             SET admission_status = $1,
                  allocated_class = $2,
                  student_id = $3,
                  status_history = status_history || $4
              WHERE id = $5`,
             [decision, allocatedClass, studentId, JSON.stringify([{ status: decision, timestamp: new Date().toISOString(), actor: userRole }]), id]
         );
-            
+
         // 3. Notify Parent
         sendNotification('+919876543210', `admission_${decision}`, { studentName: 'Admitted Student' });
 
@@ -235,22 +245,21 @@ router.post('/applications/:id/admission-decision', async (req, res) => {
 // --- PARENT/STUDENT PORTAL ENDPOINT (No Auth required, just token/number) ---
 router.get('/portal/:applicationNumber', async (req, res) => {
     const { applicationNumber } = req.params;
-    
+
     try {
-        // NOTE: This simulates the parent or student checking their status
         const result = await pool.query(`
             SELECT admission_status, application_data, status_history
             FROM admission_management
             WHERE application_number = $1;
         `, [applicationNumber]);
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'Application not found.' });
         }
 
-        res.json({ 
-            success: true, 
-            status: result.rows[0].admission_status, 
+        res.json({
+            success: true,
+            status: result.rows[0].admission_status,
             details: result.rows[0].application_data,
             history: result.rows[0].status_history // Returns the detailed audit trail
         });
@@ -270,9 +279,8 @@ router.get('/statistics', async (req, res) => {
     }
 
     try {
-        // This query calculates key stats for the dashboard funnels
         const result = await pool.query(`
-            SELECT 
+            SELECT
                 COUNT(*) AS total_applications,
                 SUM(CASE WHEN admission_status = 'admitted' THEN 1 ELSE 0 END) AS admitted,
                 SUM(CASE WHEN admission_status = 'rejected' THEN 1 ELSE 0 END) AS rejected,
@@ -310,12 +318,11 @@ router.post('/bulk/upload', upload.single('file'), async (req, res) => {
     if (!isAdmissionManager(userRole)) {
         return res.status(403).json({ success: false, error: 'Admin access required for bulk upload.' });
     }
-    
+
     if (!req.file) {
         return res.status(400).json({ success: false, error: 'No file provided for bulk upload.' });
     }
-    
-    // NOTE: Node.js would parse the CSV/Excel file and execute a batch INSERT here.
+
     res.json({ success: true, message: `Bulk file '${req.file.originalname}' received. Batch import processing started.` });
 });
 
@@ -326,8 +333,83 @@ router.get('/bulk/download', async (req, res) => {
         return res.status(403).json({ success: false, error: 'Admin access required for data export.' });
     }
 
-    // NOTE: This endpoint would execute a comprehensive DB query and stream the result as a CSV/Excel file.
     res.json({ success: true, message: 'Export initiated. Download link will be generated shortly.' });
+});
+
+// --- NEW CONFIGURATION ENDPOINTS ---
+
+/**
+ * GET: Fetch Admission Configuration
+ * Fetches settings from a dedicated config table or provides system defaults.
+ */
+router.get('/config', async (req, res) => {
+    const { userRole, schoolId } = getRequestContext(req);
+    if (!isAdmissionManager(userRole)) {
+        return res.status(403).json({ success: false, error: 'Authorization required for configuration.' });
+    }
+
+    try {
+        const result = await pool.query(`SELECT * FROM admission_config WHERE school_id = $1`, [schoolId]);
+
+        // Define system defaults if no record exists
+        const settings = result.rows[0] || {
+            current_year: `${new Date().getFullYear() + 1}-${new Date().getFullYear() + 2}`,
+            max_intake: 250,
+            admission_status: 'open',
+            verification_threshold: 100,
+            min_assessment_score: 70,
+            default_notification_phone: '+919999900000',
+            required_docs: ['birth_certificate', 'mark_sheet', 'photo'] // JSONB array default
+        };
+
+        // Normalize keys for frontend camelCase expectations
+        res.json({
+            success: true,
+            settings: {
+                currentYear: settings.current_year,
+                maxIntake: settings.max_intake,
+                admissionStatus: settings.admission_status,
+                verificationThreshold: settings.verification_threshold,
+                minAssessmentScore: settings.min_assessment_score,
+                defaultNotificationPhone: settings.default_notification_phone,
+                requiredDocs: settings.required_docs // Should be an array/JSONB field
+            }
+        });
+    } catch (error) {
+        console.error("DB Error fetching config:", error.message);
+        res.status(500).json({ success: false, error: 'Failed to retrieve admission configuration.' });
+    }
+});
+
+/**
+ * PUT: Update Admission Configuration (Upsert)
+ */
+router.put('/config', async (req, res) => {
+    const { userRole, schoolId } = getRequestContext(req);
+    if (!isAdmissionManager(userRole)) {
+        return res.status(403).json({ success: false, error: 'Authorization required to update configuration.' });
+    }
+
+    const { error, value } = configUpdateSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message, code: 'ADM_VAL_001' });
+
+    try {
+        await pool.query(
+            `INSERT INTO admission_config (school_id, current_year, max_intake, admission_status, verification_threshold, min_assessment_score, default_notification_phone, required_docs)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             ON CONFLICT (school_id) DO UPDATE SET
+                current_year = $2, max_intake = $3, admission_status = $4, verification_threshold = $5, min_assessment_score = $6, default_notification_phone = $7, required_docs = $8`,
+            [
+                schoolId, value.currentYear, value.maxIntake, value.admissionStatus, value.verificationThreshold,
+                value.minAssessmentScore, value.defaultNotificationPhone, value.requiredDocs
+            ]
+        );
+
+        res.json({ success: true, message: 'Admission configuration updated successfully.' });
+    } catch (err) {
+        console.error("DB Error updating config:", err.message);
+        res.status(500).json({ success: false, error: 'Failed to update admission configuration.' });
+    }
 });
 
 
