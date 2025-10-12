@@ -3,446 +3,990 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Behaviour Tracker - SmartGenEduX</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>🌟 Student Behavior Tracker</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Inter', sans-serif; }
+        .container-fluid { max-width: 1300px; margin-top: 20px; }
+        .card-header { background-color: #3498db; color: white; font-weight: bold; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 0.75rem; }
+        .alert-fixed { position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 350px; border-radius: 0.5rem; }
+        .level-badge { font-weight: bold; padding: 5px 10px; border-radius: 15px; }
+        .positive-btn { background-color: #2ecc71; color: white; border: none; }
+        .negative-btn { background-color: #e74c3c; color: white; border: none; }
+        .log-item.positive { border-left: 5px solid #2ecc71; }
+        .log-item.negative { border-left: 5px solid #e74c3c; }
+        .points-dial { font-size: 2.5rem; font-weight: 700; }
+        .config-category-card { cursor: pointer; transition: transform 0.2s; }
+        .config-category-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/behavior-tracker.png" alt="Behavior Tracker" class="w-12 h-12 mr-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Student Behaviour Tracker</h1>
-                        <p class="text-gray-600">Monitor and track student behavior patterns with analytics</p>
-                    </div>
-                </div>
-                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    <i class="fas fa-times mr-2"></i>Close
-                </button>
-            </div>
-        </div>
+<body>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-green-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-smile text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">89%</div>
-                        <div class="text-green-100">Positive Behavior</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-yellow-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">23</div>
-                        <div class="text-yellow-100">Incidents Today</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-blue-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-chart-line text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">15%</div>
-                        <div class="text-blue-100">Improvement Rate</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-purple-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-award text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">67</div>
-                        <div class="text-purple-100">Rewards Given</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-primary"><i class="bi bi-person-badge-fill"></i> Student Behavior & Intervention System</h1>
 
-        <!-- Log New Incident -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold mb-4">Log Behavior Incident</h2>
-            <form id="behaviorForm" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Student</label>
-                        <select id="studentSelect" class="w-full border rounded px-3 py-2" required>
-                            <option value="">Select Student</option>
-                            <option value="1">Rahul Kumar - Class 5A</option>
-                            <option value="2">Priya Sharma - Class 5A</option>
-                            <option value="3">Amit Singh - Class 5B</option>
-                            <option value="4">Neha Patel - Class 5B</option>
-                        </select>
+        <!-- Notification Area -->
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="behaviorTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab"><i class="bi bi-speedometer2"></i> Summary & Logger</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail" type="button" role="tab"><i class="bi bi-person-lines-fill"></i> Student Profile & Interventions</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="rewards-tab" data-bs-toggle="tab" data-bs-target="#rewards" type="button" role="tab"><i class="bi bi-trophy-fill"></i> Rewards & Redemption</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab"><i class="bi bi-bar-chart-line-fill"></i> Analytics & Reports</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab"><i class="bi bi-gear-fill"></i> Configuration</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content pt-3" id="behaviorTabContent">
+
+            <!-- 1. Dashboard & Logger -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                <div class="row">
+                    <!-- Incident Logger (POST /log) -->
+                    <div class="col-lg-4">
+                        <div class="card section-card">
+                            <div class="card-header bg-success">Log New Incident</div>
+                            <div class="card-body">
+                                <form id="incidentLoggerForm">
+                                    <div class="mb-3">
+                                        <label for="logStudentId" class="form-label">Student ID</label>
+                                        <select class="form-select" id="logStudentId" required>
+                                            <option value="">Select Student</option>
+                                            <!-- Dynamically populated -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="logCategory" class="form-label">Category</label>
+                                        <select class="form-select" id="logCategory" required>
+                                            <option value="">Select Category</option>
+                                            <!-- Dynamically populated from /categories -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="logTitle" class="form-label">Title</label>
+                                        <input type="text" class="form-control" id="logTitle" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="logDescription" class="form-label">Details/Description</label>
+                                        <textarea class="form-control" id="logDescription" rows="2" required></textarea>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="logPoints" class="form-label">Points Change</label>
+                                            <input type="number" class="form-control" id="logPoints" placeholder="Auto-filled or custom">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="logSeverity" class="form-label">Severity</label>
+                                            <select class="form-select" id="logSeverity" required>
+                                                <option value="low">Low</option>
+                                                <option value="medium" selected>Medium</option>
+                                                <option value="high">High</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="logParentNotify">
+                                        <label class="form-check-label" for="logParentNotify">Notify Parent (Immediate Arattai/WhatsApp)</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle"></i> Record Incident</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Behavior Type</label>
-                        <select id="behaviorType" class="w-full border rounded px-3 py-2" required>
-                            <option value="">Select Type</option>
-                            <optgroup label="Positive Behaviors">
-                                <option value="helpful">Helpful to Others</option>
-                                <option value="leadership">Leadership</option>
-                                <option value="academic_excellence">Academic Excellence</option>
-                                <option value="participation">Active Participation</option>
-                                <option value="punctuality">Punctuality</option>
-                            </optgroup>
-                            <optgroup label="Areas for Improvement">
-                                <option value="disruptive">Disruptive Behavior</option>
-                                <option value="late_arrival">Late Arrival</option>
-                                <option value="homework_incomplete">Incomplete Homework</option>
-                                <option value="inattentive">Inattentive in Class</option>
-                                <option value="conflicts">Conflicts with Peers</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Severity Level</label>
-                        <select id="severityLevel" class="w-full border rounded px-3 py-2" required>
-                            <option value="">Select Severity</option>
-                            <option value="positive">Positive Recognition</option>
-                            <option value="minor">Minor Issue</option>
-                            <option value="moderate">Moderate Concern</option>
-                            <option value="serious">Serious Issue</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Location</label>
-                        <select id="location" class="w-full border rounded px-3 py-2">
-                            <option value="">Select Location</option>
-                            <option value="classroom">Classroom</option>
-                            <option value="playground">Playground</option>
-                            <option value="library">Library</option>
-                            <option value="cafeteria">Cafeteria</option>
-                            <option value="corridor">Corridor</option>
-                            <option value="assembly">Assembly Hall</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-2">Description</label>
-                    <textarea id="description" rows="3" placeholder="Describe the behavior incident in detail..." class="w-full border rounded px-3 py-2" required></textarea>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Action Taken</label>
-                        <textarea id="actionTaken" rows="2" placeholder="What action was taken?" class="w-full border rounded px-3 py-2"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Follow-up Required</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="checkbox" id="parentContact" class="mr-2"> Contact Parent
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" id="counselorReferral" class="mr-2"> Counselor Referral
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" id="principalMeeting" class="mr-2"> Principal Meeting
-                            </label>
+                    
+                    <!-- Student Summary Table (GET /summary) -->
+                    <div class="col-lg-8">
+                        <div class="card section-card">
+                            <div class="card-header bg-primary">Student Behavior Overview</div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <select class="form-select" id="summaryFilterClass">
+                                            <option value="">Filter by Class</option>
+                                            <option value="Class 1-A">Class 1-A</option>
+                                            <option value="Class 2-A">Class 2-A</option>
+                                            <!-- Add more classes dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select" id="summaryFilterGrade">
+                                            <option value="">Filter by Grade Level</option>
+                                            <option value="1">Grade 1</option>
+                                            <option value="2">Grade 2</option>
+                                            <!-- Add more grades dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-info w-100" id="refreshSummaryBtn"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Points</th>
+                                                <th>Level</th>
+                                                <th>Trend</th>
+                                                <th>Logs (Pos/Neg)</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="summaryTableBody">
+                                            <tr><td colspan="6" class="text-center">Loading student data...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="flex space-x-4">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                        <i class="fas fa-save mr-2"></i>Log Incident
-                    </button>
-                    <button type="button" onclick="sendParentAlert()" class="bg-orange-600 text-white px-6 py-2 rounded hover:bg-orange-700">
-                        <i class="fas fa-bell mr-2"></i>Send Parent Alert
-                    </button>
-                </div>
-            </form>
-        </div>
+            </div>
 
-        <!-- Recent Incidents -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Recent Behavior Logs</h2>
-                <div class="flex space-x-2">
-                    <select id="filterClass" class="border rounded px-3 py-2">
-                        <option value="">All Classes</option>
-                        <option value="5A">Class 5A</option>
-                        <option value="5B">Class 5B</option>
-                        <option value="4A">Class 4A</option>
-                    </select>
-                    <select id="filterType" class="border rounded px-3 py-2">
-                        <option value="">All Types</option>
-                        <option value="positive">Positive</option>
-                        <option value="improvement">Needs Improvement</option>
-                    </select>
+            <!-- 2. Student Detail & Interventions -->
+            <div class="tab-pane fade" id="detail" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-secondary">Student Profile: <span id="detailStudentName">Select a Student</span></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <!-- Student Selector -->
+                                <select class="form-select mb-3" id="studentDetailSelector">
+                                    <option value="">Select Student for Detail View</option>
+                                </select>
+                                
+                                <!-- Quick Stats -->
+                                <div class="p-3 border rounded mb-4 text-center" id="detailQuickStats">
+                                    <p class="text-muted mb-1">Current Behavior Points</p>
+                                    <div id="detailPointsDial" class="points-dial text-primary">--</div>
+                                    <div id="detailBehaviorLevel" class="level-badge bg-secondary text-white">--</div>
+                                    <p class="mt-2 mb-0">Trend: <span id="detailTrend">--</span></p>
+                                </div>
+
+                                <!-- Intervention Scheduler (POST /intervention) -->
+                                <h5>Schedule Follow-Up</h5>
+                                <form id="interventionForm">
+                                    <input type="hidden" id="interventionStudentId" required>
+                                    <div class="mb-3">
+                                        <label for="interventionType" class="form-label">Intervention Type</label>
+                                        <select class="form-select" id="interventionType" required>
+                                            <option value="counseling_session">Counseling Session</option>
+                                            <option value="parent_meeting">Parent Meeting (P/T Conference)</option>
+                                            <option value="detention">Detention/Time-out</option>
+                                            <option value="reward_privilege">Positive Reinforcement</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="interventionScheduledDate" class="form-label">Scheduled Date</label>
+                                        <input type="date" class="form-control" id="interventionScheduledDate" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="interventionAssignedTo" class="form-label">Assigned To (Counselor/Teacher ID)</label>
+                                        <input type="text" class="form-control" id="interventionAssignedTo" placeholder="e.g., counselor_001" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning w-100"><i class="bi bi-calendar-plus"></i> Schedule Intervention</button>
+                                </form>
+                            </div>
+                            
+                            <div class="col-lg-8">
+                                <!-- Intervention History (GET /interventions) -->
+                                <h5>Intervention History & Status</h5>
+                                <div id="interventionsList" class="list-group mb-4">
+                                    <!-- Dynamic list of interventions -->
+                                    <p class="text-muted text-center">No scheduled interventions found.</p>
+                                </div>
+
+                                <!-- Behavior Log History (GET /student/:studentId) -->
+                                <h5>Recent Behavior Logs</h5>
+                                <div id="studentLogHistory" class="list-group">
+                                    <!-- Dynamic list of logs -->
+                                    <p class="text-muted text-center">No recent logs.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Rewards & Redemption -->
+            <div class="tab-pane fade" id="rewards" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-info">Rewards System & Redemption</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Student Context -->
+                            <div class="col-md-4">
+                                <h5>Redemption Status</h5>
+                                <select class="form-select mb-3" id="rewardStudentSelector">
+                                    <option value="">Select Student to View Rewards</option>
+                                </select>
+                                <div class="p-3 border rounded bg-light">
+                                    <p class="mb-1">Student Points: <strong id="rewardCurrentPoints">--</strong></p>
+                                    <p class="mb-1">Behavior Level: <span id="rewardBehaviorLevel" class="level-badge bg-secondary text-white">--</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Available Rewards (GET /rewards?studentId) -->
+                            <div class="col-md-8">
+                                <h5>Available Rewards for Redemption</h5>
+                                <div id="availableRewardsList" class="row">
+                                    <!-- Dynamic list of available rewards -->
+                                    <p class="text-muted text-center">Select a student or check configuration.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+
+                        <!-- Rewards Management (GET /rewards) -->
+                        <h5>All Defined Rewards (Configuration View)</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Reward</th>
+                                        <th>Type</th>
+                                        <th>Points Required</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allRewardsTableBody">
+                                    <tr><td colspan="4" class="text-center">Loading rewards system...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Analytics & Reports -->
+            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-dark">Behavior Analytics & Oversight</div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label for="analyticsPeriod" class="form-label">Reporting Period</label>
+                                <select class="form-select" id="analyticsPeriod">
+                                    <option value="week" selected>Last 7 Days</option>
+                                    <option value="month">Last 30 Days</option>
+                                    <option value="quarter">Last 90 Days</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-dark mt-4 w-100" id="runAnalyticsBtn"><i class="bi bi-graph-up"></i> Run Analysis</button>
+                            </div>
+                        </div>
+
+                        <!-- Overview Stats (GET /analytics) -->
+                        <div class="row text-center mb-4" id="analyticsOverview">
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded bg-light">
+                                    <h4 id="statTotalIncidents">--</h4><p class="text-muted">Total Incidents</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded bg-light">
+                                    <h4 id="statAvgPoints">--</h4><p class="text-muted">Avg Student Points</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded bg-light">
+                                    <h4 id="statPositiveRatio">--</h4><p class="text-muted">Positive Incidents</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 border rounded bg-light">
+                                    <h4 id="statImprovementRate">--</h4><p class="text-muted">Improvement Rate</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Needs Attention -->
+                            <div class="col-md-6">
+                                <h5>Students Needing Attention</h5>
+                                <div class="list-group" id="studentsNeedingAttentionList"></div>
+                            </div>
+                            <!-- Top Performers -->
+                            <div class="col-md-6">
+                                <h5>Top Behavior Performers</h5>
+                                <div class="list-group" id="topPerformersList"></div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Student</th>
-                            <th class="px-4 py-2 text-left">Behavior</th>
-                            <th class="px-4 py-2 text-left">Type</th>
-                            <th class="px-4 py-2 text-left">Severity</th>
-                            <th class="px-4 py-2 text-left">Date/Time</th>
-                            <th class="px-4 py-2 text-left">Action</th>
-                            <th class="px-4 py-2 text-left">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                                        <span class="text-blue-600 font-medium">RK</span>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">Rahul Kumar</div>
-                                        <div class="text-gray-500">Class 5A</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">Active Participation</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Positive</span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Recognition</span>
-                            </td>
-                            <td class="px-4 py-2">Jan 4, 2025 10:30 AM</td>
-                            <td class="px-4 py-2">Praised in class</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Completed</span>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center mr-2">
-                                        <span class="text-pink-600 font-medium">PS</span>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">Priya Sharma</div>
-                                        <div class="text-gray-500">Class 5A</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">Late Arrival</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Minor</span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Minor</span>
-                            </td>
-                            <td class="px-4 py-2">Jan 4, 2025 08:45 AM</td>
-                            <td class="px-4 py-2">Verbal reminder</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">Follow-up</span>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
-                                        <span class="text-green-600 font-medium">AS</span>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">Amit Singh</div>
-                                        <div class="text-gray-500">Class 5B</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">Helpful to Others</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Positive</span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Recognition</span>
-                            </td>
-                            <td class="px-4 py-2">Jan 3, 2025 02:15 PM</td>
-                            <td class="px-4 py-2">Merit point awarded</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Completed</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            <!-- 5. Configuration Page (Points System, Categories, Scale) -->
+            <div class="tab-pane fade" id="config" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-danger"><i class="bi bi-screwdriver"></i> System Configuration (Admin Only)</div>
+                    <div class="card-body">
+                        
+                        <!-- Points System Setup (Mock PUT/POST) -->
+                        <h5>1. Core Points System & Reset</h5>
+                        <form id="pointsSystemConfigForm" class="row g-3 p-3 border rounded mb-4">
+                            <div class="col-md-3">
+                                <label for="configStartingPoints" class="form-label">Starting Points</label>
+                                <input type="number" class="form-control" id="configStartingPoints" required min="0" max="100">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="configMaxPoints" class="form-label">Max Points</label>
+                                <input type="number" class="form-control" id="configMaxPoints" required min="1" max="100">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="configResetFrequency" class="form-label">Reset Frequency</label>
+                                <select class="form-select" id="configResetFrequency" required>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                    <option value="annually">Annually</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-sm btn-success w-100">Save Points System</button>
+                            </div>
+                        </form>
 
-        <!-- Student Behavior Analytics -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-bold mb-4">Behavior Analytics</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Top Performers -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-3 text-green-600">
-                        <i class="fas fa-star mr-2"></i>Top Performers This Week
-                    </h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-green-600 font-medium">AS</span>
-                                </div>
-                                <div>
-                                    <div class="font-medium">Amit Singh</div>
-                                    <div class="text-sm text-gray-500">Class 5B</div>
-                                </div>
-                            </div>
-                            <div class="text-green-600 font-bold">+15 pts</div>
+                        <!-- Behavior Categories Management (Mock CRUD) -->
+                        <h5>2. Behavior Categories (Positive/Negative)</h5>
+                        <div id="categoryCardsContainer" class="row g-3 mb-4">
+                            <!-- Dynamic category cards from backend/mock -->
                         </div>
-                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-green-600 font-medium">NP</span>
-                                </div>
-                                <div>
-                                    <div class="font-medium">Neha Patel</div>
-                                    <div class="text-sm text-gray-500">Class 5B</div>
-                                </div>
-                            </div>
-                            <div class="text-green-600 font-bold">+12 pts</div>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-green-600 font-medium">RK</span>
-                                </div>
-                                <div>
-                                    <div class="font-medium">Rahul Kumar</div>
-                                    <div class="text-sm text-gray-500">Class 5A</div>
-                                </div>
-                            </div>
-                            <div class="text-green-600 font-bold">+10 pts</div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Students Needing Support -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-3 text-orange-600">
-                        <i class="fas fa-hand-holding-heart mr-2"></i>Students Needing Support
-                    </h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3">
-                                    <span class="text-orange-600 font-medium">PS</span>
-                                </div>
-                                <div>
-                                    <div class="font-medium">Priya Sharma</div>
-                                    <div class="text-sm text-gray-500">Class 5A</div>
+                        <!-- Add/Edit Category Modal -->
+                        <div class="modal fade" id="categoryModal" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="categoryModalTitle">Add New Category</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form id="categoryForm">
+                                        <div class="modal-body">
+                                            <input type="hidden" id="categoryId">
+                                            <div class="mb-3">
+                                                <label for="categoryName" class="form-label">Name</label>
+                                                <input type="text" class="form-control" id="categoryName" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="categoryType" class="form-label">Type</label>
+                                                <select class="form-select" id="categoryType" required>
+                                                    <option value="positive">Positive</option>
+                                                    <option value="negative">Negative</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="categoryPoints" class="form-label">Default Points Change</label>
+                                                <input type="number" class="form-control" id="categoryPoints" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="categoryIcon" class="form-label">Icon (Emoji)</label>
+                                                <input type="text" class="form-control" id="categoryIcon" placeholder="e.g., 🎓, 🚫">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary" id="saveCategoryBtn">Save Changes</button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
-                            <div class="text-orange-600 font-bold">3 incidents</div>
                         </div>
-                        <div class="p-3 bg-orange-50 rounded-lg">
-                            <div class="text-sm text-orange-700">
-                                <strong>Recommended Actions:</strong>
-                                <ul class="list-disc list-inside mt-2 space-y-1">
-                                    <li>Schedule parent meeting</li>
-                                    <li>Counselor consultation</li>
-                                    <li>Positive reinforcement plan</li>
-                                </ul>
-                            </div>
-                        </div>
+
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal" id="addNewCategoryBtn"><i class="bi bi-plus-circle"></i> Add New Category Rule</button>
+
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
-    <script>
-        // Form submission
-        document.getElementById('behaviorForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                student: document.getElementById('studentSelect').value,
-                type: document.getElementById('behaviorType').value,
-                severity: document.getElementById('severityLevel').value,
-                location: document.getElementById('location').value,
-                description: document.getElementById('description').value,
-                actionTaken: document.getElementById('actionTaken').value,
-                parentContact: document.getElementById('parentContact').checked,
-                counselorReferral: document.getElementById('counselorReferral').checked,
-                principalMeeting: document.getElementById('principalMeeting').checked
-            };
-            
-            logBehaviorIncident(formData);
-        });
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        function logBehaviorIncident(data) {
-            // Show loading
-            const submitBtn = document.querySelector('#behaviorForm button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Logging...';
-            submitBtn.disabled = true;
-            
-            // Simulate logging
+    <script>
+        const API_BASE = ''; 
+        let studentList = []; // Global store for quick lookups
+
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
             setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
-                // Show success message
-                showMessage('Behavior incident logged successfully!', 'success');
-                
-                // Reset form
-                document.getElementById('behaviorForm').reset();
-            }, 2000);
+                area.style.display = 'none';
+            }, 7000);
         }
 
-        function sendParentAlert() {
-            const student = document.getElementById('studentSelect').value;
-            const behaviorType = document.getElementById('behaviorType').value;
+        // --- Core Fetch Function ---
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
+
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error.', 'danger');
+                throw error;
+            }
+        }
+
+        // --- Data Population Helpers ---
+        function populateStudentSelectors(students) {
+            const selectors = ['logStudentId', 'studentDetailSelector', 'rewardStudentSelector'];
+            studentList = students; // Update global store
+
+            selectors.forEach(id => {
+                const select = document.getElementById(id);
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">Select Student</option>'; // Reset
+                
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = `${student.name} (${student.rollNumber})`;
+                    select.appendChild(option);
+                });
+
+                // Restore previous selection if possible
+                if (currentValue && students.some(s => s.id === currentValue)) {
+                    select.value = currentValue;
+                }
+            });
+        }
+
+        async function populateCategories() {
+            try {
+                const categories = await apiFetch('/categories');
+                const select = document.getElementById('logCategory');
+                select.innerHTML = '<option value="">Select Category</option>';
+                
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = `${cat.icon} ${cat.name} (${cat.defaultPoints > 0 ? '+' : ''}${cat.defaultPoints})`;
+                    option.setAttribute('data-points', cat.defaultPoints);
+                    option.setAttribute('data-type', cat.type);
+                    select.appendChild(option);
+                });
+                
+                // Update config cards
+                renderConfigCategories(categories);
+
+            } catch (error) {
+                console.error('Failed to load categories.');
+            }
+        }
+        
+        // --- 1. Dashboard & Logger Logic ---
+
+        async function fetchSummary() {
+            const classId = document.getElementById('summaryFilterClass').value;
+            const grade = document.getElementById('summaryFilterGrade').value;
+            const tableBody = document.getElementById('summaryTableBody');
             
-            if (!student || !behaviorType) {
-                showMessage('Please select student and behavior type first', 'error');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading...</td></tr>';
+
+            try {
+                const data = await apiFetch(`/summary?classId=${classId}&grade=${grade}`);
+                const students = data;
+                
+                tableBody.innerHTML = '';
+                if (students.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No students found for the current filter.</td></tr>';
+                    return;
+                }
+
+                populateStudentSelectors(students);
+
+                students.forEach(student => {
+                    const level = student.behaviorLevel;
+                    const trendIcon = student.behaviorTrend === 'improving' ? 'bi-graph-up text-success' : 
+                                      student.behaviorTrend === 'declining' ? 'bi-graph-down text-danger' : 'bi-dash-lg text-secondary';
+                    
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td><strong>${student.name}</strong><br><small class="text-muted">${student.class}</small></td>
+                        <td class="fw-bold">${student.currentPoints}</td>
+                        <td><span class="level-badge text-white" style="background-color: ${level.color};">${level.level.toUpperCase()}</span></td>
+                        <td><i class="bi ${trendIcon}"></i> ${student.behaviorTrend}</td>
+                        <td>${student.positiveIncidents} / ${student.negativeIncidents}</td>
+                        <td><button class="btn btn-sm btn-outline-primary view-detail-btn" data-student-id="${student.id}"><i class="bi bi-eye"></i> Detail</button></td>
+                    `;
+                });
+
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load summary.</td></tr>';
+            }
+        }
+
+        // Handle Log Incident Form Submission
+        document.getElementById('incidentLoggerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.submitter;
+            btn.disabled = true;
+
+            const selectedOption = document.getElementById('logCategory').options[document.getElementById('logCategory').selectedIndex];
+            const defaultPoints = parseInt(selectedOption.getAttribute('data-points'));
+            
+            const payload = {
+                studentId: document.getElementById('logStudentId').value,
+                type: selectedOption.getAttribute('data-type'),
+                category: document.getElementById('logCategory').value,
+                title: document.getElementById('logTitle').value,
+                description: document.getElementById('logDescription').value,
+                points: parseInt(document.getElementById('logPoints').value) || defaultPoints,
+                recordedBy: 'teacher_001', // Mock user ID
+                severity: document.getElementById('logSeverity').value,
+                parentNotified: document.getElementById('logParentNotify').checked,
+                followUpRequired: document.getElementById('logSeverity').value === 'high'
+            };
+
+            try {
+                const data = await apiFetch('/log', 'POST', payload);
+                showNotification(`Incident logged for ${studentList.find(s => s.id === payload.studentId).name}. Points: ${data.updatedPoints}`, 'success');
+                e.target.reset();
+                fetchSummary(); 
+
+                // Automatically switch to the detail view
+                document.getElementById('studentDetailSelector').value = payload.studentId;
+                fetchStudentDetail(payload.studentId);
+                new bootstrap.Tab(document.getElementById('detail-tab')).show();
+
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Auto-fill points based on category selection
+        document.getElementById('logCategory').addEventListener('change', () => {
+            const selectedOption = document.getElementById('logCategory').options[document.getElementById('logCategory').selectedIndex];
+            const pointsInput = document.getElementById('logPoints');
+            if (selectedOption.value) {
+                pointsInput.value = selectedOption.getAttribute('data-points');
+            } else {
+                pointsInput.value = '';
+            }
+        });
+
+        document.getElementById('refreshSummaryBtn').addEventListener('click', fetchSummary);
+
+        // --- 2. Student Detail & Interventions Logic ---
+
+        // Handle View Detail button from Summary
+        document.getElementById('summaryTableBody').addEventListener('click', (e) => {
+            if (e.target.classList.contains('view-detail-btn')) {
+                const studentId = e.target.getAttribute('data-student-id');
+                document.getElementById('studentDetailSelector').value = studentId;
+                fetchStudentDetail(studentId);
+                new bootstrap.Tab(document.getElementById('detail-tab')).show();
+            }
+        });
+
+        document.getElementById('studentDetailSelector').addEventListener('change', (e) => {
+            const studentId = e.target.value;
+            if (studentId) {
+                fetchStudentDetail(studentId);
+            }
+        });
+
+        async function fetchStudentDetail(studentId) {
+            if (!studentId) return;
+
+            try {
+                const data = await apiFetch(`/student/${studentId}`);
+                const student = data.student;
+                const stats = data.statistics;
+
+                document.getElementById('detailStudentName').textContent = `${student.name} (${student.class})`;
+                document.getElementById('detailPointsDial').textContent = student.currentPoints;
+                
+                const levelBadge = document.getElementById('detailBehaviorLevel');
+                levelBadge.textContent = stats.behaviorLevel.level.toUpperCase();
+                levelBadge.style.backgroundColor = stats.behaviorLevel.color;
+                
+                document.getElementById('detailTrend').textContent = student.behaviorTrend;
+                document.getElementById('interventionStudentId').value = studentId;
+
+                renderLogHistory(data.logs);
+                renderInterventions(data.interventions);
+                
+                // Also trigger rewards update for this student
+                fetchRewards(studentId); 
+
+            } catch (error) {
+                document.getElementById('detailStudentName').textContent = 'Error Loading Data';
+                console.error('Failed to load student detail:', error);
+            }
+        }
+        
+        function renderLogHistory(logs) {
+            const container = document.getElementById('studentLogHistory');
+            container.innerHTML = '';
+
+            if (logs.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No logs found for this student.</p>';
                 return;
             }
-            
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+
+            logs.forEach(log => {
+                const typeClass = log.type === 'positive' ? 'success' : 'danger';
+                const pointsSign = log.points > 0 ? '+' : '';
+                
+                container.innerHTML += `
+                    <div class="list-group-item log-item ${log.type} d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">${log.title} (${log.category})</h6>
+                            <small class="text-muted">${log.description.substring(0, 50)}...</small>
+                        </div>
+                        <span class="badge bg-${typeClass} fs-6">${pointsSign}${log.points}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        // Handle Intervention Submission
+        document.getElementById('interventionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.submitter;
             btn.disabled = true;
             
-            setTimeout(() => {
-                btn.innerHTML = originalText;
+            const studentId = document.getElementById('interventionStudentId').value;
+            const studentName = studentList.find(s => s.id === studentId)?.name;
+
+            const payload = {
+                studentId: studentId,
+                type: document.getElementById('interventionType').value,
+                title: document.getElementById('interventionType').options[document.getElementById('interventionType').selectedIndex].textContent,
+                description: `Scheduled intervention for behavior review.`, // Simplified for mock
+                scheduledDate: document.getElementById('interventionScheduledDate').value,
+                assignedTo: document.getElementById('interventionAssignedTo').value,
+                parentInvolved: true // Default true for formality
+            };
+
+            try {
+                await apiFetch('/intervention', 'POST', payload);
+                showNotification(`Intervention scheduled for ${studentName}.`, 'success');
+                fetchStudentDetail(studentId); // Refresh interventions list
+                e.target.reset();
+            } catch {
+                // Error handled by apiFetch
+            } finally {
                 btn.disabled = false;
-                showMessage('Parent alert sent successfully!', 'success');
-            }, 2000);
-        }
-
-        function showMessage(message, type) {
-            const className = type === 'success' ? 'bg-green-600' : 'bg-red-600';
-            const icon = type === 'success' ? 'fas fa-check' : 'fas fa-exclamation-triangle';
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${className} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            messageDiv.innerHTML = `<i class="${icon} mr-2"></i>${message}`;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
-        }
-
-        // Filter functionality
-        document.getElementById('filterClass').addEventListener('change', function() {
-            console.log('Filtering by class:', this.value);
+            }
         });
 
-        document.getElementById('filterType').addEventListener('change', function() {
-            console.log('Filtering by type:', this.value);
+        function renderInterventions(interventions) {
+            const container = document.getElementById('interventionsList');
+            container.innerHTML = '';
+
+            if (interventions.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No scheduled interventions found.</p>';
+                return;
+            }
+
+            interventions.forEach(i => {
+                const statusClass = i.status === 'scheduled' ? 'warning' : i.status === 'completed' ? 'success' : 'info';
+                
+                container.innerHTML += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">${i.title} (${i.type.replace('_', ' ')})</h6>
+                            <small class="text-muted">Due: ${i.scheduledDate} | Assigned: ${i.assignedTo}</small>
+                        </div>
+                        <span class="badge bg-${statusClass}">${i.status.toUpperCase()}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 3. Rewards & Redemption Logic ---
+
+        document.getElementById('rewardStudentSelector').addEventListener('change', (e) => {
+            const studentId = e.target.value;
+            if (studentId) {
+                fetchRewards(studentId);
+            } else {
+                document.getElementById('rewardCurrentPoints').textContent = '--';
+                document.getElementById('rewardBehaviorLevel').textContent = '--';
+                document.getElementById('rewardBehaviorLevel').style.backgroundColor = '#6c757d';
+                document.getElementById('availableRewardsList').innerHTML = '<p class="text-muted text-center">Select a student to check available rewards.</p>';
+            }
         });
+        
+        async function fetchRewards(studentId = null) {
+            const listContainer = document.getElementById('availableRewardsList');
+            const tableBody = document.getElementById('allRewardsTableBody');
+            
+            try {
+                // Fetch all rewards regardless of student for the table view
+                const allRewards = await apiFetch('/rewards');
+                
+                tableBody.innerHTML = '';
+                allRewards.allRewards.forEach(reward => {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td>${reward.icon || ''} ${reward.name}</td>
+                            <td><span class="badge bg-secondary">${reward.type}</span></td>
+                            <td>${reward.pointsRequired}</td>
+                            <td>${reward.description}</td>
+                        </tr>
+                    `;
+                });
+
+                if (studentId) {
+                    // Fetch rewards specific to the selected student
+                    const studentRewardsData = await apiFetch(`/rewards?studentId=${studentId}`);
+                    const student = studentList.find(s => s.id === studentId);
+
+                    document.getElementById('rewardCurrentPoints').textContent = studentRewardsData.currentPoints;
+                    
+                    const levelBadge = document.getElementById('rewardBehaviorLevel');
+                    levelBadge.textContent = studentRewardsData.behaviorLevel.level.toUpperCase();
+                    levelBadge.style.backgroundColor = studentRewardsData.behaviorLevel.color;
+
+                    listContainer.innerHTML = '';
+                    if (studentRewardsData.availableRewards.length === 0) {
+                        listContainer.innerHTML = '<p class="text-warning">Insufficient points for any available rewards.</p>';
+                    }
+                    
+                    studentRewardsData.availableRewards.forEach(reward => {
+                        listContainer.innerHTML += `
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 p-2 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${reward.name}</h5>
+                                        <p class="card-text text-muted">${reward.description}</p>
+                                        <p class="fw-bold text-success">${reward.pointsRequired} Points</p>
+                                        <button class="btn btn-sm btn-info redeem-reward-btn" data-student-id="${studentId}" data-reward-id="${reward.id}">Redeem</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+            } catch (error) {
+                console.error('Failed to fetch rewards:', error);
+            }
+        }
+
+        // Handle Redeem Reward
+        document.getElementById('availableRewardsList').addEventListener('click', async (e) => {
+            if (e.target.classList.contains('redeem-reward-btn')) {
+                const studentId = e.target.getAttribute('data-student-id');
+                const rewardId = e.target.getAttribute('data-reward-id');
+                const studentName = studentList.find(s => s.id === studentId)?.name;
+                
+                try {
+                    await apiFetch('/reward/redeem', 'POST', { studentId, rewardId });
+                    showNotification(`${studentName} successfully redeemed reward!`, 'success');
+                    fetchRewards(studentId); // Refresh points and available rewards
+                    fetchSummary(); // Update summary table
+                } catch (error) {
+                    console.error('Redemption failed:', error);
+                }
+            }
+        });
+
+        // --- 4. Analytics Logic ---
+        
+        document.getElementById('runAnalyticsBtn').addEventListener('click', async () => {
+            const period = document.getElementById('analyticsPeriod').value;
+            try {
+                const data = await apiFetch(`/analytics?period=${period}`);
+                const overview = data.overview;
+                const trends = data.trends;
+
+                document.getElementById('statTotalIncidents').textContent = overview.totalIncidents;
+                document.getElementById('statAvgPoints').textContent = overview.averagePoints;
+                document.getElementById('statPositiveRatio').textContent = `${overview.positiveIncidents} / ${overview.negativeIncidents}`;
+                document.getElementById('statImprovementRate').textContent = `${trends.improvementRate}%`;
+
+                renderStudentsNeedingAttention(data.studentsNeedingAttention);
+                renderTopPerformers(data.topPerformers);
+                
+                showNotification(`Analytics updated for the last ${period}.`, 'info');
+            } catch {
+                // Error handled by apiFetch
+            }
+        });
+        
+        function renderStudentsNeedingAttention(students) {
+            const container = document.getElementById('studentsNeedingAttentionList');
+            container.innerHTML = '';
+            
+            students.forEach(s => {
+                const level = s.behaviorLevel;
+                container.innerHTML += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${s.name} (${s.currentPoints} pts)</span>
+                        <span class="level-badge text-white" style="background-color: ${level.color};">${level.level.toUpperCase()}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        function renderTopPerformers(students) {
+            const container = document.getElementById('topPerformersList');
+            container.innerHTML = '';
+            
+            students.forEach(s => {
+                const level = s.behaviorLevel;
+                container.innerHTML += `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${s.name} (${s.currentPoints} pts)</span>
+                        <span class="level-badge text-white" style="background-color: ${level.color};">${level.level.toUpperCase()}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 5. Configuration Logic (Simulated CRUD) ---
+        
+        // This function mocks fetching and populates the config forms
+        async function fetchConfig() {
+            // NOTE: In a real system, you would fetch these from /config endpoints.
+            const data = {
+                pointsSystem: { startingPoints: 75, maxPoints: 100, resetFrequency: 'monthly' },
+                behaviorCategories: (await apiFetch('/categories')) // Re-use categories endpoint for data
+            };
+            
+            // 1. Points System Form
+            document.getElementById('configStartingPoints').value = data.pointsSystem.startingPoints;
+            document.getElementById('configMaxPoints').value = data.pointsSystem.maxPoints;
+            document.getElementById('configResetFrequency').value = data.pointsSystem.resetFrequency;
+
+            // 2. Categories Display
+            renderConfigCategories(data.behaviorCategories);
+        }
+        
+        // Mock save for Points System
+        document.getElementById('pointsSystemConfigForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // In production, this would be a PUT /config
+            showNotification('Points System configuration saved (Simulated PUT).', 'success');
+        });
+
+        // Render Configuration Category Cards
+        function renderConfigCategories(categories) {
+            const container = document.getElementById('categoryCardsContainer');
+            container.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const cardHtml = `
+                    <div class="col-md-4">
+                        <div class="card config-category-card border-${cat.type === 'positive' ? 'success' : 'danger'}" data-category-id="${cat.id}" style="border-left: 5px solid ${cat.color};">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title mb-1">${cat.icon} ${cat.name}</h5>
+                                    <p class="card-text fw-bold text-${cat.type === 'positive' ? 'success' : 'danger'}">${cat.defaultPoints > 0 ? '+' : ''}${cat.defaultPoints} Points</p>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-info edit-category-btn" data-bs-toggle="modal" data-bs-target="#categoryModal" data-category-id="${cat.id}"><i class="bi bi-pencil"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+        
+        // Handle Edit/Add Category Modal
+        const categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+        
+        // Logic to populate modal when editing
+        document.getElementById('categoryCardsContainer').addEventListener('click', (e) => {
+            if (e.target.closest('.edit-category-btn')) {
+                const categoryId = e.target.closest('.edit-category-btn').getAttribute('data-category-id');
+                const category = behaviorData.behaviorCategories.find(c => c.id === categoryId);
+                
+                document.getElementById('categoryModalTitle').textContent = `Edit: ${category.name}`;
+                document.getElementById('categoryId').value = category.id;
+                document.getElementById('categoryName').value = category.name;
+                document.getElementById('categoryType').value = category.type;
+                document.getElementById('categoryPoints').value = category.defaultPoints;
+                document.getElementById('categoryIcon').value = category.icon;
+            }
+        });
+
+        document.getElementById('addNewCategoryBtn').addEventListener('click', () => {
+            document.getElementById('categoryModalTitle').textContent = 'Add New Category';
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryId').value = '';
+        });
+
+        // Mock save for Category
+        document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const categoryId = document.getElementById('categoryId').value;
+            const action = categoryId ? 'UPDATE' : 'CREATE';
+            
+            const payload = {
+                id: categoryId || 'new_cat_' + Date.now(),
+                name: document.getElementById('categoryName').value,
+                type: document.getElementById('categoryType').value,
+                defaultPoints: parseInt(document.getElementById('categoryPoints').value),
+                icon: document.getElementById('categoryIcon').value,
+                color: payload.type === 'positive' ? '#2ecc71' : '#e74c3c' // Simplified color assignment
+            };
+            
+            // In a real system, this would be POST or PUT /categories/:id
+            showNotification(`Category "${payload.name}" ${action} saved (Simulated API call).`, 'success');
+            categoryModal.hide();
+            await populateCategories(); // Refresh the category list on the UI
+        });
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSummary(); 
+            populateCategories();
+            fetchConfig();
+            
+            // Auto-run analytics on first load
+            document.getElementById('runAnalyticsBtn').click(); 
+        });
+
     </script>
 </body>
 </html>
