@@ -3,380 +3,691 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Tracker - SmartGenEduX</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>📊 Student Report Card Tracker & Analytics</title>
+    <!-- Bootstrap 5 CDN for styling and responsiveness -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; }
+        .container-fluid { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #00796b; /* Teal */ color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border-radius: 0.5rem; }
+        .alert-fixed { position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; border-radius: 0.5rem; }
+        .nav-tabs .nav-link.active { background-color: #00897b; color: white; border-color: #00897b; }
+        .marks-input { max-width: 80px; }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/reporttracker.png" alt="Report Tracker" class="w-12 h-12 mr-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Smart Report Tracker</h1>
-                        <p class="text-gray-600">Automated report generation with WhatsApp integration</p>
-                    </div>
-                </div>
-                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    <i class="fas fa-times mr-2"></i>Close
-                </button>
-            </div>
-        </div>
+<body>
 
-        <!-- Dashboard Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-blue-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-file-alt text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">247</div>
-                        <div class="text-blue-100">Reports Generated</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-green-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fab fa-whatsapp text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">1,234</div>
-                        <div class="text-green-100">WhatsApp Sent</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-purple-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-chart-line text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">78.5%</div>
-                        <div class="text-purple-100">Avg Performance</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-orange-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-clock text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">95%</div>
-                        <div class="text-orange-100">On-Time Reports</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-primary"><i class="bi bi-journal-check"></i> Report Card Management & Compliance</h1>
 
-        <!-- Quick Actions -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <!-- Generate Report -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">Generate New Report</h2>
-                <form id="reportForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Report Type</label>
-                        <select id="reportType" class="w-full border rounded px-3 py-2" required>
-                            <option value="">Select Report Type</option>
-                            <option value="attendance">Attendance Report</option>
-                            <option value="marks">Marks Report</option>
-                            <option value="behavior">Behavior Report</option>
-                            <option value="fee">Fee Report</option>
-                            <option value="monthly">Monthly Summary</option>
-                        </select>
+        <!-- Notification Area -->
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="reportTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="entry-tab" data-bs-toggle="tab" data-bs-target="#mark-entry" type="button"><i class="bi bi-pencil-square"></i> Mark Entry & Finalization</button></li>
+            <li class="nav-item"><button class="nav-link" id="approval-tab" data-bs-toggle="tab" data-bs-target="#approval-dist" type="button"><i class="bi bi-patch-check-fill"></i> Principal Approval & Distribution</button></li>
+            <li class="nav-item"><button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics-view" type="button"><i class="bi bi-graph-up"></i> Analytics & Oversight</button></li>
+            <li class="nav-item"><button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config-setup" type="button"><i class="bi bi-gear-fill"></i> Configuration</button></li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content pt-3" id="reportTabContent">
+
+            <!-- 1. Mark Entry & Finalization Tab (POST /reports/generate, POST /reports/:id/feed-marks, POST /reports/:id/finalize) -->
+            <div class="tab-pane fade show active" id="mark-entry" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-success">Step 1: Report Generation & Mark Entry (Teacher Action)</div>
+                    <div class="card-body">
+                        
+                        <!-- Report Generation Form -->
+                        <h5 class="text-success">A. Generate Draft Reports (Bulk)</h5>
+                        <form id="generateForm" class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="reportType" class="form-label">Report Type</label>
+                                <select class="form-select" id="reportType" required>
+                                    <option value="academic">Academic Report Card</option>
+                                    <option value="behavioral">Behavioral Assessment</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="term" class="form-label">Term/Cycle</label>
+                                <input type="text" class="form-control" id="term" placeholder="e.g., Term 1, 2024-25" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="studentIds" class="form-label">Student IDs (Comma Separated)</label>
+                                <input type="text" class="form-control" id="studentIds" placeholder="e.g., S101, S102, S103" required>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success" id="generateBtn"><i class="bi bi-file-earmark-plus"></i> Generate Drafts</button>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <!-- Marks Feeding Form (Simulated per subject/student) -->
+                        <h5 class="text-success">B. Feed Marks & Remarks</h5>
+                        <form id="marksFeedForm" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="feedReportId" class="form-label">Report ID</label>
+                                <input type="text" class="form-control" id="feedReportId" placeholder="e.g., RPT-001" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="feedStudentId" class="form-label">Student ID</label>
+                                <input type="text" class="form-control" id="feedStudentId" placeholder="e.g., S101" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="feedSubjectId" class="form-label">Subject ID</label>
+                                <select class="form-select" id="feedSubjectId" required>
+                                    <option value="MATH">Mathematics</option>
+                                    <option value="PHY">Physics</option>
+                                    <option value="HIS">History</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="feedMarks" class="form-label">Marks (Out of 100)</label>
+                                <input type="number" class="form-control marks-input" id="feedMarks" min="0" max="100" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="feedRemarks" class="form-label">Remarks / Teacher Notes</label>
+                                <textarea class="form-control" id="feedRemarks" rows="2"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary me-2"><i class="bi bi-send-fill"></i> Feed Marks to Report</button>
+                                <button type="button" class="btn btn-warning" id="finalizeBtn" disabled><i class="bi bi-lock-fill"></i> Finalize Report for Approval</button>
+                            </div>
+                        </form>
                     </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Class</label>
-                            <select id="reportClass" class="w-full border rounded px-3 py-2" required>
-                                <option value="">Select Class</option>
-                                <option value="1">Class 1</option>
-                                <option value="2">Class 2</option>
-                                <option value="3">Class 3</option>
-                                <option value="4">Class 4</option>
-                                <option value="5">Class 5</option>
-                                <option value="all">All Classes</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Subject</label>
-                            <select id="reportSubject" class="w-full border rounded px-3 py-2">
-                                <option value="">All Subjects</option>
-                                <option value="english">English</option>
-                                <option value="mathematics">Mathematics</option>
-                                <option value="science">Science</option>
-                                <option value="social">Social Studies</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">From Date</label>
-                            <input type="date" id="fromDate" class="w-full border rounded px-3 py-2" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">To Date</label>
-                            <input type="date" id="toDate" class="w-full border rounded px-3 py-2" required>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-4">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                            <i class="fas fa-file-alt mr-2"></i>Generate Report
-                        </button>
-                        <button type="button" onclick="generateAndSend()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-                            <i class="fab fa-whatsapp mr-2"></i>Generate & Send WhatsApp
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
 
-            <!-- WhatsApp Bulk Send -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">WhatsApp Bulk Reports</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Select Recipients</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="checkbox" checked class="mr-2"> All Class 5 Parents
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2"> Fee Defaulters Only
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2"> Low Attendance Students
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2"> Custom List
-                            </label>
+            <!-- 2. Principal Approval & Distribution Tab (POST /reports/:id/distribute) -->
+            <div class="tab-pane fade" id="approval-dist" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-warning text-dark">Step 2: Principal Gated Workflow & Distribution</div>
+                    <div class="card-body">
+                        
+                        <p class="alert alert-danger small"><i class="bi bi-shield-fill-exclamation"></i> Distribution is **CRITICALLY GATED**. Only the Principal/Super Admin can approve and distribute reports to parents.</p>
+
+                        <!-- Approval Pending List (Simulated) -->
+                        <h5 class="text-warning">Reports Pending Principal Approval</h5>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Report ID</th>
+                                        <th>Student</th>
+                                        <th>Term</th>
+                                        <th>Status</th>
+                                        <th>Action (Principal)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approvalTableBody">
+                                    <tr><td colspan="5" class="text-center">No reports currently pending approval.</td></tr>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Message Template</label>
-                        <select id="whatsappTemplate" class="w-full border rounded px-3 py-2">
-                            <option>Monthly Progress Report</option>
-                            <option>Attendance Alert</option>
-                            <option>Fee Reminder</option>
-                            <option>Parent-Teacher Meeting</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Schedule Delivery</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="date" class="border rounded px-3 py-2">
-                            <input type="time" class="border rounded px-3 py-2">
+
+                        <!-- Distribution Action -->
+                        <h5 class="text-success">C. Final Distribution</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="distReportId" class="form-label">Approved Report ID</label>
+                                <input type="text" class="form-control" id="distReportId" placeholder="RPT-001" required>
+                                <div class="form-text">Must be a report with 'approved' status.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="distMethod" class="form-label">Distribution Method</label>
+                                <select class="form-select" id="distMethod">
+                                    <option value="digital">Digital (Arattai/Email)</option>
+                                    <option value="print">Print & Handout</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-danger mt-4 w-100" id="distributeBtn"><i class="bi bi-bell-fill"></i> Approve & Distribute to Parents</button>
+                            </div>
                         </div>
+
                     </div>
-                    
-                    <button onclick="sendBulkWhatsApp()" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
-                        <i class="fab fa-whatsapp mr-2"></i>Send Bulk WhatsApp (125 Recipients)
-                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Recent Reports -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Recent Reports</h2>
-                <div class="flex space-x-2">
-                    <select id="filterStatus" class="border rounded px-3 py-2">
-                        <option value="">All Status</option>
-                        <option value="generated">Generated</option>
-                        <option value="sent">Sent</option>
-                        <option value="scheduled">Scheduled</option>
-                    </select>
-                    <button onclick="exportReports()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        <i class="fas fa-download mr-2"></i>Export
-                    </button>
+            <!-- 3. Analytics & Oversight Tab (GET /analytics) -->
+            <div class="tab-pane fade" id="analytics-view" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-info">Comprehensive Performance Analytics (Admin/Principal View)</div>
+                    <div class="card-body">
+                        
+                        <h5 class="text-info">Hierarchy-Based Performance Analysis</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="hierarchySelect" class="form-label">Analyze By Hierarchy</label>
+                                <select class="form-select" id="hierarchySelect">
+                                    <option value="class">Class (Overall Avg)</option>
+                                    <option value="section">Section</option>
+                                    <option value="wing">Wing/Department</option>
+                                    <option value="student">Individual Student (Requires ID)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="hierarchyFilterId" class="form-label">Filter ID (Optional)</label>
+                                <input type="text" class="form-control" id="hierarchyFilterId" placeholder="e.g., Class X-A, Student S101">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" class="btn btn-info mt-4 w-100" id="runAnalyticsBtn"><i class="bi bi-bar-chart-line-fill"></i> Run Analysis</button>
+                            </div>
+                        </div>
+
+                        <div id="analyticsResults" class="mt-3">
+                            <p class="text-muted text-center">Run an analysis to see aggregated results here.</p>
+                        </div>
+
+                        <hr class="my-4">
+                        
+                        <h5 class="text-danger">Report List & Export</h5>
+                        <div class="d-flex justify-content-between mb-3">
+                            <input type="text" class="form-control me-2" id="reportSearch" placeholder="Search by Student ID or Term...">
+                            <button class="btn btn-outline-danger me-2" id="exportCsvBtn"><i class="bi bi-filetype-csv"></i> Export CSV</button>
+                            <button class="btn btn-outline-danger" id="exportPdfBtn"><i class="bi bi-file-pdf"></i> Export PDF</button>
+                        </div>
+                        <div class="table-responsive">
+                             <table class="table table-striped table-sm">
+                                <thead><tr><th>ID</th><th>Student</th><th>Term</th><th>Status</th><th>Date</th></tr></thead>
+                                <tbody id="reportListBody"><tr><td colspan="5" class="text-center">Loading reports...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Configuration Tab (GET/PUT /config) -->
+            <div class="tab-pane fade" id="config-setup" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-dark">Report Configuration & Grading Scales (Admin/Principal Only)</div>
+                    <div class="card-body">
+                        
+                        <p class="alert alert-danger small"><i class="bi bi-lock-fill"></i> Requires Admin/Principal access to maintain compliance and academic standards.</p>
+                        
+                        <form id="configForm" class="row g-3">
+                            <h5 class="text-dark">A. Subject Weightage & Grading Scale</h5>
+                            
+                            <div class="col-md-6">
+                                <label for="gradingScale" class="form-label">Grading Scale (JSON)</label>
+                                <textarea class="form-control" id="gradingScale" rows="4" required placeholder='{"A1": [91, 100], "A2": [81, 90], ...}'></textarea>
+                                <div class="form-text">Defines how percentage marks translate to grades.</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="subjectCategoryWeights" class="form-label">Subject Category Weights (JSON)</label>
+                                <textarea class="form-control" id="subjectCategoryWeights" rows="4" required placeholder='{"main": 0.7, "co_curricular": 0.3} - Sum must be 1.0'></textarea>
+                                <div class="form-text">Used for calculating final overall performance index.</div>
+                            </div>
+
+                            <hr class="my-3">
+                            
+                            <h5 class="text-dark">B. Report Template & Finalization Policy</h5>
+                            
+                            <div class="col-md-6">
+                                <label for="templatePolicy" class="form-label">Default Report Template ID</label>
+                                <input type="text" class="form-control" id="templatePolicy" placeholder="e.g., CBSE_T1_V2" required>
+                                <div class="form-text">Controls the visual and structural output of the final report.</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="finalizationPolicy" class="form-label">Finalization Policy</label>
+                                <select class="form-select" id="finalizationPolicy" required>
+                                    <option value="principal">Requires Principal Approval</option>
+                                    <option value="hod">Requires HOD Approval</option>
+                                </select>
+                                <div class="form-text">Who must give final sign-off before distribution.</div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-dark btn-lg w-100" id="saveConfigBtn"><i class="bi bi-save"></i> Save Configuration</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Report ID</th>
-                            <th class="px-4 py-2 text-left">Type</th>
-                            <th class="px-4 py-2 text-left">Class/Subject</th>
-                            <th class="px-4 py-2 text-left">Generated</th>
-                            <th class="px-4 py-2 text-left">WhatsApp Status</th>
-                            <th class="px-4 py-2 text-left">Recipients</th>
-                            <th class="px-4 py-2 text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">#RPT-2025-001</td>
-                            <td class="px-4 py-2">Monthly Summary</td>
-                            <td class="px-4 py-2">Class 5 - All Subjects</td>
-                            <td class="px-4 py-2">Jan 4, 2025 14:30</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Sent (125/125)</span>
-                            </td>
-                            <td class="px-4 py-2">125 Parents</td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="View Report">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="text-green-600 hover:text-green-800" title="Download PDF">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="text-purple-600 hover:text-purple-800" title="WhatsApp Status">
-                                        <i class="fab fa-whatsapp"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">#RPT-2025-002</td>
-                            <td class="px-4 py-2">Attendance Report</td>
-                            <td class="px-4 py-2">Class 3 - Mathematics</td>
-                            <td class="px-4 py-2">Jan 4, 2025 11:15</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Scheduled</span>
-                            </td>
-                            <td class="px-4 py-2">42 Parents</td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="View Report">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="text-green-600 hover:text-green-800" title="Download PDF">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="text-orange-600 hover:text-orange-800" title="Edit Schedule">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">#RPT-2025-003</td>
-                            <td class="px-4 py-2">Fee Report</td>
-                            <td class="px-4 py-2">All Classes</td>
-                            <td class="px-4 py-2">Jan 3, 2025 16:45</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Sent (89/89)</span>
-                            </td>
-                            <td class="px-4 py-2">89 Parents</td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="View Report">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="text-green-600 hover:text-green-800" title="Download PDF">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="text-purple-600 hover:text-purple-800" title="Resend WhatsApp">
-                                        <i class="fab fa-whatsapp"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        </div>
+    </div>
+
+    <!-- Modal for Approval/Review -->
+    <div class="modal fade" id="reviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Report Review & Approval</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Review content for Report ID: <strong id="modalReportId"></strong></p>
+                    <div id="modalReportContent" class="p-3 border rounded bg-light">
+                        <p class="text-muted">Detailed marks, remarks, and overall performance metrics will load here for final review.</p>
+                        <!-- Simulated detailed content -->
+                        <h6>Student: Aarav Sharma | Class: X-A | Overall %: 88.5% (A1)</h6>
+                        <ul class="list-unstyled small">
+                            <li>Maths: 95/100 (Excellent work on Geometry.)</li>
+                            <li>Science: 82/100 (Needs improvement in practical lab skills.)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="rejectReportBtn"><i class="bi bi-x-circle"></i> Reject & Send Back</button>
+                    <button type="button" class="btn btn-success" id="approveReportBtn"><i class="bi bi-check-circle"></i> Approve Report</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Report generation
-        document.getElementById('reportForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                type: document.getElementById('reportType').value,
-                class: document.getElementById('reportClass').value,
-                subject: document.getElementById('reportSubject').value,
-                fromDate: document.getElementById('fromDate').value,
-                toDate: document.getElementById('toDate').value
-            };
-            
-            generateReport(formData);
-        });
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-        function generateReport(data) {
-            // Show loading
-            const submitBtn = document.querySelector('#reportForm button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
-            submitBtn.disabled = true;
-            
-            // Simulate report generation
-            setTimeout(() => {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                
-                // Show success message
-                showMessage('Report generated successfully!', 'success');
-                
-                // Reset form
-                document.getElementById('reportForm').reset();
-            }, 3000);
+    <script>
+        const API_BASE = ''; 
+        const MOCK_JWT_TOKEN = 'mock.jwt.token.for.auth'; 
+        
+        // Mock data to simulate API responses
+        let mockReports = [
+            { id: 'RPT-001', student_id: 'S101', report_type: 'Academic', generated_date: '2025-09-01', status: 'pending_approval' },
+            { id: 'RPT-002', student_id: 'S102', report_type: 'Academic', generated_date: '2025-08-25', status: 'approved' },
+            { id: 'RPT-003', student_id: 'S103', report_type: 'Behavioral', generated_date: '2025-08-20', status: 'draft' },
+        ];
+        
+        let mockAnalytics = [
+            { hierarchy_name: 'Class X', avg_performance: '82.5' },
+            { hierarchy_name: 'Class XII', avg_performance: '79.1' },
+            { hierarchy_name: 'Junior Wing', avg_performance: '88.0' },
+        ];
+
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => { area.style.display = 'none'; }, 7000);
         }
 
-        function generateAndSend() {
-            const formData = {
-                type: document.getElementById('reportType').value,
-                class: document.getElementById('reportClass').value,
-                subject: document.getElementById('reportSubject').value,
-                fromDate: document.getElementById('fromDate').value,
-                toDate: document.getElementById('toDate').value
-            };
+        /** Core Fetch Function with JWT Auth Header. */
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${MOCK_JWT_TOKEN}` 
+                    },
+                };
+                
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
+
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error. Check console for details.', 'danger');
+                throw error;
+            }
+        }
+        
+        // --- 1. MARK ENTRY & FINALIZATION LOGIC ---
+
+        document.getElementById('generateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('generateBtn');
             
-            if (!formData.type || !formData.class || !formData.fromDate || !formData.toDate) {
-                showMessage('Please fill all required fields', 'error');
+            const studentIds = form.studentIds.value.split(',').map(id => id.trim()).filter(id => id);
+
+            // Mocking UUIDs as required by backend schema
+            const validatedStudentIds = studentIds.map(id => `id-${id}-0000-0000-0000-000000000000`); 
+
+            const payload = {
+                studentIds: validatedStudentIds,
+                reportType: form.reportType.value,
+                term: form.term.value,
+                templateId: 'CBSE_T1_V2'
+            };
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Generating Drafts...';
+
+            try {
+                const data = await apiFetch('/reports/generate', 'POST', payload);
+                showNotification(data.message, 'success');
+                fetchReportList(); // Refresh list to see new drafts
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-file-earmark-plus"></i> Generate Drafts';
+            }
+        });
+        
+        document.getElementById('marksFeedForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('.btn-primary');
+            
+            const reportId = form.feedReportId.value;
+            // Mock student ID to UUID format for compliance
+            const studentId = `id-${form.feedStudentId.value}-0000-0000-0000-000000000000`;
+
+            const payload = {
+                studentId: studentId,
+                subjectId: form.feedSubjectId.value,
+                marks: parseInt(form.feedMarks.value),
+                remarks: form.feedRemarks.value
+            };
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Submitting...';
+
+            try {
+                const data = await apiFetch(`/reports/${reportId}/feed-marks`, 'POST', payload);
+                showNotification(data.message, 'success');
+                // Enable finalize button after marks are fed successfully (Simulated)
+                document.getElementById('finalizeBtn').disabled = false; 
+                form.reset();
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send-fill"></i> Feed Marks to Report';
+            }
+        });
+
+        document.getElementById('finalizeBtn').addEventListener('click', async (e) => {
+            const reportId = document.getElementById('marksFeedForm').feedReportId.value;
+            if (!reportId) {
+                showNotification('Please enter a Report ID to finalize.', 'warning');
                 return;
             }
             
-            // Show loading
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating & Sending...';
+            const btn = e.target;
             btn.disabled = true;
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
+            btn.textContent = 'Finalizing...';
+
+            try {
+                const data = await apiFetch(`/reports/${reportId}/finalize`, 'POST', {});
+                showNotification(data.message, 'success');
+                fetchApprovalList(); // Refresh list to show new pending report
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
                 btn.disabled = false;
-                showMessage('Report generated and sent via WhatsApp!', 'success');
-                document.getElementById('reportForm').reset();
-            }, 4000);
+                btn.innerHTML = '<i class="bi bi-lock-fill"></i> Finalize Report for Approval';
+            }
+        });
+
+        // --- 2. PRINCIPAL APPROVAL & DISTRIBUTION LOGIC ---
+
+        async function fetchApprovalList() {
+            const tableBody = document.getElementById('approvalTableBody');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading pending reports...</td></tr>';
+
+            try {
+                // Simulating fetching only pending reports
+                // In production, this would be a filtered call to GET /reports?status=pending_approval
+                const data = await apiFetch('/reports'); 
+                
+                const pendingReports = data.reports.filter(r => r.status === 'pending_approval');
+                
+                tableBody.innerHTML = '';
+                if (pendingReports.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No reports currently pending Principal approval.</td></tr>';
+                    return;
+                }
+
+                pendingReports.forEach(report => {
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${report.id.substring(0, 8)}...</td>
+                        <td>${report.student_id.substring(0, 8)}...</td>
+                        <td>${report.report_type} - ${report.term || 'T1'}</td>
+                        <td><span class="badge bg-warning text-dark">${report.status.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info review-btn me-2" data-bs-toggle="modal" data-bs-target="#reviewModal" data-report-id="${report.id}">Review</button>
+                            <button class="btn btn-sm btn-success approve-btn-list" data-report-id="${report.id}">Approve</button>
+                        </td>
+                    `;
+                });
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load reports for approval.</td></tr>';
+            }
         }
 
-        function sendBulkWhatsApp() {
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+        document.getElementById('approvalTableBody').addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            const reportId = target.getAttribute('data-report-id');
+
+            if (target.classList.contains('review-btn')) {
+                document.getElementById('modalReportId').textContent = reportId.substring(0, 8) + '...';
+                // In production, fetch detailed report data and populate modalReportContent
+            } else if (target.classList.contains('approve-btn-list')) {
+                // Directly trigger approval process
+                processApproval(reportId, true);
+            }
+        });
+
+        async function processApproval(reportId, isApproved) {
+            // NOTE: Assuming there is a separate /reports/:reportId/set-status endpoint for approval/rejection.
+            // Since the backend only shows /distribute, we simulate the approval status update for now.
+            const newStatus = isApproved ? 'approved' : 'rejected';
+            
+            showNotification(`Simulating Report ID ${reportId} status update to ${newStatus}.`, 'info');
+            
+            // Mock DB update for demonstration
+            const reportIndex = mockReports.findIndex(r => r.id === reportId);
+            if (reportIndex !== -1) {
+                 mockReports[reportIndex].status = newStatus;
+            }
+            
+            // In a real system, you'd call a dedicated PUT/POST endpoint here.
+            // const data = await apiFetch(`/reports/${reportId}/set-status`, 'PUT', { status: newStatus });
+            
+            fetchApprovalList();
+            fetchReportList();
+            bootstrap.Modal.getInstance(document.getElementById('reviewModal'))?.hide();
+        }
+
+        document.getElementById('approveReportBtn').addEventListener('click', () => {
+            const reportId = document.getElementById('modalReportId').textContent.replace('...', '').trim();
+            processApproval(reportId, true);
+        });
+
+        document.getElementById('rejectReportBtn').addEventListener('click', () => {
+            const reportId = document.getElementById('modalReportId').textContent.replace('...', '').trim();
+            processApproval(reportId, false);
+        });
+
+
+        document.getElementById('distributeBtn').addEventListener('click', async (e) => {
+            const reportId = document.getElementById('distReportId').value;
+            const method = document.getElementById('distMethod').value;
+            if (!reportId) { showNotification('Enter a Report ID to distribute.', 'warning'); return; }
+
+            const btn = e.target;
             btn.disabled = true;
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
+            btn.textContent = 'Distributing...';
+
+            try {
+                const data = await apiFetch(`/reports/${reportId}/distribute`, 'POST', { distributionMethod: method });
+                showNotification(data.message, 'success');
+                fetchReportList();
+            } catch (error) {
+                // Handled by apiFetch (Will catch 400 error if not approved)
+            } finally {
                 btn.disabled = false;
-                showMessage('Bulk WhatsApp messages sent successfully!', 'success');
-            }, 3000);
+                btn.innerHTML = '<i class="bi bi-bell-fill"></i> Approve & Distribute to Parents';
+            }
+        });
+
+        // --- 3. ANALYTICS & REPORTING LOGIC ---
+
+        async function runAnalytics() {
+            const hierarchy = document.getElementById('hierarchySelect').value;
+            const filterId = document.getElementById('hierarchyFilterId').value;
+            const btn = document.getElementById('runAnalyticsBtn');
+            const resultsDiv = document.getElementById('analyticsResults');
+            
+            let endpoint = `/analytics?hierarchy=${hierarchy}`;
+            if (filterId) endpoint += `&filterId=${filterId}`;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+            resultsDiv.innerHTML = '<p class="text-center text-muted">Running analysis...</p>';
+
+            try {
+                const data = await apiFetch(endpoint); // Data is mockAnalytics or similar structure
+                let html = `<p class="fw-bold">${data.message}</p><ul class="list-group">`;
+                
+                data.results.forEach(item => {
+                    const avg = parseFloat(item.avg_performance || 0).toFixed(2);
+                    html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${item.hierarchy_name}: 
+                        <span class="badge bg-primary rounded-pill">${avg}% Avg</span>
+                    </li>`;
+                });
+                html += '</ul>';
+                resultsDiv.innerHTML = html;
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="text-danger">Failed to run analytics. ${error.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-bar-chart-line-fill"></i> Run Analysis';
+            }
+        }
+        
+        document.getElementById('runAnalyticsBtn').addEventListener('click', runAnalytics);
+
+        async function fetchReportList() {
+            const tableBody = document.getElementById('reportListBody');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading history...</td></tr>';
+            
+            try {
+                // Simulating fetching data from the backend GET /reports endpoint
+                // In production, this would be const data = await apiFetch('/reports');
+                const data = { reports: mockReports };
+                
+                tableBody.innerHTML = '';
+                data.reports.forEach(report => {
+                    const statusClass = report.status === 'approved' ? 'bg-success' : (report.status === 'pending_approval' ? 'bg-warning text-dark' : 'bg-secondary');
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${report.id.substring(0, 8)}...</td>
+                        <td>${report.student_id.substring(0, 8)}...</td>
+                        <td>${report.report_type} - ${report.term || 'T1'}</td>
+                        <td><span class="badge ${statusClass}">${report.status.toUpperCase()}</span></td>
+                        <td>${new Date(report.generated_date).toLocaleDateString()}</td>
+                    `;
+                });
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load report history.</td></tr>';
+            }
         }
 
-        function exportReports() {
-            showMessage('Reports exported to Excel file', 'success');
+        document.getElementById('exportCsvBtn').addEventListener('click', async () => {
+             try {
+                const data = await apiFetch('/reports?export=csv');
+                showNotification(data.message, 'success');
+            } catch (e) {
+                 // Handled by apiFetch
+            }
+        });
+
+        document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+             try {
+                const data = await apiFetch('/reports?export=pdf');
+                showNotification(data.message, 'success');
+            } catch (e) {
+                 // Handled by apiFetch
+            }
+        });
+
+
+        // --- 4. CONFIGURATION LOGIC ---
+
+        async function fetchConfig() {
+            try {
+                const data = await apiFetch('/config');
+                const settings = data.settings || {};
+                
+                document.getElementById('gradingScale').value = JSON.stringify(settings.grading_scale || {"A1": [91, 100], "B1": [71, 80]}, null, 2);
+                document.getElementById('subjectCategoryWeights').value = JSON.stringify(settings.subject_category_weights || {"main": 0.7, "co_curricular": 0.3}, null, 2);
+                document.getElementById('templatePolicy').value = settings.default_template_id || 'CBSE_T1_V2';
+                document.getElementById('finalizationPolicy').value = settings.finalization_approver || 'principal';
+                
+            } catch (error) {
+                showNotification('Configuration loaded with default fallback values (or access denied).', 'warning');
+            }
         }
 
-        function showMessage(message, type) {
-            const className = type === 'success' ? 'bg-green-600' : 'bg-red-600';
-            const icon = type === 'success' ? 'fas fa-check' : 'fas fa-exclamation-triangle';
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('saveConfigBtn');
             
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${className} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            messageDiv.innerHTML = `<i class="${icon} mr-2"></i>${message}`;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
-        }
+            let gradingScaleData, subjectCategoryWeightsData;
+
+            try {
+                gradingScaleData = JSON.parse(form.gradingScale.value);
+                subjectCategoryWeightsData = JSON.parse(form.subjectCategoryWeights.value);
+            } catch (e) {
+                showNotification('Grading Scale and Subject Weights must be valid JSON.', 'danger');
+                return;
+            }
+
+            const payload = {
+                gradingScale: gradingScaleData,
+                subjectCategoryWeights: subjectCategoryWeightsData,
+                reportTemplates: [{ id: form.templatePolicy.value }], // Simulating template update
+                finalizationPolicy: form.finalizationPolicy.value
+            };
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+            try {
+                const data = await apiFetch('/config', 'PUT', payload);
+                showNotification(data.message, 'success');
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save"></i> Save Configuration';
+            }
+        });
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchReportList();
+            fetchApprovalList();
+            fetchConfig();
+            // Initial call to run analytics when tab is opened
+            const analyticsTab = document.getElementById('analytics-tab');
+            analyticsTab.addEventListener('shown.bs.tab', runAnalytics);
+        });
+
     </script>
 </body>
 </html>
