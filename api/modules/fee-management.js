@@ -86,6 +86,14 @@ async function logAudit(schoolId, userId, action, entityId, details) {
   console.log(`[Fee Audit] School: ${schoolId}, User: ${userId}, Action: ${action} on ${entityId}`, details);
 }
 
+// --- NEW HELPER: Mock Payment Link Generator ---
+function generatePaymentLink(studentId, amount) {
+    // In a real system, this interacts with a payment gateway service
+    const base = "https://pay.school.com/checkout/";
+    const token = Buffer.from(`${studentId}:${amount}:${Date.now()}`).toString('base64').substring(0, 16);
+    return `${base}${token}?amount=${amount}`;
+}
+
 // --- CORE API ENDPOINTS ---
 
 // GET: All fee payments with validated query params
@@ -163,23 +171,60 @@ router.post('/tally/sync-collection', async (req, res) => {
   });
 });
 
-// POST: Tally webhook for reconciliation confirmation with secret verification (No schoolId context needed here, handled by secret)
+// POST: Tally webhook for reconciliation confirmation with secret verification (ENHANCED)
 router.post('/tally/webhook', async (req, res) => {
   const { transactionId, tallyVoucherId, status, errorDetails, secret } = req.body;
+    // NOTE: schoolId context is not used here as verification is by secret/transactionId
 
   if (!secret || secret !== process.env.TALLY_WEBHOOK_SECRET)
     return res.status(403).json({ received: false, error: 'Authentication failed.' });
 
   if (!transactionId || !status)
     return res.status(400).json({ received: false, error: 'Missing required webhook payload data.' });
+    
+    // --- MOCK: Fetch relevant data for notification ---
+    // In production, this query would retrieve studentId, parentPhone, and pending/excess amount
+    const mockTransactionData = { 
+        studentId: 'uuid-std-001', 
+        parentPhone: '+919876543210', 
+        requiredAmount: 25000.00, // Amount expected
+        reconciledAmount: req.body.reconciledAmount || 25000.00 // Amount Tally actually received/reconciled
+    }; 
+    
+    const { studentId, parentPhone, requiredAmount, reconciledAmount } = mockTransactionData;
+    const excessAmount = reconciledAmount - requiredAmount; // Calculate difference
 
   if (status === 'success' || status === 'completed') {
-    await logAudit('system', 'webhook', 'TALLY_VOUCHER_SUCCESS', transactionId, { voucher: tallyVoucherId });
-  } else {
-    await logAudit('system', 'webhook', 'TALLY_VOUCHER_FAILED', transactionId, { error: errorDetails, status });
-  }
+    
+    // Scenario A: Overpayment Detected
+    if (excessAmount > 0.01) {
+        await logAudit('system', 'webhook', 'TALLY_OVERPAYMENT_DETECTED', transactionId, { excessAmount });
+        
+        await sendNotification(parentPhone, 'REFUND_INITIATED', {
+            excessAmount: excessAmount.toFixed(2),
+            businessDays: 2
+        });
+        // Update local reconciliation status to 'Reconciled - Refund Pending'
+    } else {
+        // Scenario B: Perfect Reconciliation
+        await logAudit('system', 'webhook', 'TALLY_VOUCHER_SUCCESS', transactionId, { voucher: tallyVoucherId });
+        // Update local reconciliation status to 'Reconciled'
+    }
 
-  // Update local reconciliation flags accordingly here
+  } else if (status === 'failed' || status === 'error') {
+    await logAudit('system', 'webhook', 'TALLY_VOUCHER_FAILED', transactionId, { error: errorDetails, status });
+
+    // Scenario C: Reconciliation Failure
+    const paymentLink = generatePaymentLink(studentId, requiredAmount);
+    
+    await sendNotification(parentPhone, 'TALLY_RECONCILIATION_FAILED', {
+        amount: requiredAmount.toFixed(2),
+        reason: errorDetails || 'General Tally reconciliation error. Requires immediate attention.',
+        paymentLink: paymentLink
+    });
+    // Update local reconciliation status to 'Failed - Awaiting Re-payment'
+
+  }
 
   res.status(200).json({ received: true });
 });
