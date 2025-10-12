@@ -3,381 +3,406 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invigilation Duty Allocation - SmartGenEduX</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Invigilation Duty Configuration & Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+            margin-top: 30px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        .section-card {
+            margin-bottom: 25px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .alert-fixed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/Invigilation Duty Allocation_20250621_132356_0000_1751087212459.png" alt="Invigilation Duty" class="w-12 h-12 mr-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Invigilation Duty Allocation</h1>
-                        <p class="text-gray-600">Smart teacher allocation for exam supervision</p>
-                    </div>
-                </div>
-                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    <i class="fas fa-times mr-2"></i>Close
-                </button>
-            </div>
-        </div>
+<body>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-blue-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-calendar-check text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">12</div>
-                        <div class="text-blue-100">Active Exams</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-green-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-chalkboard-teacher text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">45</div>
-                        <div class="text-green-100">Available Teachers</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-purple-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-users text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">156</div>
-                        <div class="text-purple-100">Duties Assigned</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-orange-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-balance-scale text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">3.5</div>
-                        <div class="text-orange-100">Avg Duties/Teacher</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="container">
+        <h1 class="text-center mb-4 text-primary">🏫 Invigilation Management Dashboard</h1>
 
-        <!-- Duty Assignment -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">Create Duty Assignment</h2>
-                <form id="dutyForm" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Exam Date</label>
-                            <input type="date" id="examDate" class="w-full border rounded px-3 py-2" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Exam Type</label>
-                            <select id="examType" class="w-full border rounded px-3 py-2" required>
-                                <option value="">Select Type</option>
-                                <option value="unit_test">Unit Test</option>
-                                <option value="monthly">Monthly Exam</option>
-                                <option value="quarterly">Quarterly</option>
-                                <option value="half_yearly">Half Yearly</option>
-                                <option value="annual">Annual</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Start Time</label>
-                            <input type="time" id="startTime" value="09:00" class="w-full border rounded px-3 py-2">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">End Time</label>
-                            <input type="time" id="endTime" value="12:00" class="w-full border rounded px-3 py-2">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Exam Halls</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2" value="hall1"> Hall 1 (40 seats)
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2" value="hall2"> Hall 2 (35 seats)
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2" value="hall3"> Hall 3 (30 seats)
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2" value="hall4"> Hall 4 (25 seats)
-                            </label>
-                        </div>
-                    </div>
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab">⚙️ Configuration</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="allocation-tab" data-bs-toggle="tab" data-bs-target="#allocation" type="button" role="tab">🔄 Auto Allocation</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="workflow-tab" data-bs-toggle="tab" data-bs-target="#workflow" type="button" role="tab">✅ Workflow & Export</button>
+            </li>
+        </ul>
 
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Teachers per Hall</label>
-                        <select id="teachersPerHall" class="w-full border rounded px-3 py-2">
-                            <option value="2">2 Teachers</option>
-                            <option value="3">3 Teachers</option>
-                            <option value="4">4 Teachers</option>
-                        </select>
-                    </div>
+        <div class="tab-content pt-3" id="myTabContent">
 
-                    <div class="flex space-x-4">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                            <i class="fas fa-plus mr-2"></i>Create Assignment
-                        </button>
-                        <button type="button" onclick="autoAssign()" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">
-                            <i class="fas fa-magic mr-2"></i>Auto Assign
-                        </button>
-                    </div>
-                </form>
-            </div>
+            <div class="tab-pane fade show active" id="config" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">System Configuration</div>
+                    <div class="card-body">
+                        <form id="config-form">
+                            <div class="mb-3">
+                                <label for="maxDuties" class="form-label">Maximum Duties Per Cycle</label>
+                                <input type="number" class="form-control" id="maxDuties" name="maxDuties" required min="1" max="50">
+                                <div class="form-text">Sets the soft limit for workload balancing (Total Duties Assigned - TDA).</div>
+                            </div>
 
-            <!-- Teacher Availability -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">Teacher Availability</h2>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium">Filter by Department:</span>
-                        <select id="deptFilter" class="border rounded px-3 py-2 text-sm">
-                            <option value="">All Departments</option>
-                            <option value="math">Mathematics</option>
-                            <option value="science">Science</option>
-                            <option value="english">English</option>
-                            <option value="social">Social Studies</option>
-                        </select>
-                    </div>
-                    
-                    <div class="max-h-96 overflow-y-auto">
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between p-3 border rounded">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-user text-blue-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold">Dr. Rajesh Kumar</div>
-                                        <div class="text-sm text-gray-600">Mathematics • 3 duties this month</div>
-                                    </div>
+                            <div class="mb-3">
+                                <label for="compensationRate" class="form-label">Compensation Rate (Per Duty)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" id="compensationRate" name="compensationRate" required min="0" step="10">
                                 </div>
-                                <div class="flex items-center">
-                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs mr-2">Available</span>
-                                    <input type="checkbox" class="teacher-select" value="rajesh_kumar">
-                                </div>
+                                <div class="form-text">Financial compensation/honorarium for each invigilation duty.</div>
                             </div>
                             
-                            <div class="flex items-center justify-between p-3 border rounded">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-user text-pink-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold">Mrs. Priya Sharma</div>
-                                        <div class="text-sm text-gray-600">English • 2 duties this month</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs mr-2">Available</span>
-                                    <input type="checkbox" class="teacher-select" value="priya_sharma">
-                                </div>
+                            <div class="mb-3">
+                                <label for="exemptionPolicy" class="form-label">Exemption Policy</label>
+                                <select class="form-select" id="exemptionPolicy" name="exemptionPolicy">
+                                    <option value="none">No Exemptions</option>
+                                    <option value="subject_match_once">Exempt Subject Teacher (e.g., Maths during Maths exam)</option>
+                                    <option value="permanent">Permanent Exemption List</option>
+                                </select>
+                                <div class="form-text">Defines rules for teachers who cannot be assigned specific duties.</div>
                             </div>
-                            
-                            <div class="flex items-center justify-between p-3 border rounded">
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                                        <i class="fas fa-user text-green-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold">Mr. Amit Patel</div>
-                                        <div class="text-sm text-gray-600">Science • 4 duties this month</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center">
-                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs mr-2">On Leave</span>
-                                    <input type="checkbox" class="teacher-select" value="amit_patel" disabled>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t pt-4">
-                        <button onclick="bulkAssign()" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
-                            <i class="fas fa-users mr-2"></i>Assign Selected Teachers
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Current Assignments -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Current Exam Assignments</h2>
-                <div class="flex space-x-2">
-                    <button onclick="exportSchedule()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                        <i class="fas fa-download mr-2"></i>Export
-                    </button>
-                    <button onclick="sendNotifications()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        <i class="fas fa-bell mr-2"></i>Notify Teachers
-                    </button>
+                            <div class="form-check form-switch mb-4">
+                                <input class="form-check-input" type="checkbox" role="switch" id="autoAllocation" name="autoAllocation">
+                                <label class="form-check-label" for="autoAllocation">Enable Automatic Duty Allocation</label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="saveConfigBtn">Save Configuration</button>
+                        </form>
+                    </div>
                 </div>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Date</th>
-                            <th class="px-4 py-2 text-left">Time</th>
-                            <th class="px-4 py-2 text-left">Exam</th>
-                            <th class="px-4 py-2 text-left">Hall</th>
-                            <th class="px-4 py-2 text-left">Assigned Teachers</th>
-                            <th class="px-4 py-2 text-left">Status</th>
-                            <th class="px-4 py-2 text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">Jan 5, 2025</td>
-                            <td class="px-4 py-2">09:00 - 12:00</td>
-                            <td class="px-4 py-2">Mathematics - Half Yearly</td>
-                            <td class="px-4 py-2">Hall 1</td>
-                            <td class="px-4 py-2">
-                                <div class="flex -space-x-2">
-                                    <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs" title="Dr. Rajesh Kumar">R</div>
-                                    <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs" title="Mrs. Priya Sharma">P</div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Confirmed</span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800" title="Cancel">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">Jan 6, 2025</td>
-                            <td class="px-4 py-2">09:00 - 12:00</td>
-                            <td class="px-4 py-2">Science - Half Yearly</td>
-                            <td class="px-4 py-2">Hall 2</td>
-                            <td class="px-4 py-2">
-                                <div class="flex -space-x-2">
-                                    <div class="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs" title="Mr. Suresh Nair">S</div>
-                                    <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs" title="Ms. Kavita Singh">K</div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">Pending</span>
-                            </td>
-                            <td class="px-4 py-2">
-                                <div class="flex space-x-2">
-                                    <button class="text-blue-600 hover:text-blue-800" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800" title="Cancel">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="tab-pane fade" id="allocation" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Duty Auto Allocation</div>
+                    <div class="card-body">
+                        <p class="alert alert-info">This process runs the core algorithm to generate a new invigilation chart based on current workload (TDA) and configurations.</p>
+                        
+                        <form id="auto-allocate-form">
+                            <div class="mb-3">
+                                <label for="examDate" class="form-label">Exam Date</label>
+                                <input type="date" class="form-control" id="examDate" name="examDate" required>
+                                <div class="form-text">The date for which duties need to be assigned.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="roomList" class="form-label">Rooms Requiring Invigilators (Comma Separated)</label>
+                                <textarea class="form-control" id="roomList" name="roomList" rows="3" placeholder="e.g., Room 101, Room 102, Auditorium, Lab 3" required></textarea>
+                                <div class="form-text">List of rooms that need an invigilator for the specified date.</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success" id="runAllocationBtn">Run Auto Allocation</button>
+                        </form>
+
+                        <h5 class="mt-4">Allocation Results</h5>
+                        <div id="allocation-results" class="mt-2">
+                            </div>
+                    </div>
+                </div>
             </div>
+
+            <div class="tab-pane fade" id="workflow" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Approval Workflow & Export</div>
+                    <div class="card-body">
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Current Chart Status: <span id="current-status" class="badge bg-secondary">Loading...</span></h5>
+                        </div>
+
+                        <div class="mb-4 d-grid gap-2 d-md-block">
+                            <button type="button" class="btn btn-warning me-2" id="submitApprovalBtn">1. Submit to Principal (Admin Action)</button>
+                            <button type="button" class="btn btn-success me-2" id="approveChartBtn">2. Approve Chart (Principal Action)</button>
+                            <button type="button" class="btn btn-info" id="exportChartBtn" disabled>3. Export Printable Chart</button>
+                        </div>
+                        
+                        <hr>
+
+                        <h5>Printable Chart Data Preview</h5>
+                        <div id="duty-chart-preview" class="table-responsive mt-3">
+                            <p class="text-muted">Export data will appear here upon successful retrieval.</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        document.getElementById('dutyForm').addEventListener('submit', function(e) {
+        const API_BASE = ''; // Base path for the API, leave empty if running on same host/port
+
+        /**
+         * Helper function to show a temporary notification.
+         */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => {
+                area.style.display = 'none';
+            }, 5000);
+        }
+
+        // --- Configuration Logic ---
+        async function fetchConfig() {
+            try {
+                const response = await fetch(`${API_BASE}/config`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const settings = data.settings;
+                    document.getElementById('maxDuties').value = settings.maxDutiesPerWeek || 8;
+                    document.getElementById('compensationRate').value = settings.compensationRate || 200;
+                    document.getElementById('exemptionPolicy').value = settings.exemptionPolicy || 'subject_match_once';
+                    document.getElementById('autoAllocation').checked = settings.autoAllocation !== false;
+                    
+                    // Also check and update the workflow status
+                    document.getElementById('current-status').textContent = settings.approval_status || 'Draft';
+                    updateWorkflowButtons(settings.approval_status || 'Draft');
+
+                } else {
+                    showNotification(data.error || 'Failed to fetch configuration.', 'danger');
+                }
+            } catch (error) {
+                console.error('Fetch Config Error:', error);
+                // On real error, use the fallback values as a UI default
+            }
+        }
+
+        document.getElementById('config-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            createAssignment();
+            
+            const formData = {
+                autoAllocation: document.getElementById('autoAllocation').checked,
+                maxDuties: parseInt(document.getElementById('maxDuties').value, 10),
+                exemptionPolicy: document.getElementById('exemptionPolicy').value,
+                compensationRate: parseInt(document.getElementById('compensationRate').value, 10),
+            };
+
+            document.getElementById('saveConfigBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/config`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message);
+                } else {
+                    showNotification(data.error || 'Failed to update configuration.', 'danger');
+                }
+            } catch (error) {
+                showNotification('Network error during configuration update.', 'danger');
+            } finally {
+                document.getElementById('saveConfigBtn').disabled = false;
+            }
+        });
+        
+        // --- Auto Allocation Logic ---
+        document.getElementById('auto-allocate-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const examDate = document.getElementById('examDate').value;
+            const roomListString = document.getElementById('roomList').value;
+            const roomList = roomListString.split(',').map(r => r.trim()).filter(r => r.length > 0);
+            
+            const payload = { examDate, roomList };
+            
+            const btn = document.getElementById('runAllocationBtn');
+            btn.disabled = true;
+            btn.textContent = 'Running Allocation...';
+            document.getElementById('allocation-results').innerHTML = '<div class="spinner-border text-primary" role="status"></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/auto-allocate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    displayAllocationResults(data.allocations);
+                    // Refresh status after allocation
+                    fetchConfig(); 
+                } else {
+                    showNotification(data.error || 'Allocation failed.', 'danger');
+                    document.getElementById('allocation-results').innerHTML = `<p class="text-danger">${data.error || 'An unknown error occurred during allocation.'}</p>`;
+                }
+            } catch (error) {
+                showNotification('Network error during allocation.', 'danger');
+                document.getElementById('allocation-results').innerHTML = `<p class="text-danger">Failed to connect to the server for allocation.</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Auto Allocation';
+            }
         });
 
-        function createAssignment() {
-            const examDate = document.getElementById('examDate').value;
-            const examType = document.getElementById('examType').value;
-            
-            if (!examDate || !examType) {
-                showMessage('Please fill all required fields', 'error');
+        function displayAllocationResults(allocations) {
+            const resultsDiv = document.getElementById('allocation-results');
+            if (allocations.length === 0) {
+                resultsDiv.innerHTML = '<p class="text-warning">No duties were assigned (perhaps not enough teachers or rooms were listed).</p>';
                 return;
             }
-            
-            const btn = document.querySelector('#dutyForm button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
-            btn.disabled = true;
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                showMessage('Duty assignment created successfully!', 'success');
-                document.getElementById('dutyForm').reset();
-            }, 2000);
+
+            let html = `<p class="text-success">Total ${allocations.length} duties assigned:</p><ul class="list-group">`;
+            allocations.forEach(a => {
+                html += `<li class="list-group-item"><strong>${a.teacherName}</strong> assigned to <strong>${a.room}</strong> (Duty ID: ${a.dutyId})</li>`;
+            });
+            html += '</ul>';
+            resultsDiv.innerHTML = html;
         }
 
-        function autoAssign() {
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Auto Assigning...';
-            btn.disabled = true;
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                showMessage('Teachers automatically assigned based on availability and workload balance!', 'success');
-            }, 3000);
+        // --- Workflow Logic ---
+        
+        /**
+         * Updates button states based on the current chart status.
+         */
+        function updateWorkflowButtons(status) {
+            const submitBtn = document.getElementById('submitApprovalBtn');
+            const approveBtn = document.getElementById('approveChartBtn');
+            const exportBtn = document.getElementById('exportChartBtn');
+
+            // Reset all buttons
+            submitBtn.disabled = false;
+            approveBtn.disabled = false;
+            exportBtn.disabled = true;
+
+            if (status === 'Pending') {
+                submitBtn.disabled = true; // Already submitted
+                document.getElementById('current-status').className = 'badge bg-warning';
+            } else if (status === 'Approved') {
+                submitBtn.disabled = true;
+                approveBtn.disabled = true;
+                exportBtn.disabled = false; // Unlock export
+                document.getElementById('current-status').className = 'badge bg-success';
+            } else if (status === 'Draft') {
+                approveBtn.disabled = true; // Cannot approve a draft
+                document.getElementById('current-status').className = 'badge bg-secondary';
+            }
         }
 
-        function bulkAssign() {
-            const selectedTeachers = document.querySelectorAll('.teacher-select:checked');
-            if (selectedTeachers.length === 0) {
-                showMessage('Please select at least one teacher', 'error');
+        // Submit for Approval Handler
+        document.getElementById('submitApprovalBtn').addEventListener('click', async () => {
+            await handleWorkflowAction('/submit-for-approval', 'Submitting...', 'submitApprovalBtn');
+        });
+
+        // Approve Chart Handler
+        document.getElementById('approveChartBtn').addEventListener('click', async () => {
+            await handleWorkflowAction('/approve-chart', 'Approving...', 'approveChartBtn');
+        });
+
+        // Export Chart Handler
+        document.getElementById('exportChartBtn').addEventListener('click', async () => {
+            await handleWorkflowAction('/export/duty-chart', 'Generating Export...', 'exportChartBtn', 'GET');
+        });
+
+
+        /**
+         * Generic handler for workflow POST actions.
+         */
+        async function handleWorkflowAction(endpoint, loadingText, buttonId, method = 'POST') {
+            const btn = document.getElementById(buttonId);
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = loadingText;
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    // Body is only needed for POST/PUT if data is sent
+                    ...(method !== 'GET' ? { body: JSON.stringify({}) } : {})
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Refresh status and buttons
+                    fetchConfig(); 
+
+                    if (endpoint === '/export/duty-chart') {
+                        displayDutyChart(data.chartData, data.dates);
+                    }
+                } else {
+                    showNotification(data.error || 'Action failed.', 'danger');
+                }
+            } catch (error) {
+                showNotification('Network error during workflow action.', 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        function displayDutyChart(chartData, dates) {
+            const previewDiv = document.getElementById('duty-chart-preview');
+            if (chartData.length === 0) {
+                previewDiv.innerHTML = '<p class="text-warning">No invigilation duties found for export.</p>';
                 return;
             }
-            
-            showMessage(`${selectedTeachers.length} teachers assigned to duties`, 'success');
+
+            // Create table headers
+            const headers = Object.keys(chartData[0]);
+            let tableHtml = '<table class="table table-sm table-bordered table-hover">';
+            tableHtml += '<thead class="table-light"><tr>';
+            headers.forEach(h => {
+                // Shorten date column names for better viewing
+                const displayHeader = dates.includes(h) ? h.substring(5) : h; 
+                tableHtml += `<th>${displayHeader}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+
+            // Create table rows
+            chartData.forEach(row => {
+                tableHtml += '<tr>';
+                headers.forEach(h => {
+                    tableHtml += `<td>${row[h]}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody></table>';
+            previewDiv.innerHTML = tableHtml;
         }
 
-        function exportSchedule() {
-            showMessage('Invigilation schedule exported successfully', 'success');
-        }
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', fetchConfig);
 
-        function sendNotifications() {
-            showMessage('Notifications sent to all assigned teachers', 'info');
-        }
-
-        function showMessage(message, type) {
-            const colors = {
-                'success': 'bg-green-600',
-                'error': 'bg-red-600',
-                'info': 'bg-blue-600'
-            };
-            
-            const icons = {
-                'success': 'fas fa-check',
-                'error': 'fas fa-exclamation-triangle',
-                'info': 'fas fa-info-circle'
-            };
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
-        }
     </script>
 </body>
 </html>
