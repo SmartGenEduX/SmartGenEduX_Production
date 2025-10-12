@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBSE Registration Management System</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #e3f2fd; font-family: 'Inter', sans-serif; }
+        .container-fluid { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #1976d2; color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); border-radius: 0.5rem; }
+        .alert-fixed { position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; border-radius: 0.5rem; }
+        .nav-tabs .nav-link.active { background-color: #1976d2; color: white; border-color: #1976d2; }
+        .status-submitted { background-color: #6c757d; }
+        .status-verified { background-color: #ffc107; color: #333; }
+        .status-approved { background-color: #28a745; }
+        .status-rejected { background-color: #dc3545; }
+        .badge-status { color: white; }
+        .is-invalid-field { border: 1px solid #dc3545 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-primary"><i class="bi bi-file-earmark-text"></i> CBSE Board Registration</h1>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="cbseTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-view" type="button"><i class="bi bi-list-task"></i> Registration List</button></li>
+            <li class="nav-item"><button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new-form" type="button"><i class="bi bi-plus-circle"></i> New Registration</button></li>
+            <li class="nav-item"><button class="nav-link" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit" type="button"><i class="bi bi-box-arrow-down"></i> Export & Audit</button></li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content pt-3" id="cbseTabContent">
+
+            <!-- 1. Registration List (GET /registrations) -->
+            <div class="tab-pane fade show active" id="list-view" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Manage Student Registrations (9th & 11th)</div>
+                    <div class="card-body">
+                        
+                        <!-- Filters -->
+                        <form id="filterForm" class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <select class="form-select" id="filterClass" name="studentClass">
+                                    <option value="">All Classes</option>
+                                    <option value="9th">9th</option>
+                                    <option value="11th">11th</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="filterStatus" name="status">
+                                    <option value="">All Statuses</option>
+                                    <option value="submitted">Submitted</option>
+                                    <option value="verified">Verified</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" id="filterYear" name="academicYear" placeholder="Academic Year (YYYY-YY)">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Filter</button>
+                            </div>
+                        </form>
+
+                        <!-- Registration Table -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Reg ID</th>
+                                        <th>Student</th>
+                                        <th>Class</th>
+                                        <th>Submitted At</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="registrationsTableBody">
+                                    <tr><td colspan="6" class="text-center">Loading registrations...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="paginationControls" class="d-flex justify-content-between mt-3">
+                            <button class="btn btn-sm btn-outline-primary" id="prevPageBtn" disabled>Previous</button>
+                            <span id="pageInfo" class="align-self-center small text-muted">Page 1</span>
+                            <button class="btn btn-sm btn-outline-primary" id="nextPageBtn" disabled>Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. New Registration Form (POST /registrations) -->
+            <div class="tab-pane fade" id="new-form" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Submit New Student Registration Data</div>
+                    <div class="card-body">
+                        <form id="registrationForm" class="row g-3">
+                            
+                            <!-- Section: Registration Details -->
+                            <h5 class="mt-4 text-primary"><i class="bi bi-person-lines-fill"></i> Core Registration Details</h5>
+                            <div class="col-md-4"><label for="studentId" class="form-label">Student System ID</label><input type="text" class="form-control" id="studentId" required></div>
+                            <div class="col-md-4"><label for="studentName" class="form-label">Student Name (as per records)</label><input type="text" class="form-control" id="studentName" required></div>
+                            <div class="col-md-2"><label for="studentClass" class="form-label">Class</label><select class="form-select" id="studentClass" required><option value="9th">9th</option><option value="11th">11th</option></select></div>
+                            <div class="col-md-2"><label for="academicYear" class="form-label">Academic Year</label><input type="text" class="form-control" id="academicYear" placeholder="YYYY-YY" required></div>
+                            
+                            <!-- Section: Personal Details -->
+                            <h5 class="mt-4 text-primary"><i class="bi bi-person-fill"></i> Personal Details (CBSE Mandatory Fields)</h5>
+                            <div class="col-md-4"><label for="fullName" class="form-label">Full Name (CBSE Format)</label><input type="text" class="form-control" id="fullName" required></div>
+                            <div class="col-md-4"><label for="dateOfBirth" class="form-label">Date of Birth</label><input type="date" class="form-control" id="dateOfBirth" required></div>
+                            <div class="col-md-4"><label for="gender" class="form-label">Gender</label><select class="form-select" id="gender" required><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
+                            <div class="col-md-4"><label for="aadhaarNumber" class="form-label">Aadhaar Number (12 Digits)</label><input type="text" class="form-control" id="aadhaarNumber" minlength="12" maxlength="12" required></div>
+                            
+                            <!-- NEW CBSE MANDATORY FIELDS -->
+                            <div class="col-md-4">
+                                <label for="community" class="form-label">Community/Category</label>
+                                <select class="form-select" id="community" required>
+                                    <option value="GEN">General</option>
+                                    <option value="OBC">OBC</option>
+                                    <option value="SC">SC</option>
+                                    <option value="ST">ST</option>
+                                    <option value="OTHERS">Others</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4"><label for="udiseCode" class="form-label">UDISE Code</label><input type="text" class="form-control" id="udiseCode" required></div>
+                            <div class="col-md-4"><label for="aparId" class="form-label">APAR ID (If Applicable)</label><input type="text" class="form-control" id="aparId"></div>
+
+
+                            <!-- Section: Parent Details -->
+                            <h5 class="mt-4 text-primary"><i class="bi bi-people-fill"></i> Parent Details</h5>
+                            <div class="col-md-4"><label for="fatherName" class="form-label">Father's Name</label><input type="text" class="form-control" id="fatherName" required></div>
+                            <div class="col-md-4"><label for="fatherPhone" class="form-label">Father's Phone</label><input type="tel" class="form-control" id="fatherPhone" placeholder="10-15 digits" required></div>
+                            <div class="col-md-4"><label for="motherName" class="form-label">Mother's Name</label><input type="text" class="form-control" id="motherName" required></div>
+                            
+                            <!-- Section: Submission -->
+                            <h5 class="mt-4 text-primary"><i class="bi bi-upload"></i> Submission Settings</h5>
+                            <div class="col-md-6">
+                                <label for="submittedBy" class="form-label">Submission Source</label>
+                                <select class="form-select" id="submittedBy" required><option value="admin">School Admin</option><option value="parent">Parent</option><option value="student">Student</option></select>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-success btn-lg w-100" id="submitRegBtn"><i class="bi bi-check-circle"></i> Submit Registration</button>
+                            </div>
+                            <div class="col-12"><p class="text-danger small" id="formValidationSummary"></p></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Export & Audit Tab -->
+            <div class="tab-pane fade" id="audit" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Data Export & Compliance Audit</div>
+                    <div class="card-body">
+                        
+                        <h5 class="text-primary"><i class="bi bi-file-earmark-arrow-down"></i> Data Export</h5>
+                        <p class="text-muted">Export all registration records for final CBSE portal upload or internal review.</p>
+                        <div class="row g-3">
+                            <div class="col-md-4"><button class="btn btn-warning w-100"><i class="bi bi-filetype-csv"></i> Download Data (CSV)</button></div>
+                            <div class="col-md-4"><button class="btn btn-warning w-100"><i class="bi bi-file-earmark-excel"></i> Download Data (XLSX)</button></div>
+                            <div class="col-md-4"><button class="btn btn-warning w-100"><i class="bi bi-file-earmark-pdf"></i> Generate Printable Manifest</button></div>
+                        </div>
+
+                        <hr class="my-4">
+                        
+                        <h5 class="text-primary"><i class="bi bi-journal-check"></i> Audit Trail (Simulated)</h5>
+                        <p class="text-muted">Review system logs for verification, approval, and submission actions.</p>
+                        <ul class="list-group list-group-flush small" id="auditLogList">
+                            <li class="list-group-item">2025-10-10 14:30:00: User ID 111... triggered `CBSE_VERIFICATION_NEEDED` notification.</li>
+                            <li class="list-group-item">2025-10-10 14:28:15: User ID 111... action `CBSE_SUBMITTED` for Student ID STD12345.</li>
+                            <li class="list-group-item">2025-10-09 09:00:00: System updated status of Reg ID 5 to 'Submitted'.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Registration Detail Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-eye"></i> Registration Review - <span id="modalRegId"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <h6 class="text-success"><i class="bi bi-person-vcard"></i> Registration Data</h6>
+                    <div class="row small mb-3">
+                        <div class="col-md-4"><strong>Name:</strong> <span id="detailName"></span></div>
+                        <div class="col-md-4"><strong>Class:</strong> <span id="detailClass"></span></div>
+                        <div class="col-md-4"><strong>DOB:</strong> <span id="detailDob"></span></div>
+                        <div class="col-md-4"><strong>Aadhaar:</strong> <span id="detailAadhaar"></span></div>
+                        <div class="col-md-4"><strong>Community:</strong> <span id="detailCommunity"></span></div>
+                        <div class="col-md-4"><strong>UDISE:</strong> <span id="detailUdise"></span></div>
+                        <div class="col-md-4"><strong>APAR ID:</strong> <span id="detailAparId"></span></div>
+                        <div class="col-md-4"><strong>Father:</strong> <span id="detailFather"></span></div>
+                        <div class="col-md-4"><strong>Father Phone:</strong> <span id="detailFatherPhone"></span></div>
+                    </div>
+                    
+                    <h6 class="text-warning mt-4"><i class="bi bi-file-earmark-arrow-up"></i> Document Upload</h6>
+                    <form id="documentUploadForm" data-reg-id="">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <select class="form-select form-select-sm" name="documentType" required>
+                                    <option value="">Select Document Type</option>
+                                    <option value="birth_certificate">Birth Certificate</option>
+                                    <option value="mark_sheet">Previous Marksheet</option>
+                                    <option value="aadhaar_copy">Aadhaar Copy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <input type="file" class="form-control form-control-sm" name="document" required>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-sm btn-primary w-100" id="uploadDocBtn">Upload</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <h6 class="text-warning mt-4"><i class="bi bi-file-earmark-arrow-up"></i> Document Status (Simulated Verification)</h6>
+                    <ul class="list-group list-group-flush small mb-3" id="documentList">
+                        <!-- Dynamic content will populate here -->
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Aadhaar Copy 
+                            <span class="badge bg-warning text-dark">Awaiting Upload</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Previous Marksheet 
+                            <span class="badge bg-danger">Verification Pending</span>
+                            <button class="btn btn-sm btn-outline-success ms-2 verify-doc-btn">Verify</button>
+                        </li>
+                    </ul>
+
+                    <h6 class="text-danger"><i class="bi bi-arrow-right-square"></i> Workflow Actions</h6>
+                    <div class="btn-group w-100" role="group">
+                        <button type="button" class="btn btn-warning verify-action-btn" data-reg-id=""><i class="bi bi-person-check"></i> 1. Verify Details (Teacher/Staff)</button>
+                        <button type="button" class="btn btn-success approve-action-btn" data-reg-id=""><i class="bi bi-check-circle-fill"></i> 2. Final Approval (Principal)</button>
+                        <button type="button" class="btn btn-danger reject-action-btn" data-reg-id=""><i class="bi bi-x-circle-fill"></i> 3. Reject</button>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_BASE = ''; 
+        const MOCK_JWT_TOKEN = 'mock.jwt.token.for.auth'; 
+        let currentPage = 1;
+        const pageSize = 50;
+        const YEAR_PATTERN = /^\d{4}-\d{2}$/;
+        const PHONE_PATTERN = /^\+?\d{10,15}$/;
+        const AADHAAR_LENGTH = 12;
+
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => { area.style.display = 'none'; }, 7000);
+        }
+
+        /** Core Fetch Function with JWT Auth Header. */
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${MOCK_JWT_TOKEN}` 
+                    },
+                };
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
+
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error. Check console for details.', 'danger');
+                throw error;
+            }
+        }
+        
+        // --- 1. REGISTRATION LIST LOGIC ---
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'submitted': return 'status-submitted';
+                case 'verified': return 'status-verified';
+                case 'approved': return 'status-approved';
+                case 'rejected': return 'status-rejected';
+                default: return 'bg-secondary';
+            }
+        }
+
+        async function fetchRegistrations(page = 1) {
+            currentPage = page;
+            const tableBody = document.getElementById('registrationsTableBody');
+            const filters = new URLSearchParams(new FormData(document.getElementById('filterForm')));
+            filters.set('limit', pageSize);
+            filters.set('offset', (page - 1) * pageSize);
+            
+            filters.forEach((value, key, parent) => {
+                if (!value) {
+                    parent.delete(key);
+                }
+            });
+
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading...</td></tr>';
+
+            try {
+                const data = await apiFetch(`/registrations?${filters.toString()}`);
+                
+                tableBody.innerHTML = '';
+                if (data.data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No registrations found matching criteria.</td></tr>';
+                    document.getElementById('nextPageBtn').disabled = true;
+                    document.getElementById('prevPageBtn').disabled = true;
+                    return;
+                }
+
+                data.data.forEach(reg => {
+                    const statusClass = getStatusClass(reg.status);
+                    const row = tableBody.insertRow();
+                    const regData = reg.registrationData || {};
+                    
+                    row.innerHTML = `
+                        <td>${reg.id.substring(0, 8)}...</td>
+                        <td>${regData.studentName || 'N/A'}</td>
+                        <td>${regData.studentClass || 'N/A'}</td>
+                        <td>${new Date(reg.submittedAt).toLocaleDateString()}</td>
+                        <td><span class="badge badge-status ${statusClass}">${reg.status.toUpperCase()}</span></td>
+                        <td><button class="btn btn-sm btn-info view-detail-btn" data-id="${reg.id}" data-details='${JSON.stringify(reg)}'><i class="bi bi-eye"></i> Review</button></td>
+                    `;
+                });
+
+                // Pagination
+                document.getElementById('pageInfo').textContent = `Page ${currentPage} (Showing ${data.data.length} records)`;
+                document.getElementById('prevPageBtn').disabled = currentPage === 1;
+                document.getElementById('nextPageBtn').disabled = data.data.length < pageSize; 
+
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load registrations.</td></tr>';
+            }
+        }
+        
+        document.getElementById('filterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            fetchRegistrations(1);
+        });
+
+        document.getElementById('prevPageBtn').addEventListener('click', () => {
+            if (currentPage > 1) fetchRegistrations(currentPage - 1);
+        });
+        
+        document.getElementById('nextPageBtn').addEventListener('click', () => {
+            fetchRegistrations(currentPage + 1);
+        });
+
+        // --- 2. NEW REGISTRATION FORM LOGIC & VALIDATION ---
+        
+        function validateRegistrationForm(form, payload) {
+            const errors = [];
+            const fields = form.querySelectorAll('input, select');
+            let isValid = true;
+
+            // Clear previous errors
+            fields.forEach(field => field.classList.remove('is-invalid-field'));
+
+            // Core Validation
+            if (!YEAR_PATTERN.test(payload.academicYear)) {
+                errors.push("Academic Year must be in YYYY-YY format (e.g., 2024-25).");
+                form.academicYear.classList.add('is-invalid-field');
+                isValid = false;
+            }
+            if (payload.personalDetails.aadhaarNumber.length !== AADHAAR_LENGTH) {
+                errors.push(`Aadhaar Number must be exactly ${AADHAAR_LENGTH} digits.`);
+                form.aadhaarNumber.classList.add('is-invalid-field');
+                isValid = false;
+            }
+            if (!PHONE_PATTERN.test(payload.parentDetails.fatherPhone)) {
+                errors.push("Father's Phone must be a valid 10-15 digit number.");
+                form.fatherPhone.classList.add('is-invalid-field');
+                isValid = false;
+            }
+            
+            // Check all required fields (basic check)
+            fields.forEach(field => {
+                if (field.required && !field.value.trim()) {
+                    field.classList.add('is-invalid-field');
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                document.getElementById('formValidationSummary').textContent = errors.length > 0 ? errors.join(' | ') : "Please fill out all required fields marked in red.";
+            } else {
+                document.getElementById('formValidationSummary').textContent = '';
+            }
+            return isValid;
+        }
+
+
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('submitRegBtn');
+            
+            const payload = {
+                studentId: form.studentId.value,
+                studentName: form.studentName.value,
+                studentClass: form.studentClass.value,
+                academicYear: form.academicYear.value,
+                submittedBy: form.submittedBy.value,
+                personalDetails: {
+                    fullName: form.fullName.value,
+                    dateOfBirth: form.dateOfBirth.value,
+                    gender: form.gender.value,
+                    aadhaarNumber: form.aadhaarNumber.value,
+                    community: form.community.value,
+                    udiseCode: form.udiseCode.value,
+                    aparId: form.aparId.value,
+                },
+                parentDetails: {
+                    fatherName: form.fatherName.value,
+                    fatherPhone: form.fatherPhone.value,
+                    motherName: form.motherName.value,
+                }
+            };
+
+            if (!validateRegistrationForm(form, payload)) {
+                showNotification("Please correct the highlighted errors in the form.", 'danger');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Submitting...';
+
+            try {
+                const data = await apiFetch('/registrations', 'POST', payload);
+                showNotification(`Registration successfully submitted! ID: ${data.registrationId}`, 'success');
+                form.reset();
+                fetchRegistrations(1); 
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> Submit Registration';
+            }
+        });
+        
+        // --- 3. DETAIL MODAL & WORKFLOW SIMULATION ---
+
+        // Workflow Handler: Uses apiFetch to call simulated backend status update endpoints
+        async function handleWorkflowAction(regId, actionType) {
+            const btn = document.querySelector(`[data-reg-id="${regId}"].${actionType}-action-btn`);
+            if (!btn) return;
+            
+            const originalText = btn.innerHTML;
+            const newStatus = actionType.replace('-action-btn', '');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+            
+            // Endpoint structure based on assumption: /registrations/{id}/{status_action}
+            const endpoint = `/registrations/${regId}/${newStatus}`;
+            
+            try {
+                const data = await apiFetch(endpoint, 'POST', { status: newStatus }); 
+                
+                showNotification(`Registration ${regId.substring(0, 8)} status updated to ${newStatus.toUpperCase()}.`, 'success');
+                
+                bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+                fetchRegistrations(currentPage); 
+
+            } catch (error) {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // Document Upload Handler
+        document.getElementById('documentUploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const regId = form.getAttribute('data-reg-id');
+            const docType = form.documentType.value;
+            const fileInput = form.document;
+            const btn = document.getElementById('uploadDocBtn');
+
+            if (!fileInput.files.length) {
+                showNotification("Please select a file to upload.", 'warning');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('document', fileInput.files[0]);
+            formData.append('documentType', docType);
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            try {
+                // NOTE: Using general fetch for multipart form data upload
+                const response = await fetch(`${API_BASE}/applications/${regId}/upload-document`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${MOCK_JWT_TOKEN}` },
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showNotification(`${docType} uploaded successfully!`, 'success');
+                    // Simulate refresh of document list in modal
+                } else {
+                    throw new Error(data.error || 'Upload failed.');
+                }
+            } catch (error) {
+                console.error("Upload error:", error);
+                showNotification(`Upload failed: ${error.message}`, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Upload';
+            }
+        });
+
+
+        document.getElementById('registrationsTableBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('.view-detail-btn');
+            if (btn) {
+                const reg = JSON.parse(btn.getAttribute('data-details'));
+                const regData = reg.registrationData;
+                const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+                
+                // Set Modal Data
+                document.getElementById('modalRegId').textContent = reg.id.substring(0, 15) + '...';
+                document.getElementById('detailName').textContent = regData.personalDetails.fullName;
+                document.getElementById('detailClass').textContent = regData.studentClass + ' (' + regData.academicYear + ')';
+                document.getElementById('detailDob').textContent = new Date(regData.personalDetails.dateOfBirth).toLocaleDateString();
+                document.getElementById('detailAadhaar').textContent = regData.personalDetails.aadhaarNumber;
+                
+                // NEW PERSONAL DETAILS
+                document.getElementById('detailCommunity').textContent = regData.personalDetails.community || 'N/A';
+                document.getElementById('detailUdise').textContent = regData.personalDetails.udiseCode || 'N/A';
+                document.getElementById('detailAparId').textContent = regData.personalDetails.aparId || 'N/A';
+                
+                document.getElementById('detailFather').textContent = regData.parentDetails.fatherName;
+                document.getElementById('detailFatherPhone').textContent = regData.parentDetails.fatherPhone;
+                
+                // Set Registration ID for Document Upload Form
+                document.getElementById('documentUploadForm').setAttribute('data-reg-id', reg.id);
+
+
+                // Set Workflow Buttons and Permissions
+                document.querySelectorAll('.btn-group button').forEach(workflowBtn => {
+                    workflowBtn.dataset.regId = reg.id;
+                });
+
+                document.querySelector('.verify-action-btn').disabled = reg.status !== 'submitted';
+                document.querySelector('.approve-action-btn').disabled = reg.status !== 'verified';
+                document.querySelector('.reject-action-btn').disabled = reg.status === 'rejected';
+
+                modal.show();
+            }
+        });
+        
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            const btn = e.target.closest('.verify-action-btn') || e.target.closest('.approve-action-btn') || e.target.closest('.reject-action-btn');
+            if (btn) {
+                const regId = btn.dataset.regId;
+                let actionType = '';
+                if (btn.classList.contains('verify-action-btn')) actionType = 'verify';
+                else if (btn.classList.contains('approve-action-btn')) actionType = 'approve';
+                else if (btn.classList.contains('reject-action-btn')) actionType = 'reject';
+
+                if (actionType) {
+                    handleWorkflowAction(regId, actionType);
+                }
+            }
+        });
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const year = new Date().getFullYear();
+            document.getElementById('academicYear').value = `${year}-${String(year + 1).slice(-2)}`;
+            
+            fetchRegistrations();
+        });
+    </script>
+</body>
+</html>
