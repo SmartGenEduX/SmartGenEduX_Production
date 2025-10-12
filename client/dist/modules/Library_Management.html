@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Library Management System (LMS)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f4f7f6; }
+        .container-fluid { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #007bff; color: white; font-weight: bold; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .alert-fixed {
+            position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px;
+        }
+        .overdue-row { background-color: #f8d7da; } /* Red for overdue */
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-primary">Library Compliance & Fines Module</h1>
+
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <ul class="nav nav-tabs" id="lmsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button" role="tab">📖 Inventory & Loan</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="loans-tab" data-bs-toggle="tab" data-bs-target="#loans" type="button" role="tab">⏳ Active Loans & Overdue</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab">⚙️ Configuration</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="oversight-tab" data-bs-toggle="tab" data-bs-target="#oversight" type="button" role="tab">💰 Oversight (Principal)</button>
+            </li>
+        </ul>
+
+        <div class="tab-content pt-3" id="lmsTabContent">
+
+            <div class="tab-pane fade show active" id="inventory" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Book Inventory & Check-Out</div>
+                    <div class="card-body">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="inventorySearch" placeholder="Search by Title or Author...">
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-primary" id="searchInventoryBtn"><i class="bi bi-search"></i> Search</button>
+                                <button class="btn btn-secondary" id="nextPageBtn" disabled>Next Page</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>ISBN</th>
+                                        <th>Available</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTableBody">
+                                    <tr><td colspan="6" class="text-center">Loading inventory...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h5 class="mt-4">Check-Out Book</h5>
+                        <form id="loanForm" class="row g-3">
+                            <div class="col-md-6">
+                                <label for="loanBookId" class="form-label">Book ID (from table)</label>
+                                <input type="text" class="form-control" id="loanBookId" placeholder="e.g., 550e8400..." required readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="loanStudentId" class="form-label">Student Profile ID</label>
+                                <input type="text" class="form-control" id="loanStudentId" placeholder="e.g., 11111111..." required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="loanDueDate" class="form-label">Due Date</label>
+                                <input type="date" class="form-control" id="loanDueDate" required>
+                                <div class="form-text text-danger" id="loanLimitInfo">Max loan days: 30</div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success" id="checkoutBtn"><i class="bi bi-box-arrow-up"></i> Check-Out Book</button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="loans" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Active Loans & Returns</div>
+                    <div class="card-body">
+                        
+                        <div class="row mb-3 align-items-center">
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="loansSearch" placeholder="Search by Book/Student...">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="showOverdueOnly">
+                                    <label class="form-check-label" for="showOverdueOnly">Show Overdue Only</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <button class="btn btn-primary" id="searchLoansBtn"><i class="bi bi-arrow-clockwise"></i> Refresh List</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Loan ID</th>
+                                        <th>Title</th>
+                                        <th>Student</th>
+                                        <th>Due Date</th>
+                                        <th>Fines Incurred</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activeLoansTableBody">
+                                    <tr><td colspan="6" class="text-center">Loading active loans...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="config" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Library System Configuration (Manager/Admin Only)</div>
+                    <div class="card-body">
+                        <form id="configForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="maxLoanDays" class="form-label">Max Loan Days (7-90)</label>
+                                    <input type="number" class="form-control" id="maxLoanDays" min="7" max="90" required>
+                                    <div class="form-text">Maximum duration a book can be loaned.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="finePerDay" class="form-label">Fine Per Day (₹)</label>
+                                    <input type="number" class="form-control" id="finePerDay" min="0" max="50" step="0.01" required>
+                                    <div class="form-text">Overdue fine rate (e.g., 5.00 INR).</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="maxConcurrentLoans" class="form-label">Max Concurrent Loans (1-10)</label>
+                                    <input type="number" class="form-control" id="maxConcurrentLoans" min="1" max="10" required>
+                                    <div class="form-text">Maximum books a student can hold at once.</div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="overdueNotificationDays" class="form-label">Notification Reminder Days (1-14)</label>
+                                    <input type="number" class="form-control" id="overdueNotificationDays" min="1" max="14" required>
+                                    <div class="form-text">Days *before* due date to send an initial reminder. (Arattai/WhatsApp Integration)</div>
+                                </div>
+                                
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-success" id="saveConfigBtn"><i class="bi bi-save"></i> Save Configuration</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="oversight" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-danger">Principal Oversight Dashboard</div>
+                    <div class="card-body">
+                        <p class="alert alert-warning"><i class="bi bi-lock-fill"></i> Access restricted to Principal/Super Admin roles only.</p>
+                        <div class="row text-center" id="oversightStats">
+                            
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded bg-light">
+                                    <h4 class="text-primary" id="statActiveLoans">...</h4>
+                                    <p class="text-muted">Total Active Loans</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded bg-light">
+                                    <h4 class="text-danger" id="statOverdue">...</h4>
+                                    <p class="text-muted">Overdue Books</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 border rounded bg-light">
+                                    <h4 class="text-success" id="statAccruedFines">...</h4>
+                                    <p class="text-muted">Total Accrued Fines (Unpaid)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-info mt-3" id="refreshOversightBtn"><i class="bi bi-arrow-clockwise"></i> Refresh Stats</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_BASE = ''; 
+        let currentOffset = 0;
+        const limit = 20;
+        let maxLoanDays = 30; // Default or fetched from config
+
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => {
+                area.style.display = 'none';
+            }, 7000);
+        }
+
+        // --- Core Fetch Function ---
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
+
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error.', 'danger');
+                throw error; // Re-throw to be caught by specific handler
+            }
+        }
+
+        // --- 1. INVENTORY & LOAN LOGIC ---
+        
+        async function fetchInventory(resetOffset = true) {
+            if (resetOffset) currentOffset = 0;
+            const search = document.getElementById('inventorySearch').value;
+            const tableBody = document.getElementById('inventoryTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading...</td></tr>';
+            
+            try {
+                const data = await apiFetch(`/books?limit=${limit}&offset=${currentOffset}&search=${search}`);
+                
+                tableBody.innerHTML = '';
+                if (data.books.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No books found matching the criteria.</td></tr>';
+                }
+
+                data.books.forEach(book => {
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${book.title}</td>
+                        <td>${book.author}</td>
+                        <td>${book.isbn}</td>
+                        <td class="${book.available_copies <= 2 ? 'text-danger fw-bold' : ''}">${book.available_copies}</td>
+                        <td>${book.total_copies}</td>
+                        <td><button class="btn btn-sm btn-info select-book-btn" data-book-id="${book.id}" ${book.available_copies <= 0 ? 'disabled' : ''}>Check Out</button></td>
+                    `;
+                });
+
+                document.getElementById('nextPageBtn').disabled = (currentOffset + limit) >= data.totalRecords;
+
+            } catch {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load inventory.</td></tr>';
+            }
+        }
+        
+        // Handle book selection for loan form
+        document.getElementById('inventoryTableBody').addEventListener('click', (e) => {
+            if (e.target.classList.contains('select-book-btn')) {
+                const bookId = e.target.getAttribute('data-book-id');
+                document.getElementById('loanBookId').value = bookId;
+                showNotification(`Ready to check out Book ID: ${bookId}`, 'info');
+            }
+        });
+
+        // Handle Loan Submission
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('checkoutBtn');
+            btn.disabled = true;
+
+            const payload = {
+                bookId: document.getElementById('loanBookId').value,
+                studentId: document.getElementById('loanStudentId').value,
+                dueDate: document.getElementById('loanDueDate').value
+            };
+
+            try {
+                const data = await apiFetch('/loan', 'POST', payload);
+                showNotification(`Success! ${data.message} Loan ID: ${data.loanId}`, 'success');
+                // Clear form and refresh lists
+                document.getElementById('loanForm').reset();
+                fetchInventory(false); 
+                fetchActiveLoans();
+
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('searchInventoryBtn').addEventListener('click', () => fetchInventory(true));
+        document.getElementById('nextPageBtn').addEventListener('click', () => {
+            currentOffset += limit;
+            fetchInventory(false);
+        });
+
+        // --- 2. ACTIVE LOANS & RETURN LOGIC ---
+
+        async function fetchActiveLoans() {
+            const search = document.getElementById('loansSearch').value;
+            const overdue = document.getElementById('showOverdueOnly').checked;
+            const tableBody = document.getElementById('activeLoansTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading...</td></tr>';
+
+            try {
+                const data = await apiFetch(`/loans/current?limit=${limit}&offset=0&search=${search}&overdue=${overdue}`);
+                
+                tableBody.innerHTML = '';
+                if (data.activeLoans.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No active loans found.</td></tr>';
+                }
+
+                data.activeLoans.forEach(loan => {
+                    const row = tableBody.insertRow();
+                    const isOverdue = new Date(loan.due_date) < new Date();
+                    if (isOverdue) row.classList.add('overdue-row');
+
+                    row.innerHTML = `
+                        <td>${loan.id.substring(0, 8)}...</td>
+                        <td>${loan.title}</td>
+                        <td>${loan.student_name} (${loan.class_id || 'N/A'})</td>
+                        <td class="${isOverdue ? 'text-danger fw-bold' : ''}">${new Date(loan.due_date).toLocaleDateString()}</td>
+                        <td>${loan.fines_incurred ? `₹${loan.fines_incurred.toFixed(2)}` : 'N/A'}</td>
+                        <td><button class="btn btn-sm btn-danger return-book-btn" data-loan-id="${loan.id}"><i class="bi bi-box-arrow-in-down"></i> Return</button></td>
+                    `;
+                });
+
+            } catch {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load active loans.</td></tr>';
+            }
+        }
+        
+        // Handle Return Action
+        document.getElementById('activeLoansTableBody').addEventListener('click', async (e) => {
+            if (e.target.classList.contains('return-book-btn')) {
+                const btn = e.target;
+                const loanId = btn.getAttribute('data-loan-id');
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+
+                try {
+                    const data = await apiFetch(`/return/${loanId}`, 'POST', {});
+                    
+                    let msg = `${data.message} Loan: ${loanId.substring(0, 8)}...`;
+                    if (data.fineCalculated > 0) {
+                        msg += ` **Fine incurred: ₹${data.fineCalculated.toFixed(2)}** for ${data.daysOverdue} days overdue.`;
+                        showNotification(msg, 'warning');
+                    } else {
+                        showNotification(msg, 'success');
+                    }
+                    
+                    fetchActiveLoans();
+                    fetchInventory(false);
+
+                } catch {
+                    // Error handled by apiFetch
+                    btn.disabled = false;
+                    btn.textContent = 'Return';
+                }
+            }
+        });
+
+        document.getElementById('searchLoansBtn').addEventListener('click', fetchActiveLoans);
+        document.getElementById('showOverdueOnly').addEventListener('change', fetchActiveLoans);
+
+        // --- 3. CONFIGURATION LOGIC ---
+
+        async function fetchConfig() {
+            try {
+                const data = await apiFetch('/config');
+                const settings = data.settings;
+
+                document.getElementById('maxLoanDays').value = settings.max_loan_days;
+                document.getElementById('finePerDay').value = settings.fine_per_day;
+                document.getElementById('overdueNotificationDays').value = settings.overdue_notification_days;
+                document.getElementById('maxConcurrentLoans').value = settings.max_concurrent_loans;
+                
+                // Update client-side variable for loan form
+                maxLoanDays = settings.max_loan_days;
+                document.getElementById('loanLimitInfo').textContent = `Max loan days: ${maxLoanDays}`;
+
+            } catch (error) {
+                // If 403 (Auth denied) or 500 (DB error), config form will show default/empty.
+                // We keep the form as is, assuming the Manager/Admin will know the correct values.
+            }
+        }
+
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveConfigBtn');
+            btn.disabled = true;
+
+            const payload = {
+                maxLoanDays: parseInt(document.getElementById('maxLoanDays').value),
+                finePerDay: parseFloat(document.getElementById('finePerDay').value),
+                overdueNotificationDays: parseInt(document.getElementById('overdueNotificationDays').value),
+                maxConcurrentLoans: parseInt(document.getElementById('maxConcurrentLoans').value)
+            };
+
+            try {
+                const data = await apiFetch('/config', 'PUT', payload);
+                showNotification(data.message, 'success');
+                fetchConfig(); // Re-fetch to confirm update
+
+            } catch {
+                // Error handled by apiFetch
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // --- 4. PRINCIPAL OVERSIGHT LOGIC ---
+        
+        async function fetchOversightStats() {
+            document.getElementById('statActiveLoans').textContent = '...';
+            document.getElementById('statOverdue').textContent = '...';
+            document.getElementById('statAccruedFines').textContent = '...';
+
+            try {
+                const data = await apiFetch('/stats/oversight');
+                const stats = data.dashboard;
+
+                document.getElementById('statActiveLoans').textContent = stats.totalActiveLoans.toLocaleString();
+                document.getElementById('statOverdue').textContent = stats.totalOverdue.toLocaleString();
+                document.getElementById('statAccruedFines').textContent = `₹${stats.totalAccruedFines.toFixed(2).toLocaleString()}`;
+                
+                showNotification('Principal oversight stats refreshed.', 'info');
+
+            } catch (error) {
+                // Handle 403 (Access Denied) explicitly
+                if (error.message && error.message.includes('403')) {
+                    document.getElementById('oversightStats').innerHTML = '<div class="alert alert-danger">Access denied. Only Principal/Super Admin can view these statistics.</div>';
+                } else {
+                    document.getElementById('oversightStats').innerHTML = '<div class="alert alert-danger">Failed to load statistics.</div>';
+                }
+            }
+        }
+        
+        document.getElementById('refreshOversightBtn').addEventListener('click', fetchOversightStats);
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchConfig();
+            fetchInventory(true);
+            fetchActiveLoans();
+
+            // Setup tab switch to load oversight on demand
+            document.getElementById('oversight-tab').addEventListener('shown.bs.tab', () => {
+                fetchOversightStats();
+            });
+        });
+    </script>
+</body>
+</html>
