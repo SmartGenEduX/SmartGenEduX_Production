@@ -3,349 +3,555 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Event Log - SmartGenEduX</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>🗓️ School Event Log & Compliance</title>
+    <!-- Bootstrap 5 CDN for styling and responsiveness -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; }
+        .container-fluid { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #00796b; /* Teal */ color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .section-card { margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border-radius: 0.5rem; }
+        .alert-fixed { position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 300px; border-radius: 0.5rem; }
+        .nav-tabs .nav-link.active { background-color: #00897b; color: white; border-color: #00897b; }
+        .event-badge {
+            font-size: 0.75rem;
+            margin-right: 5px;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/documentation.png" alt="School Events" class="w-12 h-12 mr-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">School Event Log</h1>
-                        <p class="text-gray-600">AI-Enhanced Event Documentation & Management</p>
-                    </div>
-                </div>
-                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    <i class="fas fa-times mr-2"></i>Close
-                </button>
-            </div>
-        </div>
+<body>
 
-        <!-- Event Statistics -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-blue-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-calendar-check text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">127</div>
-                        <div class="text-blue-100">Total Events</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-green-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-robot text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">95%</div>
-                        <div class="text-green-100">AI Enhanced</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-purple-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-users text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">1,247</div>
-                        <div class="text-purple-100">Participants</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-orange-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-chart-line text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">4.8</div>
-                        <div class="text-orange-100">Avg Rating</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="container-fluid">
+        <h1 class="text-center mb-4 text-primary"><i class="bi bi-calendar-event"></i> School Event Log & Compliance Dashboard</h1>
 
-        <!-- Add New Event -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold mb-4">Add New Event</h2>
-            <form id="eventForm" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Wing/Department</label>
-                        <select id="wing" class="w-full border rounded px-3 py-2" required>
-                            <option value="">Select Wing</option>
-                            <option value="Science Wing">Science Wing</option>
-                            <option value="Arts Wing">Arts Wing</option>
-                            <option value="Sports Wing">Sports Wing</option>
-                            <option value="Administrative">Administrative</option>
-                            <option value="Cultural">Cultural</option>
-                            <option value="Library">Library</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Event Title</label>
-                        <input type="text" id="eventTitle" placeholder="Annual Science Fair" class="w-full border rounded px-3 py-2" required>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-2">Brief Description</label>
-                    <textarea id="description" rows="3" placeholder="Describe the event briefly..." class="w-full border rounded px-3 py-2" required></textarea>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Event Date</label>
-                        <input type="date" id="eventDate" class="w-full border rounded px-3 py-2" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Duration</label>
-                        <input type="text" id="duration" placeholder="4 hours" class="w-full border rounded px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Participants</label>
-                        <input type="text" id="participants" placeholder="150 students, 20 teachers" class="w-full border rounded px-3 py-2">
-                    </div>
-                </div>
-                
-                <div class="flex space-x-4">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                        <i class="fas fa-robot mr-2"></i>Add Event with AI Enhancement
-                    </button>
-                    <button type="button" onclick="addBasicEvent()" class="bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700">
-                        <i class="fas fa-plus mr-2"></i>Add Basic Event
-                    </button>
-                    <button type="button" onclick="toggleQuickEventForm()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-                        <i class="fas fa-plus-circle mr-2"></i>Quick Event Form
-                    </button>
-                </div>
-            </form>
-        </div>
+        <!-- Notification Area -->
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="eventTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="create-tab" data-bs-toggle="tab" data-bs-target="#event-creation" type="button"><i class="bi bi-plus-square"></i> Calendar & Creation</button></li>
+            <li class="nav-item"><button class="nav-link" id="workflow-tab" data-bs-toggle="tab" data-bs-target="#event-workflow" type="button"><i class="bi bi-patch-check"></i> Approval & Notifications</button></li>
+            <li class="nav-item"><button class="nav-link" id="feed-tab" data-bs-toggle="tab" data-bs-target="#event-feed" type="button"><i class="bi bi-broadcast-pin"></i> Live Event Feed</button></li>
+            <li class="nav-item"><button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#event-config" type="button"><i class="bi bi-gear-fill"></i> Configuration</button></li>
+        </ul>
 
-        <!-- Event List -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Recent Events</h2>
-                <div class="flex space-x-2">
-                    <select id="filterWing" class="border rounded px-3 py-2">
-                        <option value="">All Wings</option>
-                        <option value="Science Wing">Science Wing</option>
-                        <option value="Arts Wing">Arts Wing</option>
-                        <option value="Sports Wing">Sports Wing</option>
-                    </select>
-                    <input type="text" id="searchEvents" placeholder="Search events..." class="border rounded px-3 py-2">
+        <!-- Tab Content -->
+        <div class="tab-content pt-3" id="eventTabContent">
+
+            <!-- 1. Calendar & Creation Tab (POST /, GET /) -->
+            <div class="tab-pane fade show active" id="event-creation" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-success">Event Planning & Venue Conflict Check</div>
+                    <div class="card-body">
+                        
+                        <h5 class="text-success">A. Create New Event</h5>
+                        <form id="eventForm" class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="eventTitle" class="form-label">Event Title</label>
+                                <input type="text" class="form-control" id="eventTitle" required maxlength="255">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="eventType" class="form-label">Type</label>
+                                <select class="form-select" id="eventType" required>
+                                    <option value="academic">Academic</option>
+                                    <option value="sports">Sports</option>
+                                    <option value="cultural">Cultural</option>
+                                    <option value="meeting">Meeting</option>
+                                    <option value="competition">Competition</option>
+                                    <option value="workshop">Workshop</option>
+                                    <option value="celebration">Celebration</option>
+                                    <option value="trip">Trip/Excursion</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="startTime" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="startTime" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endTime" class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="endTime" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="venue" class="form-label">Venue</label>
+                                <input type="text" class="form-control" id="venue" placeholder="e.g., Auditorium, Ground A" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="organizer" class="form-label">Organizer/Incharge</label>
+                                <input type="text" class="form-control" id="organizer" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="allocatedBudget" class="form-label">Allocated Budget (Optional)</label>
+                                <input type="number" class="form-control" id="allocatedBudget" min="0" placeholder="₹">
+                            </div>
+                             <div class="col-md-6">
+                                <label for="priority" class="form-label">Priority</label>
+                                <select class="form-select" id="priority" required>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High (Requires Principal Alert)</option>
+                                    <option value="urgent">Urgent (Requires Immediate Principal Alert)</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="description" class="form-label">Description (Max 1000 chars)</label>
+                                <textarea class="form-control" id="description" rows="2" maxlength="1000"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success" id="createEventBtn"><i class="bi bi-check-circle"></i> Create Event (Planning)</button>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <h5 class="text-primary">B. Upcoming Events (Live Calendar View)</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Venue</th>
+                                        <th>Dates</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eventListBody">
+                                    <tr><td colspan="5" class="text-center">Loading events...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Approval & Notifications Tab (POST /:eventId/approve, POST /:eventId/notify) -->
+            <div class="tab-pane fade" id="event-workflow" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-warning text-dark">Principal Approval & Communication</div>
+                    <div class="card-body">
+                        
+                        <!-- Approval Section -->
+                        <h5 class="text-warning">A. Event Approval (Principal/Approver Only)</h5>
+                        <form id="approvalForm" class="row g-3 mb-4">
+                            <div class="col-md-8">
+                                <label for="approveEventId" class="form-label">Event ID to Approve</label>
+                                <input type="text" class="form-control" id="approveEventId" placeholder="e.g., EVT-123" required>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-warning mt-4 w-100" id="approveBtn"><i class="bi bi-patch-check-fill"></i> Approve Event</button>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <!-- Notification Section -->
+                        <h5 class="text-info">B. Send Final Reminder / Notification</h5>
+                        <form id="notifyForm" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="notifyEventId" class="form-label">Event ID</label>
+                                <input type="text" class="form-control" id="notifyEventId" placeholder="e.g., EVT-123" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="notifyRecipients" class="form-label">Recipients (Comma Separated)</label>
+                                <select class="form-select" id="notifyRecipients" multiple required>
+                                    <option value="parents" selected>Parents</option>
+                                    <option value="students">Students</option>
+                                    <option value="staff">Staff</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="notifyMethod" class="form-label">Delivery Method</label>
+                                <select class="form-select" id="notifyMethod" required>
+                                    <option value="whatsapp" selected>WhatsApp (Arattai)</option>
+                                    <option value="email">Email</option>
+                                    <option value="sms">SMS</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="notifyMessage" class="form-label">Custom Message (Template Message)</label>
+                                <textarea class="form-control" id="notifyMessage" rows="3" required placeholder="Event starts soon! Don't forget your materials."></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-info" id="notifyBtn"><i class="bi bi-send-fill"></i> Send Notification</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Live Event Feed Tab (Gated by Config) -->
+            <div class="tab-pane fade" id="event-feed" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-primary">Live Event Feed (Filtered by Configuration)</div>
+                    <div class="card-body">
+                        <p class="alert alert-info small">This feed dynamically monitors and displays events matching the **Configured Priority** and **Types** (set in the Configuration tab).</p>
+                        <div id="liveFeedBody">
+                            <p class="text-muted text-center">No live events matching the configured filters...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="space-y-4" id="eventsList">
-                <!-- Event Card 1 -->
-                <div class="border rounded-lg p-4 hover:bg-gray-50">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mr-2">Science Wing</span>
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs mr-2">AI Enhanced</span>
-                                <span class="text-gray-500 text-sm">Jan 4, 2025</span>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Annual Science Fair 2025</h3>
-                            <p class="text-gray-600 mb-3">Students presented innovative science projects covering various topics including renewable energy, artificial intelligence, and environmental conservation. The event showcased exceptional creativity and scientific understanding among participants.</p>
+            <!-- 4. Configuration Tab (GET/PUT /config) -->
+            <div class="tab-pane fade" id="event-config" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header bg-dark">Live Monitoring Configuration (Admin/Principal Only)</div>
+                    <div class="card-body">
+                        <form id="configForm" class="row g-3">
+                            <p class="alert alert-warning small">These settings control which events appear on the **Live Event Feed** tab for real-time monitoring.</p>
                             
-                            <!-- AI Enhanced Content -->
-                            <div class="bg-blue-50 rounded-lg p-3 mb-3">
-                                <h4 class="font-medium text-blue-800 mb-2">
-                                    <i class="fas fa-robot mr-2"></i>AI Enhanced Insights
-                                </h4>
-                                <div class="space-y-2">
-                                    <div>
-                                        <strong class="text-blue-700">Key Highlights:</strong>
-                                        <ul class="list-disc list-inside text-sm text-blue-600 ml-4">
-                                            <li>15 innovative renewable energy projects</li>
-                                            <li>AI-based solutions for environmental challenges</li>
-                                            <li>Interactive demonstrations with live experiments</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <strong class="text-blue-700">Impact:</strong>
-                                        <span class="text-sm text-blue-600">Enhanced scientific curiosity and practical application skills among students, fostering innovation mindset for future STEM careers.</span>
-                                    </div>
-                                </div>
+                            <div class="col-md-6">
+                                <label for="liveFeedTypes" class="form-label">Live Feed Event Types (Select Multiple)</label>
+                                <select class="form-select" id="liveFeedTypes" multiple required>
+                                    <option value="academic">Academic</option>
+                                    <option value="sports">Sports</option>
+                                    <option value="cultural">Cultural</option>
+                                    <option value="meeting">Meeting</option>
+                                    <option value="competition">Competition</option>
+                                    <option value="workshop">Workshop</option>
+                                    <option value="celebration">Celebration</option>
+                                    <option value="trip">Trip/Excursion</option>
+                                </select>
+                                <div class="form-text">Events of these types will appear in the Live Feed.</div>
                             </div>
                             
-                            <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                <span><i class="fas fa-clock mr-1"></i>4 hours</span>
-                                <span><i class="fas fa-users mr-1"></i>150 students, 20 teachers</span>
-                                <span><i class="fas fa-star mr-1"></i>High Priority</span>
+                            <div class="col-md-6">
+                                <label for="liveFeedPriority" class="form-label">Minimum Live Feed Priority</label>
+                                <select class="form-select" id="liveFeedPriority" required>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="high" selected>High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                                <div class="form-text">Only events at this priority level or higher will be monitored.</div>
                             </div>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button class="text-blue-600 hover:text-blue-800" onclick="editEvent(1)">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-green-600 hover:text-green-800" onclick="exportEvent(1)">
-                                <i class="fas fa-download"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Event Card 2 -->
-                <div class="border rounded-lg p-4 hover:bg-gray-50">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs mr-2">Cultural</span>
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs mr-2">AI Enhanced</span>
-                                <span class="text-gray-500 text-sm">Jan 2, 2025</span>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-dark btn-lg w-100" id="saveConfigBtn"><i class="bi bi-save"></i> Save Live Feed Configuration</button>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Republic Day Celebration</h3>
-                            <p class="text-gray-600 mb-3">Patriotic cultural program featuring traditional dances, songs, and speeches commemorating India's Republic Day with participation from all grades.</p>
-                            
-                            <div class="bg-purple-50 rounded-lg p-3 mb-3">
-                                <h4 class="font-medium text-purple-800 mb-2">
-                                    <i class="fas fa-robot mr-2"></i>AI Enhanced Insights
-                                </h4>
-                                <div class="space-y-2">
-                                    <div>
-                                        <strong class="text-purple-700">Key Highlights:</strong>
-                                        <ul class="list-disc list-inside text-sm text-purple-600 ml-4">
-                                            <li>Traditional dance performances from 8 states</li>
-                                            <li>Student speeches on constitutional values</li>
-                                            <li>Flag hoisting ceremony with parade</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <strong class="text-purple-700">Impact:</strong>
-                                        <span class="text-sm text-purple-600">Strengthened cultural awareness and patriotic values, promoting unity and national pride among students.</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                <span><i class="fas fa-clock mr-1"></i>3 hours</span>
-                                <span><i class="fas fa-users mr-1"></i>All students, Parents</span>
-                                <span><i class="fas fa-star mr-1"></i>Medium Priority</span>
-                            </div>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button class="text-blue-600 hover:text-blue-800" onclick="editEvent(2)">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-green-600 hover:text-green-800" onclick="exportEvent(2)">
-                                <i class="fas fa-download"></i>
-                            </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
+            
         </div>
     </div>
 
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Event form submission
-        document.getElementById('eventForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                wing: document.getElementById('wing').value,
-                title: document.getElementById('eventTitle').value,
-                description: document.getElementById('description').value,
-                date: document.getElementById('eventDate').value,
-                duration: document.getElementById('duration').value,
-                participants: document.getElementById('participants').value
-            };
-            
-            // Show AI processing
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing with AI...';
-            submitBtn.disabled = true;
-            
-            // Simulate AI processing
-            setTimeout(() => {
-                addEventWithAI(formData);
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+        const API_BASE = ''; 
+        const MOCK_JWT_TOKEN = 'mock.jwt.token.for.auth'; 
+        
+        let mockEvents = [
+            { id: 'EVT-123', title: 'Annual Sports Day', type: 'sports', startDate: '2025-10-20', endDate: '2025-10-20', startTime: '09:00', endTime: '16:00', venue: 'Main Ground', status: 'approved', priority: 'high', organizer: 'Mr. Sharma' },
+            { id: 'EVT-124', title: 'PTA Meeting', type: 'meeting', startDate: '2025-11-05', endDate: '2025-11-05', startTime: '17:00', endTime: '18:00', venue: 'Auditorium', status: 'planning', priority: 'medium', organizer: 'Principal' },
+            { id: 'EVT-125', title: 'Science Fair', type: 'academic', startDate: '2025-12-01', endDate: '2025-12-02', startTime: '10:00', endTime: '15:00', venue: 'Science Block', status: 'approved', priority: 'medium', organizer: 'Ms. Kapoor' },
+        ];
+        
+        let currentConfig = { liveFeedTypes: ['sports', 'meeting'], liveFeedPriority: 'high' };
+
+        /** Helper function to show a temporary notification. */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => { area.style.display = 'none'; }, 7000);
+        }
+
+        /** Core Fetch Function with JWT Auth Header. */
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${MOCK_JWT_TOKEN}` 
+                    },
+                };
                 
-                // Reset form
-                e.target.reset();
-            }, 3000);
-        });
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
 
-        function addEventWithAI(eventData) {
-            // Show success message
-            const message = document.createElement('div');
-            message.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            message.innerHTML = '<i class="fas fa-check mr-2"></i>Event added successfully with AI enhancement!';
-            document.body.appendChild(message);
-            
-            setTimeout(() => {
-                message.remove();
-            }, 3000);
-            
-            console.log('Event added with AI enhancement:', eventData);
-        }
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
 
-        function addBasicEvent() {
-            const message = document.createElement('div');
-            message.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            message.innerHTML = '<i class="fas fa-info mr-2"></i>Basic event added successfully!';
-            document.body.appendChild(message);
-            
-            setTimeout(() => {
-                message.remove();
-            }, 3000);
-        }
-
-        function editEvent(id) {
-            alert(`Editing event ${id} - Feature available in full version`);
-        }
-
-        function exportEvent(id) {
-            alert(`Exporting event ${id} - Feature available in full version`);
-        }
-
-        // Search and filter functionality
-        document.getElementById('searchEvents').addEventListener('input', function(e) {
-            // Search implementation
-            console.log('Searching for:', e.target.value);
-        });
-
-        document.getElementById('filterWing').addEventListener('change', function(e) {
-            // Filter implementation
-            console.log('Filtering by wing:', e.target.value);
-        });
-        
-        // SaaS Form Functions
-        function toggleQuickEventForm() {
-            showMessage('Quick event form activated. You can now add events directly in the platform.', 'success');
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showNotification(error.message || 'Network error. Check console for details.', 'danger');
+                throw error;
+            }
         }
         
-        function addBasicEvent() {
-            showMessage('Basic event added successfully!', 'success');
+        const getStatusBadge = (status) => {
+            switch(status) {
+                case 'approved': return 'bg-success';
+                case 'planning': return 'bg-warning text-dark';
+                case 'cancelled': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        };
+
+        const getPriorityBadge = (priority) => {
+            switch(priority) {
+                case 'urgent': return 'bg-danger';
+                case 'high': return 'bg-warning text-dark';
+                case 'medium': return 'bg-info';
+                default: return 'bg-light text-dark';
+            }
+        };
+
+
+        // --- 1. EVENT CREATION & CALENDAR LOGIC ---
+
+        async function fetchEventList() {
+            const tableBody = document.getElementById('eventListBody');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border spinner-border-sm"></div> Loading events...</td></tr>';
+            
+            try {
+                // In production, pass search/filter query params here
+                const data = await apiFetch('/'); 
+                
+                tableBody.innerHTML = '';
+                if (data.events.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No upcoming events scheduled.</td></tr>';
+                    return;
+                }
+
+                data.events.forEach(event => {
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td>${event.title} <span class="badge ${getPriorityBadge(event.priority)} event-badge">${event.priority.toUpperCase()}</span></td>
+                        <td>${event.venue}</td>
+                        <td>${new Date(event.start_date).toLocaleDateString()} - ${new Date(event.end_date).toLocaleDateString()}</td>
+                        <td>${event.start_time} - ${event.end_time}</td>
+                        <td><span class="badge ${getStatusBadge(event.status)}">${event.status.toUpperCase()}</span></td>
+                    `;
+                });
+                
+                mockEvents = data.events; // Update mock data for live feed simulation
+                updateLiveFeed();
+
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load events.</td></tr>';
+            }
         }
-        
-        function showMessage(message, type) {
-            const colors = {
-                'success': 'bg-green-600',
-                'error': 'bg-red-600',
-                'info': 'bg-blue-600'
+
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('createEventBtn');
+            
+            const payload = {
+                title: form.eventTitle.value,
+                type: form.eventType.value,
+                startDate: form.startDate.value,
+                endDate: form.endDate.value,
+                startTime: form.startTime.value,
+                endTime: form.endTime.value,
+                venue: form.venue.value,
+                organizer: form.organizer.value,
+                allocatedBudget: form.allocatedBudget.value ? parseFloat(form.allocatedBudget.value) : 0,
+                description: form.description.value,
+                priority: form.priority.value,
+                targetAudience: ['students', 'parents'] // Mock target audience
             };
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Creating...';
+
+            try {
+                const data = await apiFetch('/', 'POST', payload);
+                showNotification(data.message, 'success');
+                form.reset();
+                fetchEventList(); 
+            } catch (error) {
+                // Handled by apiFetch (Will catch 409 conflict error)
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> Create Event (Planning)';
+            }
+        });
+        
+        // --- 2. WORKFLOW LOGIC ---
+        
+        document.getElementById('approvalForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const eventId = document.getElementById('approveEventId').value;
+            const btn = document.getElementById('approveBtn');
             
-            const icons = {
-                'success': 'fas fa-check',
-                'error': 'fas fa-exclamation-triangle',
-                'info': 'fas fa-info-circle'
+            btn.disabled = true;
+            btn.textContent = 'Approving...';
+
+            try {
+                const data = await apiFetch(`/${eventId}/approve`, 'POST', {});
+                showNotification(data.message, 'success');
+                fetchEventList(); 
+            } catch (error) {
+                // Handled by apiFetch (Will catch 403 authorization error)
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-patch-check-fill"></i> Approve Event';
+            }
+        });
+        
+        document.getElementById('notifyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('notifyBtn');
+            
+            const recipientsArray = Array.from(form.notifyRecipients.selectedOptions).map(opt => opt.value);
+
+            const payload = {
+                message: form.notifyMessage.value,
+                recipients: recipientsArray,
+                method: form.notifyMethod.value
             };
+            const eventId = form.notifyEventId.value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
+
+            try {
+                const data = await apiFetch(`/${eventId}/notify`, 'POST', payload);
+                showNotification(data.message, 'success');
+                form.reset();
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send-fill"></i> Send Notification';
+            }
+        });
+
+        // --- 3. LIVE EVENT FEED LOGIC ---
+        
+        const priorityOrder = { 'low': 1, 'medium': 2, 'high': 3, 'urgent': 4 };
+
+        function updateLiveFeed() {
+            const feedDiv = document.getElementById('liveFeedBody');
+            const { liveFeedTypes, liveFeedPriority } = currentConfig;
             
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
-            document.body.appendChild(messageDiv);
+            if (!liveFeedTypes || liveFeedTypes.length === 0) {
+                feedDiv.innerHTML = '<p class="text-warning text-center">Live feed disabled: No event types are configured for monitoring.</p>';
+                return;
+            }
+
+            const minPriorityValue = priorityOrder[liveFeedPriority] || 0;
             
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
+            const liveEvents = mockEvents
+                .filter(event => new Date(event.startDate) >= new Date(new Date().setHours(0, 0, 0, 0))) // Filter for today or future events
+                .filter(event => liveFeedTypes.includes(event.type)) // Filter by configured type
+                .filter(event => priorityOrder[event.priority] >= minPriorityValue) // Filter by configured minimum priority
+                .sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]); // Sort by urgency
+
+            if (liveEvents.length === 0) {
+                feedDiv.innerHTML = '<p class="text-muted text-center">No events currently match the live monitoring filters.</p>';
+                return;
+            }
+
+            let html = '<ul class="list-group">';
+            liveEvents.forEach(event => {
+                html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-${event.priority === 'urgent' ? 'danger' : (event.priority === 'high' ? 'warning' : 'light')}">
+                        <div>
+                            <strong>${event.title}</strong> (${event.organizer})
+                            <span class="badge ${getPriorityBadge(event.priority)}">${event.priority.toUpperCase()}</span>
+                            <span class="badge bg-secondary">${event.venue}</span>
+                        </div>
+                        <small class="text-muted">${new Date(event.startDate).toLocaleDateString()} @ ${event.startTime}</small>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            feedDiv.innerHTML = html;
         }
+
+        // --- 4. CONFIGURATION LOGIC ---
+
+        async function fetchConfig() {
+            try {
+                const data = await apiFetch('/config');
+                const settings = data.settings;
+                
+                // Set global configuration variable
+                currentConfig = { 
+                    liveFeedTypes: settings.live_feed_types || [], 
+                    liveFeedPriority: settings.live_feed_priority || 'medium' 
+                };
+
+                // Populate form fields
+                const selectTypes = document.getElementById('liveFeedTypes');
+                Array.from(selectTypes.options).forEach(option => {
+                    option.selected = currentConfig.liveFeedTypes.includes(option.value);
+                });
+                document.getElementById('liveFeedPriority').value = currentConfig.liveFeedPriority;
+
+                // Update the live feed immediately after fetching config
+                updateLiveFeed(); 
+
+            } catch (error) {
+                showNotification('Could not fetch configuration. Using default Live Feed settings.', 'warning');
+            }
+        }
+
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('saveConfigBtn');
+            
+            const liveFeedTypes = Array.from(form.liveFeedTypes.selectedOptions).map(opt => opt.value);
+
+            const payload = {
+                liveFeedTypes: liveFeedTypes,
+                liveFeedPriority: form.liveFeedPriority.value
+            };
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+            try {
+                const data = await apiFetch('/config', 'PUT', payload);
+                showNotification(data.message, 'success');
+                // Update local config and refresh feed
+                currentConfig = data.newSettings;
+                updateLiveFeed();
+            } catch (error) {
+                // Handled by apiFetch
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save"></i> Save Live Feed Configuration';
+            }
+        });
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchConfig();
+            fetchEventList();
+        });
+
     </script>
 </body>
 </html>
