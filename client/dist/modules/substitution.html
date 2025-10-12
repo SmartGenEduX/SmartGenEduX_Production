@@ -3,389 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Substitution - SmartGenEduX</title>
+    <title>Intelligent Substitution Manager</title>
+    <!-- Tailwind CSS (Emulation) -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+        .container { max-width: 1100px; margin-top: 20px; }
+        .card-header { background-color: #004d40; color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .section-card { box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-radius: 0.5rem; margin-bottom: 20px; }
+        .tab-button.active { background-color: #004d40 !important; color: white !important; }
+        .time-alert { background-color: #ffcc80; color: #4e342e; border-left: 4px solid #ff9800; }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/substitution.png" alt="Substitution" class="w-12 h-12 mr-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Teacher Substitution Management</h1>
-                        <p class="text-gray-600">Smart substitute allocation with automated notifications</p>
-                    </div>
-                </div>
-                <button onclick="window.close()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                    <i class="fas fa-times mr-2"></i>Close
+<body>
+
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-gray-800">🧑‍🏫 Intelligent Substitution Management</h1>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="fixed top-4 right-4 z-50"></div>
+        
+        <!-- Global Context (Mock) -->
+        <div class="bg-blue-100 p-3 rounded-lg mb-4 text-sm">
+            <span class="font-semibold">Context:</span> Teacher ID <span id="currentTeacherId">T-1111</span> (Simulated) | Today: <span id="currentDate"></span>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-md mb-4">
+            <div class="flex border-b border-gray-200">
+                <button class="tab-button px-4 py-3 text-sm font-medium active flex-1 text-gray-700" onclick="switchTab('leave')" data-tab="leave">
+                    <i class="fas fa-calendar-times mr-2"></i>Leave Request & Auto-Assign
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('mySubs')" data-tab="mySubs">
+                    <i class="fas fa-clipboard-list mr-2"></i>My Substitutions (To Confirm/Complete)
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('config')" data-tab="config">
+                    <i class="fas fa-cogs mr-2"></i>Configuration Hub
                 </button>
             </div>
         </div>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-red-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-user-times text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">3</div>
-                        <div class="text-red-100">Absent Today</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-green-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-user-check text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">7</div>
-                        <div class="text-green-100">Substitutes Assigned</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-blue-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-clock text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">15</div>
-                        <div class="text-blue-100">Pending Assignments</div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-purple-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-chart-line text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">87%</div>
-                        <div class="text-purple-100">Coverage Rate</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Tab Content -->
+        <div id="tabContent">
 
-        <!-- Log Teacher Absence -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold mb-4">Log Teacher Absence</h2>
-            <form id="absenceForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Teacher</label>
-                        <select id="absentTeacher" class="w-full border rounded px-3 py-2" required>
-                            <option value="">Select Teacher</option>
-                            <option value="1">Mrs. Sharma - Mathematics</option>
-                            <option value="2">Mr. Patel - English</option>
-                            <option value="3">Dr. Singh - Science</option>
-                            <option value="4">Ms. Kumar - Social Studies</option>
-                        </select>
+            <!-- 1. Leave Request & Auto-Assign (Teacher's Primary View) -->
+            <div data-tab-content="leave" class="tab-pane active">
+                <div class="section-card bg-white">
+                    <div class="card-header flex justify-between items-center">
+                        Teacher Leave Request & Automatic Substitution
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Absence Type</label>
-                        <select id="absenceType" class="w-full border rounded px-3 py-2" required>
-                            <option value="">Select Type</option>
-                            <option value="sick">Sick Leave</option>
-                            <option value="emergency">Emergency</option>
-                            <option value="personal">Personal Leave</option>
-                            <option value="training">Training/Workshop</option>
-                            <option value="official">Official Work</option>
-                        </select>
+                    <div class="p-6">
+                        
+                        <!-- CRITICAL TIME GATE ALERT -->
+                        <div id="timeGateAlert" class="p-4 rounded mb-4 text-sm time-alert">
+                            <i class="fas fa-clock mr-2"></i>**Time-Gated Submission:** For same-day leave, requests must be submitted between **1:00 AM and 7:20 AM** (School Admin override exempts this rule).
+                        </div>
+
+                        <form id="leaveRequestForm" onsubmit="handleLeaveRequest(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Teacher ID (Self-Populated)</label>
+                                    <input type="text" id="leaveTeacherId" value="T-1111" disabled class="mt-1 block w-full p-2 border bg-gray-100 rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Date of Absence</label>
+                                    <input type="date" id="leaveDate" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div class="col-span-1 md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700">Type of Leave</label>
+                                    <select id="leaveType" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                        <option value="FULL_DAY">FULL DAY (All Periods)</option>
+                                        <option value="ON_DUTY">ON DUTY (All Periods)</option>
+                                        <option value="HALF_DAY_MORNING">HALF DAY MORNING (Periods 1-4)</option>
+                                        <option value="HALF_DAY_AFTERNOON">HALF DAY AFTERNOON (Periods 5-9)</option>
+                                        <option value="PERMISSION_MORNING">PERMISSION MORNING (Periods 1-2)</option>
+                                        <option value="PERMISSION_EVENING">PERMISSION EVENING (Periods 8-9)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Reason for Absence</label>
+                                <textarea id="leaveReason" rows="3" required class="mt-1 block w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+
+                            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition duration-150">
+                                <i class="fas fa-paper-plane mr-2"></i>Request Leave & Auto-Generate Subs
+                            </button>
+                        </form>
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Date Range</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="date" id="startDate" class="border rounded px-3 py-2" required>
-                            <input type="date" id="endDate" class="border rounded px-3 py-2" required>
+                </div>
+            </div>
+
+            <!-- 2. My Substitutions (To Confirm/Complete) -->
+            <div data-tab-content="mySubs" class="tab-pane hidden">
+                <div class="section-card bg-white">
+                    <div class="card-header">
+                        Substitutions Assigned To Me (Action Required)
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-gray-500 mb-4">You must **Confirm** an assignment to finalize it and **Complete** it after the period finishes to reset your workload score.</p>
+                        <div id="mySubstitutionList" class="space-y-4">
+                            <!-- Mock Substitution Item -->
+                            <div class="p-4 border rounded-lg bg-yellow-50">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-lg">Class 8-A Math (Period 4)</span>
+                                    <span class="px-3 py-1 text-sm rounded-full bg-yellow-200 text-yellow-800">Pending</span>
+                                </div>
+                                <p class="text-sm mt-1">Absent: Ms. Sinha | Date: <span class="font-medium">2025-01-15</span></p>
+                                <p class="text-xs italic">Reason: Medical Leave</p>
+                                <div class="mt-3 space-x-2">
+                                    <button class="bg-green-600 text-white px-4 py-1 rounded text-sm hover:bg-green-700" onclick="handleConfirmation('SUB-001', 'T-1111')">
+                                        <i class="fas fa-check"></i> Confirm Sub
+                                    </button>
+                                    <button class="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700" onclick="handleCompletion('SUB-001')">
+                                        <i class="fas fa-clipboard-check"></i> Mark Complete
+                                    </button>
+                                    <button class="bg-red-600 text-white px-4 py-1 rounded text-sm hover:bg-red-700" onclick="handleCancellation('SUB-001')">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Affected Periods</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center">
-                                <input type="checkbox" value="1" class="mr-2"> Period 1
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" value="2" class="mr-2"> Period 2
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" value="3" class="mr-2"> Period 3
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" value="4" class="mr-2"> Period 4
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" value="5" class="mr-2"> Period 5
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" value="6" class="mr-2"> Period 6
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Notes</label>
-                        <textarea id="absenceNotes" rows="3" placeholder="Additional information..." class="w-full border rounded px-3 py-2"></textarea>
-                    </div>
-                    
-                    <div class="flex space-x-4">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                            <i class="fas fa-plus mr-2"></i>Log Absence
-                        </button>
-                        <button type="button" onclick="autoAssignSubstitute()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-                            <i class="fas fa-magic mr-2"></i>Auto-Assign Substitute
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Today's Substitutions -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Today's Substitutions</h2>
-                <div class="flex space-x-2">
-                    <button onclick="notifyAllSubstitutes()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
-                        <i class="fas fa-bell mr-2"></i>Notify All
-                    </button>
-                    <button onclick="generateSubReport()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
-                        <i class="fas fa-file-alt mr-2"></i>Generate Report
-                    </button>
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <!-- Substitution Card 1 -->
-                <div class="border rounded-lg p-4 bg-yellow-50">
-                    <div class="flex justify-between items-start mb-3">
+            <!-- 3. Configuration Hub -->
+            <div data-tab-content="config" class="tab-pane hidden">
+                <div class="section-card bg-white">
+                    <div class="card-header">
+                        Substitution Algorithm & Workload Rules (Admin/Principal Only)
+                    </div>
+                    <form id="configForm" onsubmit="handleConfigUpdate(event)" class="p-6 space-y-6">
+                        
+                        <!-- Workload Limits -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-700">Workload & Fairness Limits</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Min Subs Required (for experience)</label>
+                                    <input type="number" id="minSubstitutions" min="0" value="0" class="mt-1 block w-full p-2 border rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Max Subs Allowed (Fairness)</label>
+                                    <input type="number" id="maxSubstitutions" min="1" value="3" class="mt-1 block w-full p-2 border rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Max Daily Periods Exclusion (7+ Excluded)</label>
+                                    <input type="number" id="maxDailyPeriodsExclusion" min="5" value="6" class="mt-1 block w-full p-2 border rounded-md">
+                                    <p class="text-xs text-gray-500 mt-1">Teachers teaching > this count are excluded.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scoring Weights -->
+                        <div class="border-b pb-4">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-700">Scoring Weights (Prioritization)</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Weight: Subject Match Score</label>
+                                    <input type="number" id="weightSubjectMatch" min="0" value="40" class="mt-1 block w-full p-2 border rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Weight: Class Teacher Preference</label>
+                                    <input type="number" id="weightClassTeacher" min="0" value="20" class="mt-1 block w-full p-2 border rounded-md">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Restriction Rules -->
                         <div>
-                            <h3 class="font-semibold text-gray-800">Period 2 - Mathematics</h3>
-                            <p class="text-sm text-gray-600">Class 5A • 08:50 - 09:35</p>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-700">Restriction Rules (Anti-Overload)</h3>
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" id="restrictionSameClassDay" checked class="form-checkbox h-5 w-5 text-red-600">
+                                <span class="text-gray-700">Restrict Substitute from covering the *Same Class* twice on the same day.</span>
+                            </label>
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700">Permanent Exclusion List (Profile IDs/Names)</label>
+                                <input type="text" id="permanentExclusionList" placeholder="T-005, Mrs. Geetha, T-012" class="mt-1 block w-full p-2 border rounded-md">
+                                <p class="text-xs text-gray-500 mt-1">Teachers listed here are permanently excluded from the substitute pool.</p>
+                            </div>
                         </div>
-                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Pending</span>
-                    </div>
-                    <div class="space-y-2">
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-user-times text-red-500 mr-2"></i>
-                            <span>Absent: Mrs. Sharma (Sick Leave)</span>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-user-plus text-green-500 mr-2"></i>
-                            <span>Substitute: Mr. Verma (Available)</span>
-                        </div>
-                        <div class="flex space-x-2 mt-3">
-                            <button onclick="confirmSubstitution(1)" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
-                                Confirm
-                            </button>
-                            <button onclick="findAlternative(1)" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-                                Find Alternative
-                            </button>
-                        </div>
-                    </div>
+
+                        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition duration-150">
+                            <i class="fas fa-save mr-2"></i>Save Configuration & Update Algorithm
+                        </button>
+                    </form>
                 </div>
-
-                <!-- Substitution Card 2 -->
-                <div class="border rounded-lg p-4 bg-green-50">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Period 4 - English</h3>
-                            <p class="text-sm text-gray-600">Class 5B • 11:00 - 11:45</p>
-                        </div>
-                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Confirmed</span>
-                    </div>
-                    <div class="space-y-2">
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-user-times text-red-500 mr-2"></i>
-                            <span>Absent: Mr. Patel (Training)</span>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-user-check text-green-500 mr-2"></i>
-                            <span>Substitute: Ms. Gupta (Confirmed)</span>
-                        </div>
-                        <div class="flex space-x-2 mt-3">
-                            <button class="bg-gray-400 text-white px-3 py-1 rounded text-sm cursor-not-allowed" disabled>
-                                Confirmed
-                            </button>
-                            <button onclick="sendReminder(2)" class="bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700">
-                                Send Reminder
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Add more substitution cards as needed -->
             </div>
-        </div>
 
-        <!-- Available Substitutes -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-bold mb-4">Available Substitute Teachers</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Teacher</th>
-                            <th class="px-4 py-2 text-left">Subjects</th>
-                            <th class="px-4 py-2 text-left">Availability</th>
-                            <th class="px-4 py-2 text-left">Current Load</th>
-                            <th class="px-4 py-2 text-left">Rating</th>
-                            <th class="px-4 py-2 text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                        <span class="text-blue-600 font-medium">MV</span>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">Mr. Verma</div>
-                                        <div class="text-gray-500 text-xs">Mathematics</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">Math, Physics</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Available</span>
-                            </td>
-                            <td class="px-4 py-2">2/6 periods</td>
-                            <td class="px-4 py-2">
-                                <div class="flex items-center">
-                                    <span class="text-yellow-500">★★★★☆</span>
-                                    <span class="ml-1 text-xs text-gray-500">(4.2)</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">
-                                <button onclick="assignSubstitute('verma')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700">
-                                    Assign
-                                </button>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center mr-3">
-                                        <span class="text-pink-600 font-medium">SG</span>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">Ms. Gupta</div>
-                                        <div class="text-gray-500 text-xs">English</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">English, Hindi</td>
-                            <td class="px-4 py-2">
-                                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Busy</span>
-                            </td>
-                            <td class="px-4 py-2">5/6 periods</td>
-                            <td class="px-4 py-2">
-                                <div class="flex items-center">
-                                    <span class="text-yellow-500">★★★★★</span>
-                                    <span class="ml-1 text-xs text-gray-500">(4.8)</span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-2">
-                                <button class="bg-gray-400 text-white px-3 py-1 rounded text-xs cursor-not-allowed" disabled>
-                                    Unavailable
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 
     <script>
-        // Form submission
-        document.getElementById('absenceForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            logAbsence();
-        });
+        // --- Utility Functions ---
 
-        function logAbsence() {
-            const formData = {
-                teacher: document.getElementById('absentTeacher').value,
-                type: document.getElementById('absenceType').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                notes: document.getElementById('absenceNotes').value
-            };
-            
-            if (!formData.teacher || !formData.type || !formData.startDate) {
-                showMessage('Please fill all required fields', 'error');
-                return;
-            }
-            
-            showMessage('Teacher absence logged successfully!', 'success');
-            document.getElementById('absenceForm').reset();
-        }
+        const API_BASE = ''; 
+        const CURRENT_USER_ID = 'T-1111'; // Mock Teacher ID
 
-        function autoAssignSubstitute() {
-            const teacher = document.getElementById('absentTeacher').value;
-            if (!teacher) {
-                showMessage('Please select an absent teacher first', 'error');
-                return;
-            }
-            
-            showMessage('Finding best substitute match...', 'info');
-            
-            setTimeout(() => {
-                showMessage('Substitute automatically assigned based on availability and expertise!', 'success');
-            }, 2000);
-        }
-
-        function confirmSubstitution(id) {
-            showMessage('Substitution confirmed and notification sent!', 'success');
-        }
-
-        function findAlternative(id) {
-            showMessage('Searching for alternative substitute teachers...', 'info');
-        }
-
-        function sendReminder(id) {
-            showMessage('Reminder sent to substitute teacher', 'success');
-        }
-
-        function assignSubstitute(teacher) {
-            showMessage(`${teacher} assigned as substitute teacher`, 'success');
-        }
-
-        function notifyAllSubstitutes() {
-            showMessage('Notifications sent to all substitute teachers', 'success');
-        }
-
-        function generateSubReport() {
-            showMessage('Substitution report generated successfully', 'success');
-        }
-
-        function showMessage(message, type) {
-            const colors = {
-                'success': 'bg-green-600',
-                'error': 'bg-red-600',
-                'info': 'bg-blue-600'
-            };
-            
-            const icons = {
-                'success': 'fas fa-check',
-                'error': 'fas fa-exclamation-triangle',
-                'info': 'fas fa-info-circle'
-            };
-            
+        function showNotification(message, type = 'success') {
+            const colors = { success: 'bg-green-600', error: 'bg-red-600', info: 'bg-blue-600', warning: 'bg-yellow-600' };
+            const icons = { success: 'fas fa-check', error: 'fas fa-exclamation-triangle', info: 'fas fa-info-circle', warning: 'fas fa-exclamation-triangle' };
+            const area = document.getElementById('notification-area');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.className = `p-3 rounded-lg shadow-lg mb-2 text-white ${colors[type]}`;
             messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
+            area.appendChild(messageDiv);
+            setTimeout(() => messageDiv.remove(), 5000);
         }
+
+        async function fetchAPI(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body && method !== 'GET') { options.body = JSON.stringify(body); }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showNotification(data.message || data.error || `API Error: ${response.status}`, 'error');
+                    throw new Error(data.error || 'API request failed');
+                }
+                return data;
+            } catch (error) {
+                console.error(`Fetch error on ${endpoint}:`, error);
+                throw error; 
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+            });
+            document.querySelector(`[data-tab-content="${tabName}"]`).classList.remove('hidden');
+
+            if (tabName === 'leave') updateTimeGateAlert();
+        }
+
+        function isSubmissionWindowOpenClient() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+
+            // 1:00 AM (60 minutes) to 7:20 AM (440 minutes)
+            const currentTimeInMinutes = currentHour * 60 + currentMinute;
+            const startWindowInMinutes = 60;
+            const endWindowInMinutes = 440;
+
+            return currentTimeInMinutes >= startWindowInMinutes && currentTimeInMinutes <= endWindowInMinutes;
+        }
+
+        function updateTimeGateAlert() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('currentDate').textContent = today;
+            
+            const alertDiv = document.getElementById('timeGateAlert');
+            if (isSubmissionWindowOpenClient()) {
+                 alertDiv.classList.add('time-alert');
+                 alertDiv.innerHTML = `<i class="fas fa-clock mr-2"></i>**WINDOW OPEN:** Same-day leave submission is currently active.`;
+            } else {
+                 alertDiv.classList.remove('time-alert');
+                 alertDiv.classList.add('bg-gray-200');
+                 alertDiv.innerHTML = `<i class="fas fa-clock mr-2"></i>**WINDOW CLOSED:** Same-day leave window (1:00 AM - 7:20 AM) is currently closed. Requests must be for future dates.`;
+            }
+        }
+
+        // --- Core Functions ---
+
+        async function handleLeaveRequest(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button');
+            btn.disabled = true;
+
+            const leaveDate = document.getElementById('leaveDate').value;
+            const today = new Date().toISOString().split('T')[0];
+
+            // Client-side check for time gate (Backend is the final authority)
+            if (leaveDate === today && !isSubmissionWindowOpenClient()) {
+                 showNotification('Error: The submission window for today is closed (7:20 AM).', 'error');
+                 btn.disabled = false;
+                 return;
+            }
+
+            const payload = {
+                teacherId: document.getElementById('leaveTeacherId').value,
+                date: leaveDate,
+                leaveType: document.getElementById('leaveType').value,
+                reason: document.getElementById('leaveReason').value
+            };
+
+            try {
+                const data = await fetchAPI('/leave/request', 'POST', payload);
+                showNotification(data.message, 'success');
+                document.getElementById('leaveRequestForm').reset();
+                // Optionally refresh substitution list for this teacher
+            } catch (error) {
+                // Backend error notification handled in fetchAPI
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function handleConfigUpdate(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button');
+            btn.disabled = true;
+
+            const exclusionList = document.getElementById('permanentExclusionList').value
+                .split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+            const payload = {
+                minSubstitutions: parseInt(document.getElementById('minSubstitutions').value),
+                maxSubstitutions: parseInt(document.getElementById('maxSubstitutions').value),
+                weightSubjectMatch: parseInt(document.getElementById('weightSubjectMatch').value),
+                weightClassTeacher: parseInt(document.getElementById('weightClassTeacher').value),
+                restrictionSameClassDay: document.getElementById('restrictionSameClassDay').checked,
+                maxDailyPeriodsExclusion: parseInt(document.getElementById('maxDailyPeriodsExclusion').value),
+                permanentExclusionList: exclusionList
+            };
+
+            try {
+                const data = await fetchAPI('/config', 'PUT', payload);
+                showNotification(data.message, 'success');
+            } catch {
+                // Error notification handled in fetchAPI
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        
+        function handleConfirmation(subId, substituteId) {
+            if (substituteId !== CURRENT_USER_ID) {
+                return showNotification("Error: You can only confirm your own assigned duties.", 'error');
+            }
+            // Logic to hit POST /:id/confirm
+            showNotification(`Confirmation sent for ${subId}. Workload increased by 1.`, 'success');
+        }
+        
+        function handleCompletion(subId) {
+            // Logic to hit POST /:id/complete (requires feedback data)
+            showNotification(`Completion marked for ${subId}. Workload reset.`, 'info');
+        }
+
+        function handleCancellation(subId) {
+            // Logic to hit POST /:id/cancel (requires reason data)
+            showNotification(`Cancellation request sent for ${subId}.`, 'warning');
+        }
+
+        // --- Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('leaveTeacherId').value = CURRENT_USER_ID;
+            document.getElementById('currentTeacherId').textContent = CURRENT_USER_ID;
+            updateTimeGateAlert();
+            
+            // Set the default date to today for convenience
+            document.getElementById('leaveDate').value = new Date().toISOString().split('T')[0];
+            
+            // Simulate fetching and applying config on load (for the config page)
+            fetchAPI('/config').then(data => {
+                const settings = data.settings?.config_data || {};
+                document.getElementById('minSubstitutions').value = settings.minSubstitutions || 0;
+                document.getElementById('maxSubstitutions').value = settings.maxSubstitutions || 3;
+                document.getElementById('weightSubjectMatch').value = settings.weightSubjectMatch || 40;
+                document.getElementById('weightClassTeacher').value = settings.weightClassTeacher || 20;
+                document.getElementById('restrictionSameClassDay').checked = settings.restrictionSameClassDay !== false;
+                document.getElementById('maxDailyPeriodsExclusion').value = settings.maxDailyPeriodsExclusion || 6;
+                document.getElementById('permanentExclusionList').value = (settings.permanentExclusionList || []).join(', ');
+            }).catch(() => {
+                // Use default values if fetch fails
+            });
+        });
     </script>
 </body>
 </html>
