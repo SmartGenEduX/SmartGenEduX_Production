@@ -493,6 +493,81 @@
                 showMainSections();
             }
         }
+ <script>
+        document.addEventListener('DOMContentLoaded', () => {
+  // Fetch and display real dashboard stats
+  fetchDashboardStats();
+
+  // Fetch and render modules dynamically
+  loadModules();
+
+  // Initialize nav active states
+  initNavigation();
+});
+
+async function fetchDashboardStats() {
+  // Simulate backend API call - replace with real fetch
+  const stats = await simulatedFetchStats();
+
+  const statsContainer = document.getElementById('mainStats');
+  if (!statsContainer) return;
+
+  statsContainer.innerHTML = stats
+    .map(({ icon, value, label }) => `
+      <div class="stat-card">
+        <div class="stat-icon">${icon}</div>
+        <div class="stat-value">${value}</div>
+        <div class="stat-label">${label}</div>
+      </div>
+    `).join('');
+}
+
+async function simulatedFetchStats() {
+  // Dummy sample stats - replace with real API
+  await new Promise((r) => setTimeout(r, 500)); // simulate delay
+  return [
+    { icon: '🏫', value: '247', label: 'Total Schools' },
+    { icon: '👥', value: '15,432', label: 'Total Students' },
+    { icon: '👨‍🏫', value: '2,186', label: 'Total Teachers' },
+  ];
+}
+
+function loadModules() {
+  // You can fetch real modules from backend. Here is a sample dynamic addition:
+  const academicModules = [
+    { id: 'attendance', name: 'Attendance', icon: 'attendance.png', desc: 'Track attendance', features: ['GPS Tracking', 'Daily Reports'], status: 'Active' },
+    { id: 'exams', name: 'Exams', icon: 'exams.png', desc: 'Manage exams', features: ['Scheduling', 'Results'], status: 'Active' },
+  ];
+
+  const moduleContainer = document.getElementById('moduleContainer');
+  if (!moduleContainer) return;
+
+  moduleContainer.innerHTML = academicModules.map(m => `
+    <div class="module-card" onclick="openModule('${m.id}')">
+      <img src="./assets/${m.icon}" alt="${m.name}" class="module-icon" />
+      <h4>${m.name}</h4>
+      <p>${m.desc}</p>
+      <ul>${m.features.map(f => `<li>${f}</li>`).join('')}</ul>
+      <div class="status">${m.status}</div>
+    </div>
+  `).join('');
+}
+
+function initNavigation() {
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', e => {
+      navItems.forEach(i => i.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      // Switch content sections accordingly
+    });
+  });
+}
+
+function openModule(id) {
+  alert(`Opening module: ${id}`);
+}
     </script>
+    
 </body>
 </html>
