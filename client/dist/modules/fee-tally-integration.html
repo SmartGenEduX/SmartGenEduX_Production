@@ -4,19 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fee Management with Tally Integration - SmartGenEduX</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-header {
+            background-image: linear-gradient(to right, #10b981, #3b82f6); /* Green-600 to Blue-600 */
+        }
+        .container {
+            max-width: 1400px;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-lg shadow-md p-6 mb-6 text-white">
+        <div class="gradient-header rounded-lg shadow-xl p-6 mb-6 text-white">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <img src="../assets/Fee Management_20250621_155356_0000_1751640161627.png" alt="Fee Management" class="w-12 h-12 mr-4 bg-white rounded-lg p-2">
+                    <!-- Placeholder for logo image -->
+                    <div class="w-12 h-12 mr-4 bg-white rounded-lg p-2 flex items-center justify-center">
+                        <i class="fas fa-wallet text-2xl text-green-600"></i>
+                    </div>
                     <div>
                         <h1 class="text-2xl font-bold">Fee Management with Tally Integration</h1>
-                        <p class="text-blue-100">Advanced accounting integration with automated bookkeeping</p>
+                        <p class="text-blue-100">Advanced accounting integration with automated bookkeeping across all branches</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -28,42 +39,44 @@
             </div>
         </div>
 
-        <!-- Tally Integration Status -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-link text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-lg font-bold">Connected</div>
-                        <div class="text-green-100">Tally Integration</div>
-                    </div>
+        <!-- Tally Integration Status & Multi-Branch Selector -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+            <div class="md:col-span-1 bg-white rounded-lg shadow-md p-6">
+                <label for="branchSelector" class="block text-sm font-bold text-gray-700 mb-2">Select Branch</label>
+                <select id="branchSelector" onchange="fetchBranchData(this.value)" class="w-full border-2 border-blue-300 rounded-lg px-3 py-2 text-gray-800 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="BRANCH-001" selected>Branch 1 (HQ)</option>
+                    <option value="BRANCH-002">Branch 2 (South)</option>
+                    <option value="BRANCH-003">Branch 3 (North)</option>
+                    <option value="BRANCH-004">Branch 4 (East)</option>
+                </select>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-6 flex items-center">
+                <i class="fas fa-link text-3xl mr-4"></i>
+                <div>
+                    <div class="text-lg font-bold" id="statusTally">Connected</div>
+                    <div class="text-green-100">Tally Integration</div>
                 </div>
             </div>
-            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-sync text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">247</div>
-                        <div class="text-blue-100">Auto Synced</div>
-                    </div>
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6 flex items-center">
+                <i class="fas fa-sync text-3xl mr-4"></i>
+                <div>
+                    <div class="text-2xl font-bold" id="statusSynced">0</div>
+                    <div class="text-blue-100">Auto Synced (Today)</div>
                 </div>
             </div>
-            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-calculator text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">₹2.4L</div>
-                        <div class="text-purple-100">Today's Collection</div>
-                    </div>
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6 flex items-center">
+                <i class="fas fa-calculator text-3xl mr-4"></i>
+                <div>
+                    <div class="text-2xl font-bold" id="statusCollection">₹0.00</div>
+                    <div class="text-purple-100">Today's Collection</div>
                 </div>
             </div>
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg p-6">
-                <div class="flex items-center">
-                    <i class="fas fa-chart-line text-3xl mr-4"></i>
-                    <div>
-                        <div class="text-2xl font-bold">99.2%</div>
-                        <div class="text-orange-100">Sync Accuracy</div>
-                    </div>
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg p-6 flex items-center">
+                <i class="fas fa-chart-line text-3xl mr-4"></i>
+                <div>
+                    <div class="text-2xl font-bold" id="statusAccuracy">--%</div>
+                    <div class="text-orange-100">Sync Accuracy</div>
                 </div>
             </div>
         </div>
@@ -83,6 +96,15 @@
                 </div>
                 
                 <form id="tallyConfig" class="space-y-4">
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                            <div>
+                                <h3 class="font-semibold text-green-900">Current Branch (B-1) Webhook URL:</h3>
+                                <p class="text-sm text-green-700 break-all">/tally/webhook?schoolId=<span id="webhookBranchId">BRANCH-001</span></p>
+                            </div>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium mb-2">Tally Server IP</label>
@@ -103,33 +125,12 @@
                         </select>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Username</label>
-                            <input type="text" id="tallyUser" value="admin" class="w-full border rounded px-3 py-2">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Password</label>
-                            <input type="password" id="tallyPass" class="w-full border rounded px-3 py-2">
-                        </div>
-                    </div>
-                    
-                    <div class="bg-green-50 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                            <div>
-                                <h3 class="font-semibold text-green-900">Connection Status: Active</h3>
-                                <p class="text-sm text-green-700">Last sync: 2 minutes ago</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex space-x-3">
+                    <div class="flex space-x-3 border-t pt-4">
                         <button type="button" onclick="testConnection()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                             <i class="fas fa-plug mr-2"></i>Test Connection
                         </button>
                         <button type="button" onclick="syncNow()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                            <i class="fas fa-sync mr-2"></i>Sync Now
+                            <i class="fas fa-sync mr-2"></i>Sync Now (Manual)
                         </button>
                     </div>
                 </form>
@@ -142,46 +143,27 @@
                         <i class="fas fa-robot text-blue-600 text-xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold">Automated Accounting</h2>
-                        <p class="text-gray-600">Smart ledger management and entry automation</p>
+                        <h2 class="text-xl font-bold">Automated Financial Logic</h2>
+                        <p class="text-gray-600">Smart ledger, reconciliation failure, and refund management</p>
                     </div>
                 </div>
                 
                 <div class="space-y-4">
-                    <div class="bg-blue-50 rounded-lg p-4">
-                        <h3 class="font-semibold text-blue-900 mb-2">Auto-Entry Rules</h3>
+                    <div class="bg-red-50 rounded-lg p-4">
+                        <h3 class="font-semibold text-red-900 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Automated Failure/Refund Triggers</h3>
                         <div class="space-y-2 text-sm">
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2" checked> Fee collections → Student Fees A/c
+                            <label class="flex items-center justify-between">
+                                <span>Tally Fail → Auto Repayment Link to Parent</span>
+                                <span class="text-green-600 font-bold">Enabled</span>
                             </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2" checked> Refunds → Fee Refund A/c
+                            <label class="flex items-center justify-between">
+                                <span>Overpayment Detected → Auto Refund Notification</span>
+                                <span class="text-green-600 font-bold">Enabled</span>
                             </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2" checked> Late fees → Additional Income
+                            <label class="flex items-center justify-between">
+                                <span>Tri-Party Verification Status</span>
+                                <span class="text-blue-600 font-bold">Integrated</span>
                             </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" class="mr-2"> Scholarship adjustments → Scholarship A/c
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Default Ledger</label>
-                            <select class="w-full border rounded px-3 py-2 text-sm">
-                                <option>Student Fees</option>
-                                <option>Tuition Fees</option>
-                                <option>Miscellaneous Fees</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Tax Treatment</label>
-                            <select class="w-full border rounded px-3 py-2 text-sm">
-                                <option>Exempt</option>
-                                <option>GST 18%</option>
-                                <option>GST 12%</option>
-                            </select>
                         </div>
                     </div>
                     
@@ -190,42 +172,46 @@
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span>Fee collections processed</span>
-                                <span class="font-bold">47 entries</span>
+                                <span class="font-bold" id="autoEntriesProcessed">0 entries</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Vouchers generated</span>
-                                <span class="font-bold">47 vouchers</span>
+                                <span class="font-bold" id="vouchersGenerated">0 vouchers</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Reconciliation status</span>
-                                <span class="text-green-600 font-bold">100% matched</span>
+                                <span>Reconciliation match status</span>
+                                <span class="text-green-600 font-bold" id="reconciliationMatch">Pending</span>
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="reviewPending()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 text-sm">
+                            <i class="fas fa-eye mr-2"></i>Review Pending Vouchers
+                        </button>
+                        <button onclick="bulkApprove()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm">
+                            <i class="fas fa-check-double mr-2"></i>Bulk Approve Vouchers
+                        </button>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Real-time Financial Reports -->
+        <!-- Real-time Financial Reports & Audit -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Financial Analytics -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-chart-bar text-purple-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold">Financial Analytics</h2>
-                        <p class="text-gray-600">Real-time reports from Tally data</p>
-                    </div>
-                </div>
+                <h2 class="text-xl font-bold mb-4 flex items-center"><i class="fas fa-chart-bar text-purple-600 mr-2"></i> Financial Analytics & Reporting</h2>
                 
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-green-50 rounded-lg p-3 text-center">
-                            <div class="text-lg font-bold text-green-600">₹4,23,560</div>
+                            <div class="text-lg font-bold text-green-600" id="monthlyCollection">₹0.00</div>
                             <div class="text-sm text-green-700">This Month Collection</div>
                         </div>
                         <div class="bg-blue-50 rounded-lg p-3 text-center">
-                            <div class="text-lg font-bold text-blue-600">₹56,890</div>
-                            <div class="text-sm text-blue-700">Pending Dues</div>
+                            <div class="text-lg font-bold text-blue-600" id="pendingDues">₹0.00</div>
+                            <div class="text-sm text-blue-700">Total Pending Dues</div>
                         </div>
                     </div>
                     
@@ -233,161 +219,99 @@
                         <button onclick="generateTrialBalance()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 text-sm">
                             <i class="fas fa-balance-scale mr-2"></i>Generate Trial Balance
                         </button>
-                        <button onclick="feeCollectionReport()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm">
-                            <i class="fas fa-chart-line mr-2"></i>Fee Collection Report
-                        </button>
                         <button onclick="defaultersList()" class="w-full bg-orange-600 text-white py-2 rounded hover:bg-orange-700 text-sm">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>Defaulters List
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Defaulters List (Multi-Branch)
                         </button>
-                        <button onclick="reconciliationReport()" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 text-sm">
-                            <i class="fas fa-check-double mr-2"></i>Reconciliation Report
+                        <button onclick="reconciliationReport()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm">
+                            <i class="fas fa-check-double mr-2"></i>Full Reconciliation Report
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Advanced Voucher Management -->
+            <!-- Sync History & Audit Trail -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-receipt text-orange-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold">Smart Voucher System</h2>
-                        <p class="text-gray-600">Automated voucher generation and management</p>
-                    </div>
-                </div>
-                
-                <div class="space-y-4">
-                    <div class="bg-orange-50 rounded-lg p-4">
-                        <h3 class="font-semibold text-orange-900 mb-2">Voucher Templates</h3>
-                        <div class="grid grid-cols-2 gap-2 text-sm">
-                            <div class="flex items-center justify-between">
-                                <span>Receipt vouchers</span>
-                                <span class="text-green-600">Auto-generated</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Payment vouchers</span>
-                                <span class="text-green-600">Auto-generated</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Journal entries</span>
-                                <span class="text-blue-600">Manual review</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span>Contra vouchers</span>
-                                <span class="text-orange-600">Semi-auto</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span>Today's vouchers</span>
-                            <span class="font-bold">47 created</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Pending approval</span>
-                            <span class="font-bold text-orange-600">3 vouchers</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Auto-posted</span>
-                            <span class="font-bold text-green-600">44 vouchers</span>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="reviewPending()" class="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 text-sm">
-                            <i class="fas fa-eye mr-2"></i>Review Pending
-                        </button>
-                        <button onclick="bulkApprove()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">
-                            <i class="fas fa-check-double mr-2"></i>Bulk Approve
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sync History & Audit Trail -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Tally Sync History & Audit Trail</h2>
-                <div class="flex space-x-2">
-                    <button onclick="exportSyncLog()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Sync History & Audit Trail</h2>
+                    <button onclick="exportSyncLog()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
                         <i class="fas fa-download mr-2"></i>Export Log
                     </button>
-                    <button onclick="auditReport()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
-                        <i class="fas fa-search mr-2"></i>Audit Report
-                    </button>
                 </div>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left">Sync Time</th>
-                            <th class="px-4 py-2 text-left">Records</th>
-                            <th class="px-4 py-2 text-left">Vouchers</th>
-                            <th class="px-4 py-2 text-left">Amount</th>
-                            <th class="px-4 py-2 text-left">Status</th>
-                            <th class="px-4 py-2 text-left">Tally Response</th>
-                            <th class="px-4 py-2 text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">Jan 4, 2025 14:30</td>
-                            <td class="px-4 py-2">23 fee records</td>
-                            <td class="px-4 py-2">23 receipts</td>
-                            <td class="px-4 py-2">₹1,15,600</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Success</span>
-                            </td>
-                            <td class="px-4 py-2">All entries posted</td>
-                            <td class="px-4 py-2">
-                                <button class="text-blue-600 hover:text-blue-800" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">Jan 4, 2025 13:00</td>
-                            <td class="px-4 py-2">15 fee records</td>
-                            <td class="px-4 py-2">15 receipts</td>
-                            <td class="px-4 py-2">₹78,450</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Success</span>
-                            </td>
-                            <td class="px-4 py-2">All entries posted</td>
-                            <td class="px-4 py-2">
-                                <button class="text-blue-600 hover:text-blue-800" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr class="border-t">
-                            <td class="px-4 py-2">Jan 4, 2025 11:15</td>
-                            <td class="px-4 py-2">9 fee records</td>
-                            <td class="px-4 py-2">8 receipts</td>
-                            <td class="px-4 py-2">₹45,200</td>
-                            <td class="px-4 py-2">
-                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Partial</span>
-                            </td>
-                            <td class="px-4 py-2">1 entry failed validation</td>
-                            <td class="px-4 py-2">
-                                <button class="text-orange-600 hover:text-orange-800" title="Retry Failed">
-                                    <i class="fas fa-redo"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                
+                <div class="overflow-x-auto h-64">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left">Sync Time</th>
+                                <th class="px-4 py-2 text-left">Records</th>
+                                <th class="px-4 py-2 text-left">Status</th>
+                                <th class="px-4 py-2 text-left">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="syncHistoryBody">
+                            <tr class="border-t">
+                                <td class="px-4 py-2">5 minutes ago</td>
+                                <td class="px-4 py-2">12 entries</td>
+                                <td class="px-4 py-2"><span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Success</span></td>
+                                <td class="px-4 py-2">Posted Vouchers to Tally</td>
+                            </tr>
+                            <tr class="border-t">
+                                <td class="px-4 py-2">Yesterday 17:00</td>
+                                <td class="px-4 py-2">78 entries</td>
+                                <td class="px-4 py-2"><span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Failure Fix</span></td>
+                                <td class="px-4 py-2">Auto-sent 3 repayment links</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Script -->
     <script>
+        const API_BASE = ''; 
+        let currentBranchId = document.getElementById('branchSelector').value;
+
+        // --- Helper Functions ---
+        function showMessage(message, type) {
+            const colors = { 'success': 'bg-green-600', 'error': 'bg-red-600', 'info': 'bg-blue-600', 'warning': 'bg-yellow-600' };
+            const icons = { 'success': 'fas fa-check', 'error': 'fas fa-exclamation-triangle', 'info': 'fas fa-info-circle', 'warning': 'fas fa-bell' };
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => { messageDiv.remove(); }, 4000);
+        }
+
+        // Simulates fetching data based on branch ID
+        function fetchBranchData(branchId) {
+            currentBranchId = branchId;
+            document.getElementById('webhookBranchId').textContent = branchId;
+            
+            showMessage(`Switching to Branch ${branchId}...`, 'info');
+
+            // --- Simulate Real-time Data Fetch ---
+            const collection = Math.floor(Math.random() * 500000);
+            const accuracy = (98 + Math.random() * 2).toFixed(1);
+            const synced = Math.floor(Math.random() * 100) + 20;
+
+            document.getElementById('statusTally').textContent = 'Connected';
+            document.getElementById('statusSynced').textContent = synced;
+            document.getElementById('statusCollection').textContent = `₹${collection.toLocaleString('en-IN')}`;
+            document.getElementById('statusAccuracy').textContent = `${accuracy}%`;
+            
+            document.getElementById('monthlyCollection').textContent = `₹${(collection * 5).toLocaleString('en-IN')}`;
+            document.getElementById('pendingDues').textContent = `₹${(collection * 0.1).toLocaleString('en-IN')}`;
+            
+            document.getElementById('autoEntriesProcessed').textContent = `${synced} entries`;
+            document.getElementById('vouchersGenerated').textContent = `${synced} vouchers`;
+        }
+
+        // --- Tally Actions ---
+
         function testConnection() {
             showMessage('Testing Tally server connection...', 'info');
             setTimeout(() => {
@@ -395,85 +319,77 @@
             }, 2000);
         }
 
-        function syncNow() {
+        async function syncNow() {
             showMessage('Initiating manual sync with Tally...', 'info');
-            setTimeout(() => {
-                showMessage('Sync completed! 12 new entries posted to Tally.', 'success');
-            }, 3000);
+            
+            // This hits POST /tally/sync-collection?schoolId={currentBranchId}
+            try {
+                // Mock API call initiation
+                // const response = await fetch(`${API_BASE}/tally/sync-collection?schoolId=${currentBranchId}`, { method: 'POST' });
+                
+                setTimeout(() => {
+                    const failed = Math.random() > 0.8;
+                    if (failed) {
+                        showMessage('Sync initiated. WAITING FOR TALLY WEBHOOK... (Failure scenario upcoming)', 'warning');
+                        // Simulate delayed Tally failure webhook that triggers auto-repayment link
+                        setTimeout(() => {
+                            showMessage('Tally reports FAILURE! Auto-Repayment Link sent to parent.', 'error');
+                        }, 5000);
+                    } else {
+                        showMessage('Sync initiated. WAITING FOR TALLY WEBHOOK... (Success scenario upcoming)', 'info');
+                        // Simulate delayed Tally success webhook
+                        setTimeout(() => {
+                            showMessage('Tally confirms success! Vouchers reconciled.', 'success');
+                        }, 4000);
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                showMessage('Failed to initiate sync due to network error.', 'error');
+            }
         }
 
-        function generateTrialBalance() {
-            showMessage('Generating trial balance from Tally data...', 'info');
-            setTimeout(() => {
-                showMessage('Trial balance generated and ready for download.', 'success');
-            }, 2000);
-        }
-
-        function feeCollectionReport() {
-            showMessage('Generating fee collection report...', 'info');
-            setTimeout(() => {
-                showMessage('Fee collection report exported to Excel.', 'success');
-            }, 2500);
-        }
-
-        function defaultersList() {
-            showMessage('Generating defaulters list from Tally data...', 'info');
-            setTimeout(() => {
-                showMessage('Defaulters list ready. 23 students identified.', 'success');
-            }, 2000);
-        }
-
-        function reconciliationReport() {
-            showMessage('Running reconciliation between SmartGenEduX and Tally...', 'info');
-            setTimeout(() => {
-                showMessage('Reconciliation complete! 99.8% accuracy achieved.', 'success');
-            }, 4000);
-        }
+        // --- Voucher Management Actions ---
 
         function reviewPending() {
-            showMessage('Opening pending vouchers for review...', 'info');
+            showMessage('Opening voucher review panel for manual posting...', 'info');
         }
 
         function bulkApprove() {
             showMessage('Bulk approving pending vouchers...', 'info');
             setTimeout(() => {
-                showMessage('3 vouchers approved and posted to Tally.', 'success');
+                showMessage('All pending vouchers approved and posted to Tally.', 'success');
             }, 1500);
         }
 
+        // --- Report Actions ---
+
+        function generateTrialBalance() {
+            showMessage('Generating Trial Balance for selected branch...', 'info');
+            setTimeout(() => { showMessage('Trial Balance generated and ready for download.', 'success'); }, 2000);
+        }
+
+        function defaultersList() {
+            showMessage('Generating Defaulters List across all branches...', 'info');
+            setTimeout(() => { showMessage('Defaulters list ready. Sent to Admin email.', 'success'); }, 2000);
+        }
+
+        function reconciliationReport() {
+            showMessage('Running Full Reconciliation Report...', 'info');
+            setTimeout(() => { showMessage('Reconciliation report generated. Check audit trail for details.', 'success'); }, 3000);
+        }
+
+        // --- Audit Actions ---
+
         function exportSyncLog() {
-            showMessage('Exporting sync history log...', 'success');
+            showMessage('Exporting sync history log for Branch ' + currentBranchId + '...', 'success');
         }
 
-        function auditReport() {
-            showMessage('Generating comprehensive audit report...', 'info');
-            setTimeout(() => {
-                showMessage('Audit report generated with full transaction trail.', 'success');
-            }, 3000);
-        }
-
-        function showMessage(message, type) {
-            const colors = {
-                'success': 'bg-green-600',
-                'error': 'bg-red-600',
-                'info': 'bg-blue-600'
-            };
-            
-            const icons = {
-                'success': 'fas fa-check',
-                'error': 'fas fa-exclamation-triangle',
-                'info': 'fas fa-info-circle'
-            };
-            
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
-        }
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load initial data for the default branch (BRANCH-001)
+            fetchBranchData(currentBranchId);
+        });
     </script>
 </body>
 </html>
