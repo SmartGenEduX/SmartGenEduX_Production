@@ -1,367 +1,408 @@
-// Invigilation Duty Allocation Module - Production Ready API
-const express = require('express');
-const { Pool } = require('pg');
-const router = express.Router();
-
-// Initialize PostgreSQL Pool
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
-
-// --- CORE ROLE CHECKER (To enforce Principal/Admin configuration access) ---
-const getRequestContext = (req) => ({
-    schoolId: '00000000-0000-0000-0000-000000000001', // Placeholder for RLS testing
-    userId: '11111111-1111-1111-1111-111111111111',
-    userRole: 'school_admin' // Placeholder: Must come from authenticated JWT
-});
-
-// Authorization helper functions based on your defined roles
-const isConfigAuthorized = (role) => 
-    role === 'super_admin' || role === 'school_admin' || role === 'principal';
-
-const isPrincipalOrSuperAdmin = (role) =>
-    role === 'super_admin' || role === 'principal';
-
-
-// --- CORE LOGIC: Auto Allocation (Replicates App Script logic via DB) ---
-
-/**
- * Executes the core duty allocation logic based on App Script requirements.
- */
-async function executeDutyAllocation(schoolId, examDate, rooms) {
-    const client = await pool.connect();
-    let allocationResults = [];
-
-    try {
-        await client.query('BEGIN'); // Start transaction
-
-        // 1. Fetch all ACTIVE teachers sorted by total duties (TDA)
-        const teachersQuery = `
-            SELECT id, user_profile_id, first_name, last_name, subject, total_duties, status
-            FROM teachers
-            WHERE school_id = $1 AND status = 'ACTIVE'
-            ORDER BY total_duties ASC;
-        `;
-        const { rows: allTeachers } = await client.query(teachersQuery, [schoolId]);
-
-        if (allTeachers.length === 0) {
-            throw new Error("No active teachers found for duty allocation.");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invigilation Duty Configuration & Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
         }
+        .container {
+            max-width: 900px;
+            margin-top: 30px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        .section-card {
+            margin-bottom: 25px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .alert-fixed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
 
-        let roomsToAssign = [...rooms]; 
-        let assignedTeacherIds = new Set();
+    <div class="container">
+        <h1 class="text-center mb-4 text-primary">🏫 Invigilation Management Dashboard</h1>
+
+        <div id="notification-area" class="alert-fixed" style="display: none;"></div>
         
-        // --- 2. Allocation Loop (Simplified Workload Balancing) ---
-        for (const teacher of allTeachers) {
-            if (roomsToAssign.length === 0) break;
-            if (assignedTeacherIds.has(teacher.id)) continue;
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab">⚙️ Configuration</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="allocation-tab" data-bs-toggle="tab" data-bs-target="#allocation" type="button" role="tab">🔄 Auto Allocation</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="workflow-tab" data-bs-toggle="tab" data-bs-target="#workflow" type="button" role="tab">✅ Workflow & Export</button>
+            </li>
+        </ul>
 
-            // Simple Exemption Check (App Script Feature)
-            const isExempt = teacher.subject && teacher.subject.toLowerCase() === 'mathematics'; // Simplified exemption check
-            if (isExempt) continue;
+        <div class="tab-content pt-3" id="myTabContent">
 
-            const assignedRoom = roomsToAssign.shift();
+            <div class="tab-pane fade show active" id="config" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">System Configuration</div>
+                    <div class="card-body">
+                        <form id="config-form">
+                            <div class="mb-3">
+                                <label for="maxDuties" class="form-label">Maximum Duties Per Cycle</label>
+                                <input type="number" class="form-control" id="maxDuties" name="maxDuties" required min="1" max="50">
+                                <div class="form-text">Sets the soft limit for workload balancing (Total Duties Assigned - TDA).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="compensationRate" class="form-label">Compensation Rate (Per Duty)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" id="compensationRate" name="compensationRate" required min="0" step="10">
+                                </div>
+                                <div class="form-text">Financial compensation/honorarium for each invigilation duty.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="exemptionPolicy" class="form-label">Exemption Policy</label>
+                                <select class="form-select" id="exemptionPolicy" name="exemptionPolicy">
+                                    <option value="none">No Exemptions</option>
+                                    <option value="subject_match_once">Exempt Subject Teacher (e.g., Maths during Maths exam)</option>
+                                    <option value="permanent">Permanent Exemption List</option>
+                                </select>
+                                <div class="form-text">Defines rules for teachers who cannot be assigned specific duties.</div>
+                            </div>
+
+                            <div class="form-check form-switch mb-4">
+                                <input class="form-check-input" type="checkbox" role="switch" id="autoAllocation" name="autoAllocation">
+                                <label class="form-check-label" for="autoAllocation">Enable Automatic Duty Allocation</label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="saveConfigBtn">Save Configuration</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
             
-            // 3. Record the assignment (Assumes an invigilation_duties table exists)
-            const dutyRecord = await client.query(
-                `INSERT INTO invigilation_duties (school_id, teacher_profile_id, exam_date, room_name, status)
-                 VALUES ($1, $2, $3, $4, 'assigned') RETURNING id;`,
-                [schoolId, teacher.user_profile_id, examDate, assignedRoom]
-            );
+            <div class="tab-pane fade" id="allocation" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Duty Auto Allocation</div>
+                    <div class="card-body">
+                        <p class="alert alert-info">This process runs the core algorithm to generate a new invigilation chart based on current workload (TDA) and configurations.</p>
+                        
+                        <form id="auto-allocate-form">
+                            <div class="mb-3">
+                                <label for="examDate" class="form-label">Exam Date</label>
+                                <input type="date" class="form-control" id="examDate" name="examDate" required>
+                                <div class="form-text">The date for which duties need to be assigned.</div>
+                            </div>
 
-            // 4. Update teacher's total duty factor (TDA)
-            await client.query(
-                "UPDATE teachers SET total_duties = total_duties + 1 WHERE id = $1",
-                [teacher.id]
-            );
+                            <div class="mb-3">
+                                <label for="roomList" class="form-label">Rooms Requiring Invigilators (Comma Separated)</label>
+                                <textarea class="form-control" id="roomList" name="roomList" rows="3" placeholder="e.g., Room 101, Room 102, Auditorium, Lab 3" required></textarea>
+                                <div class="form-text">List of rooms that need an invigilator for the specified date.</div>
+                            </div>
 
-            allocationResults.push({
-                teacherName: `${teacher.first_name} ${teacher.last_name}`,
-                room: assignedRoom,
-                dutyId: dutyRecord.rows[0].id
-            });
+                            <button type="submit" class="btn btn-success" id="runAllocationBtn">Run Auto Allocation</button>
+                        </form>
+
+                        <h5 class="mt-4">Allocation Results</h5>
+                        <div id="allocation-results" class="mt-2">
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="workflow" role="tabpanel">
+                <div class="card section-card">
+                    <div class="card-header">Approval Workflow & Export</div>
+                    <div class="card-body">
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Current Chart Status: <span id="current-status" class="badge bg-secondary">Loading...</span></h5>
+                        </div>
+
+                        <div class="mb-4 d-grid gap-2 d-md-block">
+                            <button type="button" class="btn btn-warning me-2" id="submitApprovalBtn">1. Submit to Principal (Admin Action)</button>
+                            <button type="button" class="btn btn-success me-2" id="approveChartBtn">2. Approve Chart (Principal Action)</button>
+                            <button type="button" class="btn btn-info" id="exportChartBtn" disabled>3. Export Printable Chart</button>
+                        </div>
+                        
+                        <hr>
+
+                        <h5>Printable Chart Data Preview</h5>
+                        <div id="duty-chart-preview" class="table-responsive mt-3">
+                            <p class="text-muted">Export data will appear here upon successful retrieval.</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_BASE = ''; // Base path for the API, leave empty if running on same host/port
+
+        /**
+         * Helper function to show a temporary notification.
+         */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notification-area');
+            area.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            area.style.display = 'block';
+            setTimeout(() => {
+                area.style.display = 'none';
+            }, 5000);
+        }
+
+        // --- Configuration Logic ---
+        async function fetchConfig() {
+            try {
+                const response = await fetch(`${API_BASE}/config`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const settings = data.settings;
+                    document.getElementById('maxDuties').value = settings.maxDutiesPerWeek || 8;
+                    document.getElementById('compensationRate').value = settings.compensationRate || 200;
+                    document.getElementById('exemptionPolicy').value = settings.exemptionPolicy || 'subject_match_once';
+                    document.getElementById('autoAllocation').checked = settings.autoAllocation !== false;
+                    
+                    // Also check and update the workflow status
+                    document.getElementById('current-status').textContent = settings.approval_status || 'Draft';
+                    updateWorkflowButtons(settings.approval_status || 'Draft');
+
+                } else {
+                    showNotification(data.error || 'Failed to fetch configuration.', 'danger');
+                }
+            } catch (error) {
+                console.error('Fetch Config Error:', error);
+                // On real error, use the fallback values as a UI default
+            }
+        }
+
+        document.getElementById('config-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            assignedTeacherIds.add(teacher.id);
-        }
-        
-        // --- 5. Update the Approval Status after Allocation ---
-        await client.query(
-            `INSERT INTO invigilation_settings (school_id, approval_status, last_allocated_date)
-             VALUES ($1, 'Draft', $2) 
-             ON CONFLICT (school_id) DO UPDATE SET approval_status = 'Draft', last_allocated_date = $2;`,
-            [schoolId, examDate]
-        );
-
-
-        await client.query('COMMIT'); 
-        return allocationResults;
-
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error("Duty Allocation Error:", error);
-        throw new Error("Failed to finalize allocation due to database error.");
-    } finally {
-        client.release();
-    }
-}
-
-// --- API ENDPOINTS ---
-
-// POST: Trigger Auto Allocation
-router.post('/auto-allocate', async (req, res) => {
-    const { examDate, roomList } = req.body;
-    const { schoolId } = getRequestContext(req);
-
-    if (!examDate || !roomList || roomList.length === 0) {
-        return res.status(400).json({ success: false, error: 'Exam Date and available rooms are required.' });
-    }
-
-    try {
-        const results = await executeDutyAllocation(schoolId, examDate, roomList);
-
-        res.json({
-            success: true,
-            message: `Successfully allocated duties for ${examDate}. The chart is now ready for review and submission.`,
-            allocations: results
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-/**
- * NEW WORKFLOW STEP 1: School Admin submits chart for Principal Approval.
- * Sets approval_status to 'Pending'.
- */
-router.post('/submit-for-approval', async (req, res) => {
-    const { schoolId, userId, userRole } = getRequestContext(req);
-
-    if (!isConfigAuthorized(userRole)) {
-        return res.status(403).json({ success: false, error: 'Only Admin/Principal can submit for approval.' });
-    }
-
-    try {
-        await pool.query(
-            `UPDATE invigilation_settings 
-             SET approval_status = 'Pending', 
-                 submitted_by = $2, 
-                 submitted_at = NOW() 
-             WHERE school_id = $1`,
-            [schoolId, userId]
-        );
-
-        // Arattai/WhatsApp Integration: Notify Principal
-        console.log(`ARATTAI/WHATSAPP ALERT: Invigilation Chart submitted by ${userRole} (${userId}) to Principal for approval.`);
-
-        res.json({ 
-            success: true, 
-            message: "Invigilation duty chart submitted to the Principal's desk for final approval." 
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, error: 'Failed to submit chart.' });
-    }
-});
-
-/**
- * NEW WORKFLOW STEP 2: Principal approves the chart.
- * Sets approval_status to 'Approved' and UNLOCKS the print option.
- */
-router.post('/approve-chart', async (req, res) => {
-    const { schoolId, userId, userRole } = getRequestContext(req);
-
-    if (!isPrincipalOrSuperAdmin(userRole)) {
-        return res.status(403).json({ success: false, error: 'Only Principal/Super Admin can approve the chart.' });
-    }
-
-    try {
-        await pool.query(
-            `UPDATE invigilation_settings 
-             SET approval_status = 'Approved', 
-                 approved_by = $2, 
-                 approved_at = NOW() 
-             WHERE school_id = $1`,
-            [schoolId, userId]
-        );
-
-        res.json({ 
-            success: true, 
-            message: "Invigilation duty chart officially approved. Printing and distribution unlocked." 
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, error: 'Failed to approve chart.' });
-    }
-});
-
-
-/**
- * GET: Generates the final structured data needed for the Duty Chart (Printable View).
- * GATED: Only allowed if the chart status is 'Approved'.
- */
-router.get('/export/duty-chart', async (req, res) => {
-    try {
-        const { schoolId } = getRequestContext(req);
-
-        // 1. Check Approval Status
-        const statusResult = await pool.query(
-            "SELECT approval_status FROM invigilation_settings WHERE school_id = $1", 
-            [schoolId]
-        );
-
-        const status = statusResult.rows[0]?.approval_status || 'Draft';
-
-        if (status !== 'Approved') {
-            return res.status(403).json({
-                success: false,
-                error: `Printable chart not approved. Current status: ${status}. Needs Principal sign-off.`
-            });
-        }
-        
-        // 2. Proceed with data fetching (Only if Approved)
-        const datesQuery = await pool.query("SELECT DISTINCT exam_date FROM invigilation_duties WHERE school_id = $1 ORDER BY exam_date ASC", [schoolId]);
-        const examDates = datesQuery.rows.map(r => r.exam_date);
-
-        const assignmentsQuery = `
-            SELECT 
-                t.first_name, t.last_name, t.subject, t.total_duties,
-                iduty.exam_date, iduty.room_name
-            FROM teachers t
-            LEFT JOIN invigilation_duties iduty ON t.user_profile_id = iduty.teacher_profile_id 
-                AND t.school_id = iduty.school_id
-            WHERE t.school_id = $1
-            ORDER BY t.first_name;
-        `;
-        const { rows: rawAssignments } = await pool.query(assignmentsQuery, [schoolId]);
-        
-        const dutyChart = structureDutyChart(rawAssignments, examDates);
-
-        res.json({
-            success: true,
-            dates: examDates, // Column headers
-            chartData: dutyChart // Row data
-        });
-    } catch (err) {
-        console.error("DB Query Error /export/duty-chart:", err);
-        res.status(500).json({ success: false, error: 'Failed to generate printable duty chart data.' });
-    }
-});
-
-
-// Helper to structure the raw query results into the expected printable format
-function structureDutyChart(rawAssignments, examDates) {
-    const chartData = {};
-
-    rawAssignments.forEach(row => {
-        const teacherName = `${row.first_name} ${row.last_name}`;
-        if (!chartData[teacherName]) {
-            chartData[teacherName] = {
-                name: teacherName,
-                subject: row.subject,
-                duties: {},
-                totalDuties: row.total_duties
+            const formData = {
+                autoAllocation: document.getElementById('autoAllocation').checked,
+                maxDuties: parseInt(document.getElementById('maxDuties').value, 10),
+                exemptionPolicy: document.getElementById('exemptionPolicy').value,
+                compensationRate: parseInt(document.getElementById('compensationRate').value, 10),
             };
-        }
 
-        const dateKey = row.exam_date ? new Date(row.exam_date).toISOString().split('T')[0] : null;
-        
-        if (dateKey && row.room_name) {
-            chartData[teacherName].duties[dateKey] = row.room_name;
-        }
-    });
+            document.getElementById('saveConfigBtn').disabled = true;
 
-    const finalChart = Object.values(chartData).map(teacher => {
-        const row = {
-            'TEACHER NAME': teacher.name,
-            'SUBJECT': teacher.subject,
-            'TDA': teacher.totalDuties, // Total Duties Assigned (Final column)
-        };
-        
-        examDates.forEach(date => {
-            const dateString = new Date(date).toISOString().split('T')[0];
-            row[dateString] = teacher.duties[dateString] || '';
-        });
-        
-        return row;
-    });
-    
-    return finalChart;
-}
+            try {
+                const response = await fetch(`${API_BASE}/config`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
 
-
-// --- EXISTING ENDPOINTS ---
-
-// POST: Trigger Auto Allocation
-router.post('/auto-allocate', async (req, res) => {
-    // ... (logic handled above in executeDutyAllocation)
-});
-
-
-// GET: Exam Schedule List
-router.get('/exams', async (req, res) => {
-    // ... (logic handled above)
-});
-
-// GET: Teacher Workload Stats
-router.get('/workload', async (req, res) => {
-    // ... (logic handled above)
-});
-
-
-// --- NEW ENDPOINT: SCHOOL ADMIN CONFIGURATION PAGE ---
-
-/**
- * GET: Retrieves configuration settings for the invigilation module.
- * Only accessible by School Admin/Principal.
- */
-router.get('/config', async (req, res) => {
-    const { schoolId, userRole } = getRequestContext(req);
-    
-    if (!isConfigAuthorized(userRole)) {
-        return res.status(403).json({ success: false, error: 'Access denied. Configuration requires School Admin or Principal privileges.' });
-    }
-
-    // NOTE: This assumes a dedicated 'invigilation_settings' table exists.
-    try {
-        const result = await pool.query(`
-            SELECT * FROM invigilation_settings WHERE school_id = $1;
-        `, [schoolId]);
-
-        res.json({ success: true, settings: result.rows[0] || {} });
-    } catch (err) {
-        // Fallback structure if config table is missing
-        res.json({
-            success: true,
-            settings: {
-                autoAllocation: true,
-                maxDutiesPerWeek: 8,
-                exemptionPolicy: 'subject_match_once',
-                compensationRate: 200,
-                notificationMethods: ['whatsapp', 'email'],
-                approvalRequired: 'principal'
+                if (data.success) {
+                    showNotification(data.message);
+                } else {
+                    showNotification(data.error || 'Failed to update configuration.', 'danger');
+                }
+            } catch (error) {
+                showNotification('Network error during configuration update.', 'danger');
+            } finally {
+                document.getElementById('saveConfigBtn').disabled = false;
             }
         });
-    }
-});
+        
+        // --- Auto Allocation Logic ---
+        document.getElementById('auto-allocate-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const examDate = document.getElementById('examDate').value;
+            const roomListString = document.getElementById('roomList').value;
+            const roomList = roomListString.split(',').map(r => r.trim()).filter(r => r.length > 0);
+            
+            const payload = { examDate, roomList };
+            
+            const btn = document.getElementById('runAllocationBtn');
+            btn.disabled = true;
+            btn.textContent = 'Running Allocation...';
+            document.getElementById('allocation-results').innerHTML = '<div class="spinner-border text-primary" role="status"></div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/auto-allocate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    displayAllocationResults(data.allocations);
+                    // Refresh status after allocation
+                    fetchConfig(); 
+                } else {
+                    showNotification(data.error || 'Allocation failed.', 'danger');
+                    document.getElementById('allocation-results').innerHTML = `<p class="text-danger">${data.error || 'An unknown error occurred during allocation.'}</p>`;
+                }
+            } catch (error) {
+                showNotification('Network error during allocation.', 'danger');
+                document.getElementById('allocation-results').innerHTML = `<p class="text-danger">Failed to connect to the server for allocation.</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Auto Allocation';
+            }
+        });
+
+        function displayAllocationResults(allocations) {
+            const resultsDiv = document.getElementById('allocation-results');
+            if (allocations.length === 0) {
+                resultsDiv.innerHTML = '<p class="text-warning">No duties were assigned (perhaps not enough teachers or rooms were listed).</p>';
+                return;
+            }
+
+            let html = `<p class="text-success">Total ${allocations.length} duties assigned:</p><ul class="list-group">`;
+            allocations.forEach(a => {
+                html += `<li class="list-group-item"><strong>${a.teacherName}</strong> assigned to <strong>${a.room}</strong> (Duty ID: ${a.dutyId})</li>`;
+            });
+            html += '</ul>';
+            resultsDiv.innerHTML = html;
+        }
+
+        // --- Workflow Logic ---
+        
+        /**
+         * Updates button states based on the current chart status.
+         */
+        function updateWorkflowButtons(status) {
+            const submitBtn = document.getElementById('submitApprovalBtn');
+            const approveBtn = document.getElementById('approveChartBtn');
+            const exportBtn = document.getElementById('exportChartBtn');
+
+            // Reset all buttons
+            submitBtn.disabled = false;
+            approveBtn.disabled = false;
+            exportBtn.disabled = true;
+
+            if (status === 'Pending') {
+                submitBtn.disabled = true; // Already submitted
+                document.getElementById('current-status').className = 'badge bg-warning';
+            } else if (status === 'Approved') {
+                submitBtn.disabled = true;
+                approveBtn.disabled = true;
+                exportBtn.disabled = false; // Unlock export
+                document.getElementById('current-status').className = 'badge bg-success';
+            } else if (status === 'Draft') {
+                approveBtn.disabled = true; // Cannot approve a draft
+                document.getElementById('current-status').className = 'badge bg-secondary';
+            }
+        }
+
+        // Submit for Approval Handler
+        document.getElementById('submitApprovalBtn').addEventListener('click', async () => {
+            await handleWorkflowAction('/submit-for-approval', 'Submitting...', 'submitApprovalBtn');
+        });
+
+        // Approve Chart Handler
+        document.getElementById('approveChartBtn').addEventListener('click', async () => {
+            await handleWorkflowAction('/approve-chart', 'Approving...', 'approveChartBtn');
+        });
+
+        // Export Chart Handler
+        document.getElementById('exportChartBtn').addEventListener('click', async () => {
+            await handleWorkflowAction('/export/duty-chart', 'Generating Export...', 'exportChartBtn', 'GET');
+        });
 
 
-// PUT: Updates configuration settings.
-router.put('/config', async (req, res) => {
-    const { autoAllocation, maxDuties, exemptionPolicy, compensationRate } = req.body;
-    const { schoolId, userRole } = getRequestContext(req);
+        /**
+         * Generic handler for workflow POST actions.
+         */
+        async function handleWorkflowAction(endpoint, loadingText, buttonId, method = 'POST') {
+            const btn = document.getElementById(buttonId);
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = loadingText;
+            
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    // Body is only needed for POST/PUT if data is sent
+                    ...(method !== 'GET' ? { body: JSON.stringify({}) } : {})
+                });
+                const data = await response.json();
 
-    if (!isConfigAuthorized(userRole)) {
-        return res.status(403).json({ success: false, error: 'Authorization failed.' });
-    }
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    // Refresh status and buttons
+                    fetchConfig(); 
 
-    // NOTE: In a real system, this would update the 'invigilation_settings' table.
-    // Assuming the update query for simplicity:
-    console.log(`Updating Invigilation settings for School ${schoolId}`);
+                    if (endpoint === '/export/duty-chart') {
+                        displayDutyChart(data.chartData, data.dates);
+                    }
+                } else {
+                    showNotification(data.error || 'Action failed.', 'danger');
+                }
+            } catch (error) {
+                showNotification('Network error during workflow action.', 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
 
-    res.json({ 
-        success: true, 
-        message: 'Invigilation settings updated successfully.',
-        updatedSettings: { maxDuties, compensationRate }
-    });
-});
+        function displayDutyChart(chartData, dates) {
+            const previewDiv = document.getElementById('duty-chart-preview');
+            if (chartData.length === 0) {
+                previewDiv.innerHTML = '<p class="text-warning">No invigilation duties found for export.</p>';
+                return;
+            }
 
+            // Create table headers
+            const headers = Object.keys(chartData[0]);
+            let tableHtml = '<table class="table table-sm table-bordered table-hover">';
+            tableHtml += '<thead class="table-light"><tr>';
+            headers.forEach(h => {
+                // Shorten date column names for better viewing
+                const displayHeader = dates.includes(h) ? h.substring(5) : h; 
+                tableHtml += `<th>${displayHeader}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
 
-module.exports = router;
+            // Create table rows
+            chartData.forEach(row => {
+                tableHtml += '<tr>';
+                headers.forEach(h => {
+                    tableHtml += `<td>${row[h]}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody></table>';
+            previewDiv.innerHTML = tableHtml;
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', fetchConfig);
+
+    </script>
+</body>
+</html>
