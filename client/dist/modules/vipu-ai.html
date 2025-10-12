@@ -3,240 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vipu AI - SmartGenEduX</title>
+    <title>Vipu AI - Principal & Super Admin Oversight</title>
+    <!-- Tailwind CSS (Emulation) -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f9; font-family: 'Inter', sans-serif; }
+        .container { max-width: 1200px; margin-top: 20px; }
+        .card-header { background-color: #2c3e50; color: white; font-weight: bold; }
+        .chat-container { height: 450px; overflow-y: auto; background: #f8f9fa; border-radius: 0.5rem; padding: 1rem; }
+        .chat-message { max-width: 80%; margin-bottom: 1rem; padding: 0.75rem 1rem; border-radius: 1.5rem; }
+        .chat-message.user { background-color: #3498db; color: white; margin-left: auto; border-bottom-right-radius: 0; }
+        .chat-message.assistant { background-color: #ecf0f1; color: #2c3e50; margin-right: auto; border-bottom-left-radius: 0; }
+        .tab-button.active { background-color: #3498db; color: white; }
+        .nav-link { transition: all 0.2s; }
+        .metric-value { font-size: 2.5rem; font-weight: 700; color: #3498db; }
+        .metric-label { color: #6b7280; }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg shadow-md p-6 mb-6 text-white">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/vipu-ai.png" alt="Vipu AI" class="w-12 h-12 mr-4">
-                    <div>
-                        <h1 class="text-2xl font-bold">Vipu AI Assistant</h1>
-                        <p class="opacity-90">Your intelligent educational assistant powered by advanced AI</p>
-                    </div>
-                </div>
-                <button onclick="window.close()" class="bg-white bg-opacity-20 text-white px-4 py-2 rounded hover:bg-opacity-30">
-                    <i class="fas fa-times mr-2"></i>Close
-                </button>
-            </div>
-        </div>
+<body>
 
-        <!-- AI Features Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-6 text-center">
-                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-comments text-2xl text-blue-600"></i>
-                </div>
-                <h3 class="text-lg font-bold mb-2">Smart Chat</h3>
-                <p class="text-gray-600">Get instant answers about students, curriculum, and school operations</p>
-            </div>
-            <div class="bg-white rounded-lg shadow-md p-6 text-center">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-chart-bar text-2xl text-green-600"></i>
-                </div>
-                <h3 class="text-lg font-bold mb-2">Analytics</h3>
-                <p class="text-gray-600">AI-powered insights on student performance and trends</p>
-            </div>
-            <div class="bg-white rounded-lg shadow-md p-6 text-center">
-                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-magic text-2xl text-purple-600"></i>
-                </div>
-                <h3 class="text-lg font-bold mb-2">Automation</h3>
-                <p class="text-gray-600">Automate routine tasks and generate intelligent reports</p>
-            </div>
-        </div>
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-gray-800">🧠 Vipu AI Oversight Assistant</h1>
 
-        <!-- AI Chat Interface -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">
-                    <i class="fas fa-robot mr-2 text-purple-600"></i>Chat with Vipu AI
-                </h2>
-                
-                <!-- Chat Messages -->
-                <div id="chatMessages" class="h-64 overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50">
-                    <div class="flex items-start mb-4">
-                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                            <i class="fas fa-robot text-purple-600"></i>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 shadow-sm">
-                            <p>Hello! I'm Vipu AI, your educational assistant. I can help you with:</p>
-                            <ul class="list-disc list-inside mt-2 text-sm">
-                                <li>Student performance analysis</li>
-                                <li>Curriculum planning</li>
-                                <li>Administrative queries</li>
-                                <li>Report generation</li>
-                                <li>Data insights</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Chat Input -->
-                <div class="flex space-x-2">
-                    <input 
-                        type="text" 
-                        id="chatInput" 
-                        placeholder="Ask me anything about your school data..."
-                        class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        onkeypress="handleChatEnter(event)"
-                    >
-                    <button 
-                        onclick="sendMessage()" 
-                        class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700"
-                    >
-                        <i class="fas fa-paper-plane"></i>
+        <!-- Content Area - Initially Hidden for Role Check -->
+        <div id="contentWrapper" style="display: none;">
+
+            <!-- Tab Navigation -->
+            <div class="bg-white rounded-lg shadow-md mb-4">
+                <div class="flex border-b border-gray-200">
+                    <button class="tab-button nav-link px-6 py-3 text-sm font-medium active flex-1" onclick="switchTab('chat')" data-tab="chat">
+                        <i class="fas fa-comments mr-2"></i>AI Chat Support
+                    </button>
+                    <button class="tab-button nav-link px-6 py-3 text-sm font-medium flex-1" onclick="switchTab('history')" data-tab="history">
+                        <i class="fas fa-history mr-2"></i>Conversation History
+                    </button>
+                    <button class="tab-button nav-link px-6 py-3 text-sm font-medium flex-1" onclick="switchTab('knowledge')" data-tab="knowledge">
+                        <i class="fas fa-book-open mr-2"></i>Knowledge Base
+                    </button>
+                    <button class="tab-button nav-link px-6 py-3 text-sm font-medium flex-1" onclick="switchTab('analytics')" data-tab="analytics">
+                        <i class="fas fa-chart-line mr-2"></i>Usage Analytics
+                    </button>
+                    <button class="tab-button nav-link px-6 py-3 text-sm font-medium flex-1" onclick="switchTab('settings')" data-tab="settings">
+                        <i class="fas fa-cog mr-2"></i>AI Configuration
                     </button>
                 </div>
-                
-                <!-- Quick Actions -->
-                <div class="mt-4">
-                    <p class="text-sm text-gray-600 mb-2">Quick Questions:</p>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="quickQuestion('attendance')" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm hover:bg-blue-200">
-                            Show attendance trends
-                        </button>
-                        <button onclick="quickQuestion('performance')" class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm hover:bg-green-200">
-                            Top performing students
-                        </button>
-                        <button onclick="quickQuestion('fees')" class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm hover:bg-orange-200">
-                            Fee collection status
-                        </button>
-                    </div>
-                </div>
             </div>
 
-            <!-- AI Insights Panel -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-bold mb-4">
-                    <i class="fas fa-brain mr-2 text-blue-600"></i>AI Insights
-                </h2>
-                
-                <!-- Insight Cards -->
-                <div class="space-y-4">
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                        <div class="flex items-center mb-2">
-                            <i class="fas fa-trending-up text-blue-600 mr-2"></i>
-                            <h3 class="font-semibold text-blue-800">Performance Alert</h3>
-                        </div>
-                        <p class="text-blue-700 text-sm">
-                            Class 5A mathematics scores have improved by 15% this month. 
-                            Consider similar teaching methods for other subjects.
-                        </p>
-                    </div>
-                    
-                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                        <div class="flex items-center mb-2">
-                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
-                            <h3 class="font-semibold text-yellow-800">Attention Needed</h3>
-                        </div>
-                        <p class="text-yellow-700 text-sm">
-                            3 students have attendance below 75%. Schedule parent meetings to address concerns.
-                        </p>
-                    </div>
-                    
-                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                        <div class="flex items-center mb-2">
-                            <i class="fas fa-star text-green-600 mr-2"></i>
-                            <h3 class="font-semibold text-green-800">Success Story</h3>
-                        </div>
-                        <p class="text-green-700 text-sm">
-                            Fee collection rate reached 95% this month - highest in 6 months!
-                        </p>
-                    </div>
-                    
-                    <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-                        <div class="flex items-center mb-2">
-                            <i class="fas fa-lightbulb text-purple-600 mr-2"></i>
-                            <h3 class="font-semibold text-purple-800">AI Recommendation</h3>
-                        </div>
-                        <p class="text-purple-700 text-sm">
-                            Based on behavior patterns, implement peer mentoring program for improved classroom dynamics.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <!-- Tab Content -->
+            <div id="tabContent">
 
-        <!-- AI Tools -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-tools mr-2 text-green-600"></i>AI-Powered Tools
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button onclick="generateReport()" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all">
-                    <i class="fas fa-file-alt text-2xl mb-2"></i>
-                    <div class="font-semibold">Smart Reports</div>
-                    <div class="text-xs opacity-90">AI-generated insights</div>
-                </button>
-                
-                <button onclick="predictTrends()" class="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg hover:from-green-600 hover:to-green-700 transition-all">
-                    <i class="fas fa-chart-line text-2xl mb-2"></i>
-                    <div class="font-semibold">Trend Analysis</div>
-                    <div class="text-xs opacity-90">Predict future patterns</div>
-                </button>
-                
-                <button onclick="optimizeSchedule()" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all">
-                    <i class="fas fa-calendar-alt text-2xl mb-2"></i>
-                    <div class="font-semibold">Schedule Optimizer</div>
-                    <div class="text-xs opacity-90">AI-optimized timetables</div>
-                </button>
-                
-                <button onclick="studentRecommendations()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all">
-                    <i class="fas fa-user-graduate text-2xl mb-2"></i>
-                    <div class="font-semibold">Student Insights</div>
-                    <div class="text-xs opacity-90">Personalized recommendations</div>
-                </button>
-            </div>
-        </div>
+                <!-- 1. AI Chat Support -->
+                <div data-tab-content="chat" class="tab-pane active">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Chat Panel -->
+                        <div class="lg:col-span-2 bg-white rounded-lg shadow-lg p-4 flex flex-col h-[600px]">
+                            <div id="chatMessages" class="chat-container flex-grow">
+                                <!-- Messages will be injected here -->
+                            </div>
+                            <div class="mt-4 flex space-x-3">
+                                <input type="text" id="chatInput" placeholder="Ask Vipu AI for defaulter lists, exam schedules, or critical event status..." class="flex-1 border-2 border-gray-300 p-3 rounded-full focus:outline-none focus:border-blue-500" onkeypress="handleEnter(event)">
+                                <button onclick="sendMessage()" class="bg-blue-600 text-white w-14 h-14 rounded-full hover:bg-blue-700 transition duration-150">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500 text-center">
+                                Vipu AI access level: <span class="font-bold text-red-600">PRINCIPAL/SUPER ADMIN</span> (<span id="currentUserId">Loading...</span>)
+                            </div>
+                        </div>
 
-        <!-- VipuDev Integration -->
-        <div class="bg-gradient-to-r from-teal-500 to-blue-600 rounded-lg shadow-md p-6 text-white">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="../assets/vipudev.png" alt="VipuDev" class="w-12 h-12 mr-4">
-                    <div>
-                        <h2 class="text-xl font-bold">Powered by VipuDev AI</h2>
-                        <p class="opacity-90">Advanced AI technology for educational excellence</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="text-2xl font-bold">99.9%</div>
-                    <div class="text-sm opacity-90">Accuracy Rate</div>
-                </div>
-            </div>
-            
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white bg-opacity-20 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <i class="fas fa-database text-2xl mr-3"></i>
-                        <div>
-                            <div class="font-semibold">Smart Data Processing</div>
-                            <div class="text-sm opacity-90">Real-time analysis</div>
+                        <!-- Capabilities and Quick Help -->
+                        <div class="lg:col-span-1 space-y-6">
+                            <!-- Quick Help / Related Topics (Management Focus) -->
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h3 class="text-lg font-bold mb-3 flex items-center text-gray-700">
+                                    <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>Critical Oversight Queries
+                                </h3>
+                                <div id="quickHelpSuggestions" class="space-y-2 text-sm">
+                                    <button class="w-full text-left p-2 bg-red-100 hover:bg-red-200 rounded transition" onclick="quickHelp('defaulters')">
+                                        <i class="fas fa-money-bill-wave mr-2"></i>Get current Fee Defaulters List
+                                    </button>
+                                    <button class="w-full text-left p-2 bg-orange-100 hover:bg-orange-200 rounded transition" onclick="quickHelp('exam_schedule')">
+                                        <i class="fas fa-calendar-alt mr-2"></i>Show final Exam Schedule & Invigilator Chart
+                                    </button>
+                                    <button class="w-full text-left p-2 bg-blue-100 hover:bg-blue-200 rounded transition" onclick="quickHelp('event_status')">
+                                        <i class="fas fa-bullhorn mr-2"></i>What events are happening today?
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Capabilities -->
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h3 class="text-lg font-bold mb-3 flex items-center text-gray-700">
+                                    <i class="fas fa-wrench mr-2 text-purple-500"></i>Vipu AI Management Capabilities
+                                </h3>
+                                <div id="capabilitiesList" class="space-y-2 text-sm">
+                                    <!-- Capabilities injected here -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white bg-opacity-20 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <i class="fas fa-shield-alt text-2xl mr-3"></i>
-                        <div>
-                            <div class="font-semibold">Secure & Private</div>
-                            <div class="text-sm opacity-90">Data protection</div>
+
+                <!-- 2. Conversation History -->
+                <div data-tab-content="history" class="tab-pane hidden">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-700">Your Past Conversations</h2>
+                        <div id="historyFilters" class="mb-4 space-x-4">
+                            <select id="historyStatusFilter" class="p-2 border rounded" onchange="fetchUserHistory()">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <button class="bg-gray-200 p-2 rounded hover:bg-gray-300" onclick="fetchUserHistory()">
+                                <i class="fas fa-sync-alt mr-1"></i>Refresh
+                            </button>
+                        </div>
+                        <div id="conversationHistoryList" class="space-y-4">
+                            <p class="text-gray-500">Loading history...</p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white bg-opacity-20 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <i class="fas fa-rocket text-2xl mr-3"></i>
-                        <div>
-                            <div class="font-semibold">Continuous Learning</div>
-                            <div class="text-sm opacity-90">Adaptive AI</div>
+
+                <!-- 3. Knowledge Base -->
+                <div data-tab-content="knowledge" class="tab-pane hidden">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-700">Knowledge Base Explorer</h2>
+
+                        <!-- Search and Filters -->
+                        <div class="flex space-x-4 mb-6">
+                            <input type="text" id="kbSearchInput" placeholder="Search policies, procedures, and management guidance..." class="flex-1 border-2 border-gray-300 p-3 rounded-lg focus:outline-none focus:border-blue-500">
+                            <select id="kbCategoryFilter" class="p-3 border rounded-lg" onchange="fetchKnowledgeBase()">
+                                <option value="">All Categories</option>
+                                <!-- Categories injected here -->
+                            </select>
+                            <button onclick="searchKnowledge()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-search mr-2"></i>Search
+                            </button>
                         </div>
+                        
+                        <!-- Categories -->
+                        <div id="kbCategories" class="flex flex-wrap gap-3 mb-6">
+                            <!-- Category buttons injected here -->
+                        </div>
+
+                        <!-- Popular Questions -->
+                        <h3 class="text-xl font-bold mb-3 text-gray-700">Popular FAQs</h3>
+                        <div id="popularQuestionsList" class="space-y-3">
+                            <p class="text-gray-500">Loading popular questions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Analytics & Oversight (Admin/Principal Only) -->
+                <div data-tab-content="analytics" class="tab-pane hidden">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-700 flex items-center">
+                            <i class="fas fa-chart-line mr-2 text-green-600"></i>System Analytics & Performance
+                        </h2>
+                        
+                        <div id="analyticsDashboard" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Usage Metrics -->
+                            <div class="bg-blue-50 p-4 rounded-lg text-center">
+                                <div class="metric-value" id="totalConversations">0</div>
+                                <div class="metric-label">Total Conversations</div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg text-center">
+                                <div class="metric-value" id="activeUsers">0</div>
+                                <div class="metric-label">Active Staff Users</div>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg text-center">
+                                <div class="metric-value" id="avgResponseTime">0s</div>
+                                <div class="metric-label">Avg. Response Time</div>
+                            </div>
+                            
+                            <!-- Performance Metrics -->
+                            <div class="md:col-span-3 grid grid-cols-3 gap-6">
+                                <div class="bg-gray-100 p-4 rounded-lg">
+                                    <h3 class="font-semibold mb-2">Helpfulness Rate</h3>
+                                    <div class="text-3xl font-bold text-green-600" id="helpfulnessRate">0%</div>
+                                    <p class="text-sm text-gray-500">User marked as helpful (Assistant messages)</p>
+                                </div>
+                                <div class="bg-gray-100 p-4 rounded-lg">
+                                    <h3 class="font-semibold mb-2">Response Accuracy</h3>
+                                    <div class="text-3xl font-bold text-blue-600" id="responseAccuracy">0%</div>
+                                    <p class="text-sm text-gray-500">AI confidence score average</p>
+                                </div>
+                                <div class="bg-gray-100 p-4 rounded-lg">
+                                    <h3 class="font-semibold mb-2">Most Popular Topic</h3>
+                                    <div class="text-lg font-bold text-purple-600" id="mostPopularTopic">...</div>
+                                    <p class="text-sm text-gray-500">Category generating most traffic</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Usage Distribution -->
+                            <div class="md:col-span-3 bg-gray-100 p-4 rounded-lg">
+                                <h3 class="font-bold mb-2">Usage Distribution by Role</h3>
+                                <div id="roleDistribution" class="text-sm space-y-1">
+                                    <!-- Distribution data injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Configuration & Settings -->
+                <div data-tab-content="settings" class="tab-pane hidden">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-700 flex items-center">
+                            <i class="fas fa-tools mr-2 text-orange-500"></i>AI System Settings
+                        </h2>
+                        <p class="text-red-600 mb-6">Settings changes affect Vipu AI's behavior and learning across the entire system. Requires management clearance.</p>
+
+                        <form id="settingsForm" onsubmit="updateSettings(event)" class="space-y-6">
+                            <!-- General Preferences -->
+                            <div class="border-b pb-4">
+                                <h3 class="text-xl font-semibold mb-3">General Preferences</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Response Style</label>
+                                        <select id="responseStyle" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                            <option value="friendly_professional">Friendly & Professional</option>
+                                            <option value="formal">Formal & Detailed</option>
+                                            <option value="concise">Concise & Direct</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Data Retention (Days)</label>
+                                        <input type="number" id="dataRetention" min="30" max="365" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Behavioral and Learning Controls -->
+                            <div class="border-b pb-4">
+                                <h3 class="text-xl font-semibold mb-3">Behavioral & Privacy Controls</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="learningEnabled" class="form-checkbox h-5 w-5 text-blue-600">
+                                        <span class="text-gray-700">Enable System Learning (Improve AI over time)</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="personalizedResponses" class="form-checkbox h-5 w-5 text-blue-600">
+                                        <span class="text-gray-700">Enable Personalized Responses (Use user role/context)</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3">
+                                        <input type="checkbox" id="contentFiltering" class="form-checkbox h-5 w-5 text-red-600">
+                                        <span class="text-gray-700">Strict Content Filtering/Moderation</span>
+                                    </label>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Privacy Mode</label>
+                                        <select id="privacyMode" class="mt-1 block w-full p-2 border border-gray-300 rounded-md">
+                                            <option value="enhanced">Enhanced (Recommended)</option>
+                                            <option value="standard">Standard</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition duration-150">
+                                <i class="fas fa-save mr-2"></i>Save All AI Settings
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -244,135 +274,262 @@
     </div>
 
     <script>
-        // Chat functionality
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            addMessageToChat('user', message);
-            input.value = '';
-            
-            // Simulate AI response
-            setTimeout(() => {
-                const response = generateAIResponse(message);
-                addMessageToChat('ai', response);
-            }, 1500);
+        const API_BASE = ''; // Assumed base path for API calls
+        let currentConvId = null;
+        // --- CRITICAL CHANGE: ENFORCE PRINCIPAL/SUPER ADMIN ACCESS ---
+        const MOCK_USER_ID = 'principal_001'; 
+        const MOCK_USER_NAME = 'Principal Sharma';
+        const MOCK_USER_ROLE = 'principal'; // Only 'principal' or 'super_admin' allowed
+        const ALLOWED_ROLES = ['principal', 'super_admin'];
+
+        // --- Core Functions ---
+
+        function showNotification(message, type = 'success') {
+            const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500', warning: 'bg-yellow-500' };
+            const icons = { success: 'fas fa-check-circle', error: 'fas fa-exclamation-circle', info: 'fas fa-info-circle', warning: 'fas fa-exclamation-triangle' };
+            const area = document.createElement('div');
+            area.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            area.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            document.body.appendChild(area);
+            setTimeout(() => area.remove(), 4000);
         }
 
-        function handleChatEnter(event) {
-            if (event.key === 'Enter') {
+        async function fetchAPI(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body && method !== 'GET') { options.body = JSON.stringify(body); }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showNotification(data.error || `API Error: ${response.status}`, 'error');
+                    throw new Error(data.error || 'API request failed');
+                }
+                return data;
+            } catch (error) {
+                console.error(`Fetch error on ${endpoint}:`, error);
+                throw error; 
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'text-white', 'bg-blue-600');
+                btn.classList.add('text-gray-700');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active', 'text-white', 'bg-blue-600');
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+            });
+            document.querySelector(`[data-tab-content="${tabName}"]`).classList.remove('hidden');
+
+            // Load data when tab changes
+            if (tabName === 'history') fetchUserHistory();
+            if (tabName === 'knowledge') fetchKnowledgeBase();
+            if (tabName === 'analytics') fetchAnalytics();
+            if (tabName === 'settings') fetchSettings();
+            if (tabName === 'chat') {
+                if (!currentConvId) startNewConversation();
+                else scrollToBottom();
+            }
+        }
+
+        // --- Chat Functions ---
+
+        async function startNewConversation() {
+            if (!checkRoleAccess(false)) return; // Access already checked, this is now safe
+            
+            currentConvId = null; // Resetting ID for a clean start
+            const chatBox = document.getElementById('chatMessages');
+            chatBox.innerHTML = '';
+            document.getElementById('currentUserId').textContent = MOCK_USER_ID;
+
+            // Send a mock greeting to start the conversation (simulates user joining chat)
+            const initialMessage = `Hello, I need critical oversight data.`;
+
+            try {
+                const data = await fetchAPI('/chat/start', 'POST', {
+                    userId: MOCK_USER_ID,
+                    userName: MOCK_USER_NAME,
+                    userRole: MOCK_USER_ROLE,
+                    initialMessage: initialMessage
+                });
+                
+                currentConvId = data.conversation.id;
+                data.conversation.messages.forEach(msg => addMessageToChat(msg.content, msg.role));
+                
+                showNotification('Oversight conversation started.', 'success');
+                scrollToBottom();
+
+            } catch (error) {
+                console.error("Failed to start chat:", error);
+                addMessageToChat("Error: Could not connect to Vipu AI for oversight data.", 'assistant');
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+            if (!currentConvId) {
+                return showNotification("Please wait for the conversation to initialize or refresh the page.", 'warning');
+            }
+
+            addMessageToChat(message, 'user');
+            input.value = '';
+
+            try {
+                const data = await fetchAPI(`/chat/${currentConvId}/message`, 'POST', { message });
+                const assistantMessage = data.assistantMessage;
+                addMessageToChat(assistantMessage.content, assistantMessage.role, assistantMessage.id, assistantMessage.confidence);
+                scrollToBottom();
+
+            } catch (error) {
+                addMessageToChat("Sorry, I encountered an error. Please try again.", 'assistant');
+            }
+        }
+
+        function addMessageToChat(text, role, msgId = null, confidence = null) {
+            const chatBox = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${role}`;
+
+            let content = `<strong>${role === 'user' ? MOCK_USER_NAME : 'Vipu AI'}:</strong> ${text}`;
+
+            if (role === 'assistant' && confidence) {
+                content += `<div class="text-xs mt-1 opacity-75">Confidence: ${confidence}%</div>`;
+                content += `<div class="text-xs mt-1 space-x-2">
+                    <button class="text-green-200 hover:text-white" onclick="rateMessage('${msgId}', true)"><i class="fas fa-thumbs-up"></i></button>
+                    <button class="text-red-200 hover:text-white" onclick="rateMessage('${msgId}', false)"><i class="fas fa-thumbs-down"></i></button>
+                </div>`;
+            }
+
+            messageDiv.innerHTML = content;
+            chatBox.appendChild(messageDiv);
+        }
+
+        function scrollToBottom() {
+            const chatBox = document.getElementById('chatMessages');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+
+        async function rateMessage(msgId, helpful) {
+            try {
+                await fetchAPI(`/chat/message/${msgId}/feedback`, 'POST', { helpful });
+                showNotification(helpful ? 'Feedback recorded: Helpful!' : 'Feedback recorded: Not Helpful.', 'info');
+            } catch {
+                showNotification('Failed to record feedback.', 'error');
+            }
+        }
+
+        function quickHelp(type) {
+            let prompt = '';
+            if (type === 'defaulters') prompt = 'Provide the list of current fee defaulters and their total outstanding amount.';
+            if (type === 'exam_schedule') prompt = 'Show the final approved seating chart and invigilator duties for the upcoming exam.';
+            if (type === 'event_status') prompt = 'List all high-priority events happening today and their status.';
+            
+            if (prompt) {
+                document.getElementById('chatInput').value = prompt;
                 sendMessage();
             }
         }
-
-        function addMessageToChat(sender, message) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'flex items-start mb-4';
-            
-            if (sender === 'user') {
-                messageDiv.innerHTML = `
-                    <div class="ml-auto">
-                        <div class="bg-purple-600 text-white rounded-lg p-3 shadow-sm max-w-xs">
-                            <p>${message}</p>
-                        </div>
-                    </div>
-                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center ml-3">
-                        <i class="fas fa-user text-gray-600"></i>
-                    </div>
-                `;
-            } else {
-                messageDiv.innerHTML = `
-                    <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                        <i class="fas fa-robot text-purple-600"></i>
-                    </div>
-                    <div class="bg-white rounded-lg p-3 shadow-sm max-w-xs">
-                        <p>${message}</p>
-                    </div>
-                `;
+        
+        // --- Role Restriction and Initialization ---
+        
+        function checkRoleAccess(notify = false) {
+            if (ALLOWED_ROLES.includes(MOCK_USER_ROLE)) {
+                return true;
             }
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Logic to display denial message now handled in DOMContentLoaded
+            return false;
         }
 
-        function generateAIResponse(userMessage) {
-            const responses = {
-                'attendance': "Based on current data, overall attendance is 87.5%. Class 5A has the highest attendance at 92%, while Class 3B needs attention with 81%. I recommend implementing an attendance reward system.",
-                'performance': "Top performing students this month: 1) Amit Singh (95.2% avg), 2) Neha Patel (93.8% avg), 3) Rahul Kumar (91.5% avg). Mathematics and Science show strongest performance across all classes.",
-                'fees': "Fee collection status: 95% collected (₹8,42,350), 5% pending (₹1,23,450). 23 students have outstanding fees. I can generate reminder messages for parents.",
-                'default': "I understand you're asking about school operations. Could you be more specific? I can help with attendance analysis, student performance, fee management, scheduling, or generating reports."
-            };
-            
-            const lowerMessage = userMessage.toLowerCase();
-            
-            if (lowerMessage.includes('attendance')) return responses.attendance;
-            if (lowerMessage.includes('performance') || lowerMessage.includes('student') || lowerMessage.includes('marks')) return responses.performance;
-            if (lowerMessage.includes('fee') || lowerMessage.includes('payment') || lowerMessage.includes('money')) return responses.fees;
-            
-            return responses.default;
+
+        // --- History Functions ---
+
+        async function fetchUserHistory() {
+            if (!checkRoleAccess(false)) return;
+            // Mock implementation for demonstration
+            const list = document.getElementById('conversationHistoryList');
+            list.innerHTML = '<p class="text-gray-500">History loading simulated...</p>';
         }
 
-        function quickQuestion(type) {
-            const questions = {
-                'attendance': 'Show me current attendance trends and patterns',
-                'performance': 'Who are the top performing students this month?',
-                'fees': 'What is the current fee collection status?'
-            };
-            
-            document.getElementById('chatInput').value = questions[type];
-            sendMessage();
+        function loadConversation(convId) {
+            if (!checkRoleAccess(false)) return;
+            // Mock implementation
+            showNotification(`Simulating load of conversation ${convId}.`, 'info');
+            switchTab('chat');
+        }
+        
+        // --- Knowledge Base Functions ---
+
+        async function fetchKnowledgeBase() {
+            if (!checkRoleAccess(false)) return;
+            // Mock implementation for demonstration
+            const list = document.getElementById('popularQuestionsList');
+            list.innerHTML = '<p class="text-gray-500">Knowledge Base simulated to load based on management topics.</p>';
         }
 
-        // AI Tools
-        function generateReport() {
-            showAIProcess('Generating comprehensive AI report...', () => {
-                showSuccess('AI report generated successfully! Check your reports section.');
-            });
+        function searchKnowledge() {
+            if (!checkRoleAccess(false)) return;
+            // Mock implementation
+            showNotification(`Simulating search...`, 'info');
+        }
+        
+        // --- Analytics Functions ---
+
+        async function fetchAnalytics() {
+            if (!checkRoleAccess(false)) return;
+            // Mock implementation for demonstration
+            document.getElementById('analyticsDashboard').innerHTML = '<p class="text-center text-gray-500">Analytics data simulated.</p>';
+        }
+        
+        // --- Settings Functions ---
+
+        async function fetchSettings() {
+            if (!checkRoleAccess(false)) return;
+            // Mock implementation for demonstration
+            document.getElementById('responseStyle').value = 'formal';
         }
 
-        function predictTrends() {
-            showAIProcess('Analyzing data patterns and predicting trends...', () => {
-                showSuccess('Trend analysis complete! View insights in the analytics dashboard.');
-            });
+        async function updateSettings(event) {
+            event.preventDefault();
+            if (!checkRoleAccess(false)) return;
+            showNotification('Settings updated successfully (Simulated)', 'success');
         }
 
-        function optimizeSchedule() {
-            showAIProcess('Optimizing timetable using AI algorithms...', () => {
-                showSuccess('Schedule optimization complete! New timetable suggestions available.');
-            });
-        }
 
-        function studentRecommendations() {
-            showAIProcess('Analyzing student data for personalized recommendations...', () => {
-                showSuccess('Student insights generated! Check individual student profiles.');
-            });
-        }
+        // --- Initialization ---
 
-        function showAIProcess(message, callback) {
-            const processDiv = document.createElement('div');
-            processDiv.className = 'fixed top-4 right-4 bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            processDiv.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${message}`;
-            document.body.appendChild(processDiv);
-            
-            setTimeout(() => {
-                processDiv.remove();
-                callback();
-            }, 3000);
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentWrapper = document.getElementById('contentWrapper');
 
-        function showSuccess(message) {
-            const successDiv = document.createElement('div');
-            successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            successDiv.innerHTML = `<i class="fas fa-check mr-2"></i>${message}`;
-            document.body.appendChild(successDiv);
-            
-            setTimeout(() => {
-                successDiv.remove();
-            }, 4000);
-        }
+            // Check role and show content if authorized
+            if (checkRoleAccess(false)) {
+                contentWrapper.style.display = 'block';
+                startNewConversation();
+                switchTab('chat');
+            } else {
+                // Display denial message ONLY within this module's container
+                contentWrapper.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-6 rounded relative mt-8 mx-auto max-w-lg shadow-xl text-center">
+                        <strong class="font-bold text-xl">🚫 Access Restricted!</strong>
+                        <p class="mt-3">This Vipu AI Oversight Assistant is strictly limited to Principal and Super Admin dashboards for critical system oversight.</p>
+                        <p class="text-sm mt-2">Your current simulated role is: <span class="font-bold">${MOCK_USER_ROLE.toUpperCase()}</span>. Access to other staff modules is unaffected.</p>
+                    </div>
+                `;
+                contentWrapper.style.display = 'block'; 
+            }
+        });
     </script>
 </body>
 </html>
