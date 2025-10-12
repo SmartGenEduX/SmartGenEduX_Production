@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Seating Planner - Stratified Mixing</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-button.active {
+            border-bottom: 3px solid #10b981; /* Emerald green */
+            color: #10b981;
+            font-weight: 600;
+        }
+        .report-section { max-height: 500px; overflow-y: auto; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-t-4 border-emerald-500">
+            <h1 class="text-3xl font-extrabold text-gray-800 flex items-center">
+                <i class="fas fa-graduation-cap text-emerald-500 mr-4"></i>
+                Exam Seating Planner (Stratified Mixing)
+            </h1>
+            <p class="text-gray-500 mt-2">Design, generate, and export anti-cheating seating plans for exams across multiple classes and rooms.</p>
+        </div>
+
+        <!-- Global Notification Area -->
+        <div id="notification-area" class="fixed top-5 right-5 z-50"></div>
+
+        <!-- Main Content Area -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            
+            <!-- Tabs -->
+            <div class="flex border-b mb-6 space-x-4">
+                <button id="tab-input" class="tab-button active pb-2 text-gray-600 hover:text-emerald-500 transition duration-150" onclick="switchTab('input')">
+                    <i class="fas fa-edit mr-1"></i> 1. Setup & Generation
+                </button>
+                <button id="tab-reports" class="tab-button pb-2 text-gray-600 hover:text-emerald-500 transition duration-150" onclick="switchTab('reports')">
+                    <i class="fas fa-print mr-1"></i> 2. Reports & Export
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tab-content">
+                
+                <!-- 1. Setup & Generation Tab -->
+                <div id="content-input" class="tab-content">
+                    <p class="text-gray-700 mb-4 bg-yellow-50 p-3 rounded border border-yellow-200">
+                        Enter classes and available rooms. The system will automatically perform **stratified mixing** to ensure students from the same section are separated for anti-cheating compliance.
+                    </p>
+
+                    <h3 class="text-xl font-semibold mb-3 text-gray-800">A. Classes & Sections</h3>
+                    <div id="class-input-container" class="space-y-4 mb-6 p-4 border rounded-lg bg-gray-50">
+                        <!-- Dynamic Class Inputs Go Here -->
+                        <div class="class-group flex space-x-2 items-end border-b pb-4">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Class Name (e.g., IX, X)</label>
+                                <input type="text" placeholder="Class Name" class="class-name w-full border border-gray-300 rounded-md shadow-sm p-2">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Sections (Comma Sep.)</label>
+                                <input type="text" placeholder="A, B, C" class="class-sections w-full border border-gray-300 rounded-md shadow-sm p-2">
+                            </div>
+                            <button onclick="addClassGroup()" class="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">
+                                <i class="fas fa-plus"></i> Add Class
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="addClassGroup()" class="text-sm text-blue-600 hover:text-blue-800 mb-6"><i class="fas fa-plus-circle mr-1"></i> Add Another Class Group</button>
+
+                    <h3 class="text-xl font-semibold mb-3 text-gray-800">B. Available Rooms</h3>
+                    <div id="room-input-container" class="flex flex-wrap gap-3 mb-6 p-4 border rounded-lg bg-gray-50">
+                        <input type="text" id="room-list" placeholder="Room X A1, Library, Terrace 1, IT Lab (Comma Separated)" class="w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        <input type="number" id="default-capacity" placeholder="Default Capacity per room (e.g., 40)" value="38" class="border border-gray-300 rounded-md shadow-sm p-2 w-full md:w-1/4">
+                    </div>
+
+                    <button onclick="generateSeatingPlan()" class="w-full md:w-1/2 mx-auto block bg-emerald-500 text-white py-3 rounded-lg font-bold text-lg hover:bg-emerald-600 transition duration-200">
+                        <i class="fas fa-shuffle mr-2"></i> GENERATE SEATING PLAN
+                    </button>
+                    
+                    <div id="allocation-preview" class="mt-8"></div>
+                </div>
+
+                <!-- 2. Reports & Export Tab -->
+                <div id="content-reports" class="tab-content hidden">
+                    <p class="text-gray-700 mb-6">Review the final distribution and generate printable reports for both the invigilator (room view) and the class teacher (student list view).</p>
+
+                    <div id="report-message" class="mb-6">
+                        <p class="text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>Please generate a seating plan first in the Setup tab.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Invigilator Report -->
+                        <div class="card">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800 border-b pb-2 flex items-center">
+                                <i class="fas fa-clipboard-list mr-2 text-blue-500"></i> Invigilator's Reference
+                            </h3>
+                            <button onclick="generateInvigilatorReport()" id="btn-invigilator" class="w-full bg-blue-500 text-white py-2 rounded mb-4 hover:bg-blue-600" disabled>
+                                Generate Printable View
+                            </button>
+                            <div id="invigilator-report-output" class="report-section border p-3 rounded bg-white">
+                                <!-- Report content goes here -->
+                            </div>
+                        </div>
+
+                        <!-- Class Teacher Report -->
+                        <div class="card">
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800 border-b pb-2 flex items-center">
+                                <i class="fas fa-user-check mr-2 text-purple-500"></i> Class Teacher's Reference
+                            </h3>
+                            <button onclick="generateClassTeacherReport()" id="btn-class-teacher" class="w-full bg-purple-500 text-white py-2 rounded mb-4 hover:bg-purple-600" disabled>
+                                Generate Printable View
+                            </button>
+                            <div id="class-teacher-report-output" class="report-section border p-3 rounded bg-white">
+                                <!-- Report content goes here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal for Dynamic Report Output -->
+    <div id="report-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl p-6">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4 border-b pb-2"></h2>
+            <div id="modal-content-area" class="report-section max-h-96 overflow-y-auto mb-4 p-2 border"></div>
+            <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600">Close</button>
+            <button onclick="printReport()" class="bg-emerald-500 text-white py-2 px-4 rounded ml-2 hover:bg-emerald-600">
+                <i class="fas fa-print mr-2"></i>Print Document
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        const API_BASE = ''; // Replace with your actual API base URL if needed
+        let lastDistribution = null;
+
+        // --- Utility Functions ---
+
+        function showMessage(message, type) {
+            const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500' };
+            const icons = { success: 'fas fa-check-circle', error: 'fas fa-exclamation-triangle', info: 'fas fa-info-circle' };
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-4 rounded-lg shadow-xl text-white ${colors[type]} mb-3 transition-opacity duration-300`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            
+            const area = document.getElementById('notification-area');
+            area.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.classList.add('opacity-0');
+                messageDiv.addEventListener('transitionend', () => messageDiv.remove());
+            }, 5000);
+        }
+
+        async function apiFetch(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body && method !== 'GET') {
+                    options.body = JSON.stringify(body);
+                }
+
+                // Mocking authentication for demo purposes
+                options.headers['Authorization'] = 'Bearer mock_jwt_token'; 
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                
+                if (!response.ok || data.success === false) {
+                    throw new Error(data.error || `API error (${response.status})`);
+                }
+                return data;
+
+            } catch (error) {
+                console.error('API Fetch Error:', endpoint, error);
+                showMessage(error.message || 'Network error occurred.', 'error');
+                throw error;
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'reports' && !lastDistribution) {
+                document.getElementById('report-message').innerHTML = '<p class="text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>Please generate a seating plan first in the Setup tab.</p>';
+                document.getElementById('btn-invigilator').disabled = true;
+                document.getElementById('btn-class-teacher').disabled = true;
+            } else if (tabName === 'reports') {
+                 document.getElementById('report-message').innerHTML = '<p class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Plan generated. Ready to create reports.</p>';
+                document.getElementById('btn-invigilator').disabled = false;
+                document.getElementById('btn-class-teacher').disabled = false;
+            }
+        }
+
+        // --- Core Application Functions ---
+
+        function addClassGroup() {
+            const container = document.getElementById('class-input-container');
+            const newGroup = document.createElement('div');
+            newGroup.className = 'class-group flex space-x-2 items-end border-b pb-4';
+            newGroup.innerHTML = `
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">Class Name (e.g., IX)</label>
+                    <input type="text" placeholder="Class Name" class="class-name w-full border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">Sections (Comma Sep.)</label>
+                    <input type="text" placeholder="A1, A2, B1 (with strength 1-38)" class="class-sections w-full border border-gray-300 rounded-md shadow-sm p-2">
+                </div>
+                <button onclick="this.parentNode.remove()" class="bg-red-500 text-white p-2 rounded-md hover:bg-red-600">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(newGroup);
+        }
+
+        function collectInputData() {
+            const classGroups = document.querySelectorAll('.class-group');
+            const classData = [];
+            let isValid = true;
+            
+            classGroups.forEach(group => {
+                const nameInput = group.querySelector('.class-name');
+                const sectionsInput = group.querySelector('.class-sections');
+                
+                const className = nameInput.value.trim().toUpperCase();
+                const sections = sectionsInput.value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+                if (className && sections.length > 0) {
+                    // Create structured data for the backend, simulating student roll numbers 1-50
+                    const sectionData = sections.map(secName => {
+                        // Example: Class X, Section A1 has 50 students
+                        return { name: secName, strength: 50, rollStart: 1, rollEnd: 50, id: `${className}_${secName}` }; 
+                    });
+
+                    classData.push({ name: className, sections: sectionData });
+                } else if (nameInput.value || sectionsInput.value) {
+                    isValid = false;
+                }
+            });
+
+            const roomsString = document.getElementById('room-list').value.trim();
+            const defaultCapacity = parseInt(document.getElementById('default-capacity').value);
+            
+            if (!roomsString || isNaN(defaultCapacity) || defaultCapacity < 10) {
+                 showMessage("Room list and valid capacity are required.", 'error');
+                 isValid = false;
+            }
+
+            if (!isValid) {
+                showMessage("Please ensure all class names and sections are correctly entered.", 'error');
+                return null;
+            }
+
+            const rooms = roomsString.split(',').map(r => ({ name: r.trim().toUpperCase(), capacity: defaultCapacity }));
+
+            return { classData, rooms };
+        }
+
+        async function generateSeatingPlan() {
+            const inputData = collectInputData();
+            if (!inputData) return;
+            
+            const btn = event.target;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating... Please wait.';
+            btn.disabled = true;
+
+            try {
+                // Call the corrected backend endpoint
+                const data = await apiFetch('/student/distribute', 'POST', inputData);
+                
+                lastDistribution = data.distribution;
+                displayAllocationPreview(data.distribution);
+                
+                showMessage('Seating Plan generated successfully! Review the preview.', 'success');
+                switchTab('reports'); // Move to reports tab after success
+
+            } catch (error) {
+                showMessage(`Generation Failed: ${error.message}`, 'error');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-shuffle mr-2"></i> GENERATE SEATING PLAN';
+                btn.disabled = false;
+            }
+        }
+
+        function displayAllocationPreview(distribution) {
+            const container = document.getElementById('allocation-preview');
+            let html = `
+                <h4 class="text-lg font-semibold mb-3 text-gray-700">Generated Allocation Summary:</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            `;
+
+            distribution.forEach(roomAssignment => {
+                const totalStudents = roomAssignment.assignments.reduce((sum, a) => sum + (a.rollEnd - a.rollStart + 1), 0);
+                
+                // Truncate the list of sections for display
+                const sectionsList = roomAssignment.assignments.map(a => `${a.class} ${a.section}`).join(', ');
+                const displaySections = sectionsList.length > 50 ? sectionsList.substring(0, 50) + '...' : sectionsList;
+
+                html += `
+                    <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg shadow-sm">
+                        <p class="font-bold text-indigo-800 text-xl">${roomAssignment.roomName}</p>
+                        <p class="text-sm text-gray-600 mt-1">Total Seats: <span class="font-bold">${totalStudents}</span></p>
+                        <p class="text-xs text-gray-500 mt-2">Sections: ${displaySections}</p>
+                        <p class="text-xs text-red-500 font-medium">Mixing Ratio: Alternating</p>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // --- Report Generation Functions ---
+
+        function generateInvigilatorReport() {
+            if (!lastDistribution) return showMessage('Generate plan first.', 'error');
+            
+            let html = '<div class="space-y-6">';
+
+            lastDistribution.forEach(roomAssignment => {
+                html += `
+                    <div class="border-b pb-4">
+                        <h4 class="text-2xl font-bold text-blue-800 mb-2">${roomAssignment.roomName}</h4>
+                        <p class="text-sm text-gray-600 mb-3">Total Students: ${roomAssignment.assignments.reduce((sum, a) => sum + (a.rollEnd - a.rollStart + 1), 0)}</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                `;
+                roomAssignment.assignments.forEach(assignment => {
+                    html += `<li class="text-gray-700 font-mono text-sm">
+                        ${assignment.class} ${assignment.section} [${assignment.rollStart} - ${assignment.rollEnd}]
+                    </li>`;
+                });
+                html += '</ul></div>';
+            });
+
+            html += '</div>';
+            
+            document.getElementById('invigilator-report-output').innerHTML = html;
+            
+            // Show in modal for printing
+            document.getElementById('modal-title').textContent = "Invigilator's Reference (Print View)";
+            document.getElementById('modal-content-area').innerHTML = html;
+            document.getElementById('report-modal').classList.remove('hidden');
+
+            showMessage("Invigilator report generated.", 'success');
+        }
+
+        function generateClassTeacherReport() {
+            if (!lastDistribution) return showMessage('Generate plan first.', 'error');
+            
+            // Structure: { 'Class X A1': [{ room: 'X A1', rollRange: '1-19' }, ...] }
+            const teacherReport = {};
+
+            lastDistribution.forEach(roomAssignment => {
+                roomAssignment.assignments.forEach(assignment => {
+                    const classKey = `${assignment.class} ${assignment.section}`;
+                    if (!teacherReport[classKey]) {
+                        teacherReport[classKey] = [];
+                    }
+                    teacherReport[classKey].push({
+                        room: roomAssignment.roomName,
+                        rollRange: `${assignment.rollStart} - ${assignment.rollEnd}`
+                    });
+                });
+            });
+
+            let html = '<div class="space-y-6">';
+
+            Object.entries(teacherReport).sort().forEach(([classKey, locations]) => {
+                html += `
+                    <div class="border-b pb-4">
+                        <h4 class="text-2xl font-bold text-purple-800 mb-3">${classKey}</h4>
+                        <ul class="list-disc pl-5 space-y-1">
+                `;
+                locations.forEach(loc => {
+                    html += `<li class="text-gray-700 text-base">
+                        Roll Numbers <span class="font-semibold">${loc.rollRange}</span> must report to <span class="font-mono text-lg text-red-600">${loc.room}</span>.
+                    </li>`;
+                });
+                html += '</ul></div>';
+            });
+
+            html += '</div>';
+
+            document.getElementById('class-teacher-report-output').innerHTML = html;
+            
+            // Show in modal for printing
+            document.getElementById('modal-title').textContent = "Class Teacher's Reference (Print View)";
+            document.getElementById('modal-content-area').innerHTML = html;
+            document.getElementById('report-modal').classList.remove('hidden');
+
+            showMessage("Class Teacher report generated.", 'success');
+        }
+
+        function printReport() {
+            const printContent = document.getElementById('modal-content-area').innerHTML;
+            const title = document.getElementById('modal-title').textContent;
+            const originalBody = document.body.innerHTML;
+
+            const printWindow = window.open('', '', 'height=800,width=1200');
+            printWindow.document.write('<html><head><title>' + title + '</title>');
+            printWindow.document.write('<style>body { font-family: sans-serif; padding: 20px; } .text-red-600 { color: #dc2626; } .text-blue-800 { color: #1e40af; } .text-purple-800 { color: #5b21b6; } .font-mono { font-family: monospace; }</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(`<h1>${title}</h1><hr class="mb-6"/>`);
+            printWindow.document.write(printContent);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add initial class input row
+            addClassGroup();
+            
+            // Set mock initial classes
+            document.querySelector('.class-name').value = 'X';
+            document.querySelector('.class-sections').value = 'A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11';
+            
+            addClassGroup();
+            document.querySelector('.class-group:last-child .class-name').value = 'IX';
+            document.querySelector('.class-group:last-child .class-sections').value = 'A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11';
+
+            document.getElementById('room-list').value = 'ROOM X A1, ROOM X A2, ROOM X A3, ROOM X A4, ROOM X A5, ROOM X A6, ROOM X A7, ROOM X A8, ROOM X A9, ROOM X A10, ROOM X A11, ROOM IX A1, ROOM IX A2, ROOM IX A3, ROOM IX A4, ROOM IX A5, ROOM IX A6, ROOM IX A7, ROOM IX A8, ROOM IX A9, ROOM IX A10, ROOM IX A11, LIBRARY, TERRACE 1, TERRACE 2, TERRACE 3, IT LAB';
+            
+            switchTab('input');
+        });
+
+    </script>
+</body>
+</html>
