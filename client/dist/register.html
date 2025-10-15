@@ -1,265 +1,352 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - SmartGenEduX</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .register-card {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .input-group {
-            position: relative;
-        }
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label,
-        .input-group select:focus + label,
-        .input-group select:not([value=""]) + label {
-            transform: translateY(-1.5rem) scale(0.8);
-            color: #667eea;
-        }
-        .input-group label {
-            transition: all 0.3s ease;
-            position: absolute;
-            left: 1rem;
-            top: 1rem;
-            pointer-events: none;
-            color: #9ca3af;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register - SmartGenEduX</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', sans-serif;
+    }
+    .register-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .input-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    .input-group input:focus, .input-group select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px #c3dafe;
+    }
+    .input-group label {
+      position: absolute;
+      left: 1rem;
+      transform: translateY(-50%);
+      color: #9ca3af;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      background: white;
+      padding: 0 0.25rem;
+    }
+    /* Floating label adjustment for select boxes and text inputs */
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label,
+    .input-group select:focus + label,
+    .input-group select:valid + label {
+      top: -0.6rem;
+      font-size: 0.75rem;
+      color: #667eea;
+    }
+    .error-message, .success-message {
+        text-align: center;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    .error-message {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #f87171;
+    }
+    .success-message {
+        background-color: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #4ade80;
+    }
+  </style>
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
-        <div class="absolute top-1/2 left-1/4 w-60 h-60 bg-white opacity-5 rounded-full"></div>
-    </div>
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
+        <div class="absolute top-1/2 left-1/4 w-60 h-60 bg-white opacity-5 rounded-full"></div>
+    </div>
 
-    <div class="relative z-10 w-full max-w-md">
-        <!-- Logo and Title -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4 overflow-hidden">
-                <img src="assets/smartgenedux-main-logo.jpg" alt="SmartGenEduX" class="w-full h-full object-cover">
-            </div>
-            <h1 class="text-4xl font-bold text-white mb-2">SmartGenEduX</h1>
-            <p class="text-blue-100">Join Our Education Platform</p>
-        </div>
+    <div class="relative z-10 w-full max-w-md">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4 overflow-hidden">
+                <img src="assets/SmartGenEduX_20250518_005919_0000.jpg" alt="SmartGenEduX" class="w-full h-full object-cover">
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-2">SmartGenEduX</h1>
+            <p class="text-blue-100">Join Our Education Platform</p>
+        </div>
 
-        <!-- Registration Card -->
-        <div class="register-card rounded-2xl shadow-2xl p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Create Account</h2>
-                <p class="text-gray-600">Get started with SmartGenEduX</p>
-            </div>
+        <!-- Registration Card -->
+        <div class="register-card rounded-2xl shadow-2xl p-8">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Create Account</h2>
+                <p class="text-gray-600">Get started with SmartGenEduX</p>
+            </div>
 
-            <!-- Registration Form -->
-            <form id="registerForm" class="space-y-6">
-                <!-- Name Input -->
-                <div class="input-group">
-                    <input 
-                        type="text" 
-                        id="name" 
-                        name="name"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="name">Full Name</label>
-                </div>
+            <!-- Message Area -->
+            <div id="messageArea"></div>
 
-                <!-- Email Input -->
-                <div class="input-group">
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="email">Email Address</label>
-                </div>
+            <!-- Registration Form -->
+            <form id="registerForm" class="space-y-6" novalidate>
+                <!-- Name Input -->
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="fullName"
+                        placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        required
+                        minlength="2"
+                    >
+                    <label for="name">Full Name</label>
+                </div>
 
-                <!-- Role Selection -->
-                <div class="input-group">
-                    <select 
-                        id="role" 
-                        name="role"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                        <option value="">Select Role</option>
-                        <option value="school_admin">School Administrator</option>
-                        <option value="teacher">Teacher</option>
-                    </select>
-                    <label for="role">Role</label>
-                </div>
+                <!-- Email Input -->
+                <div class="input-group">
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        required
+                    >
+                    <label for="email">Email Address</label>
+                </div>
 
-                <!-- School Name -->
-                <div class="input-group">
-                    <input 
-                        type="text" 
-                        id="school" 
-                        name="school"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="school">School Name</label>
-                </div>
+                <!-- Role Selection -->
+                <div class="input-group">
+                    <select 
+                        id="role" 
+                        name="role"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        required
+                    >
+                        <option value="" disabled selected>Select Role</option>
+                        <option value="school_admin">School Administrator</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                    <label for="role">Role</label>
+                </div>
 
-                <!-- Password Input -->
-                <div class="input-group">
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="password">Password</label>
-                </div>
+                <!-- School Name -->
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="school" 
+                        name="tenant"
+                        placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        required
+                        minlength="3"
+                    >
+                    <label for="school">School Name</label>
+                </div>
 
-                <!-- Confirm Password -->
-                <div class="input-group">
-                    <input 
-                        type="password" 
-                        id="confirmPassword" 
-                        name="confirmPassword"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="confirmPassword">Confirm Password</label>
-                </div>
+                <!-- Password Input -->
+                <div class="input-group">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        required
+                        minlength="6"
+                    >
+                    <label for="password">Password (Min 6 Chars)</label>
+                </div>
 
-                <!-- Terms and Conditions -->
-                <div class="flex items-center">
-                    <input type="checkbox" id="terms" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" required>
-                    <label for="terms" class="ml-2 text-sm text-gray-600">
-                        I agree to the <a href="#" class="text-blue-600 hover:text-blue-800">Terms of Service</a> 
-                        and <a href="#" class="text-blue-600 hover:text-blue-800">Privacy Policy</a>
-                    </label>
-                </div>
+                <!-- Confirm Password -->
+                <div class="input-group">
+                    <input 
+                        type="password" 
+                        id="confirmPassword" 
+                        name="confirmPassword"
+                        placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        required
+                    >
+                    <label for="confirmPassword">Confirm Password</label>
+                </div>
 
-                <!-- Register Button -->
-                <button 
-                    type="submit" 
-                    class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
-                >
-                    <i class="fas fa-user-plus mr-2"></i>
-                    Create Account
-                </button>
+                <!-- Terms and Conditions -->
+                <div class="flex items-center">
+                    <input type="checkbox" id="terms" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" required>
+                    <label for="terms" class="ml-2 text-sm text-gray-600">
+                        I agree to the <a href="javascript:void(0)" onclick="openTerms()" class="text-blue-600 hover:text-blue-800">Terms of Service</a> 
+                        and <a href="javascript:void(0)" onclick="openPrivacy()" class="text-blue-600 hover:text-blue-800">Privacy Policy</a>
+                    </label>
+                </div>
 
-                <!-- Demo Note -->
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
-                        <p class="text-sm text-yellow-800">
-                            <strong>Demo Mode:</strong> Registration creates a demo account for testing purposes.
-                        </p>
-                    </div>
-                </div>
-            </form>
+                <!-- Register Button -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                    <i class="fas fa-user-plus mr-2"></i>
+                    Create Account
+                </button>
+            </form>
 
-            <!-- Footer -->
-            <div class="text-center mt-6 pt-6 border-t border-gray-200">
-                <p class="text-sm text-gray-600">
-                    Already have an account? 
-                    <a href="login.html" class="text-blue-600 hover:text-blue-800 font-medium">Sign In</a>
-                </p>
-            </div>
-        </div>
+            <!-- Footer -->
+            <div class="text-center mt-6 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-600">
+                    Already have an account? 
+                    <a href="login.html" class="text-blue-600 hover:text-blue-800 font-medium">Sign In</a>
+                </p>
+            </div>
+        </div>
 
-        <!-- Footer -->
-        <div class="text-center mt-8 text-white text-sm">
-            <p>© 2024 SmartGenEduX. All rights reserved.</p>
-            <p class="mt-2 text-blue-200">Join thousands of educators worldwide</p>
-        </div>
-    </div>
+        <!-- Footer -->
+        <div class="text-center mt-8 text-white text-sm">
+            <p>© 2024 SmartGenEduX. All rights reserved.</p>
+            <p class="mt-2 text-blue-200">Join thousands of educators worldwide</p>
+        </div>
+    </div>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg p-6 text-center">
-            <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p class="text-gray-600">Creating your account...</p>
-        </div>
-    </div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 text-center">
+            <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p class="text-gray-600">Creating your account...</p>
+        </div>
+        <div id="networkErrorToast" class="hidden"></div>
+    </div>
 
-    <script>
-        // Handle form submission
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+    <script>
+        // Handle form submission
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            const password = data.password;
+            const confirmPassword = data.confirmPassword;
+            
+            // Remove confirmation field as it is not needed by the API
+            delete data.confirmPassword;
             
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
+            // Clear message area
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = '';
             
-            // Validate passwords match
-            if (data.password !== data.confirmPassword) {
-                showError('Passwords do not match');
+            // 1. Validate passwords match and basic fields
+            if (!data.fullName || !data.email || !data.role || !data.tenant) {
+                showMessage('Please fill all required fields.', 'error');
                 return;
             }
-            
-            // Show loading
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            
-            // Simulate registration process
-            setTimeout(() => {
-                // Hide loading
-                document.getElementById('loadingOverlay').classList.add('hidden');
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match!', 'error');
+                return;
+            }
+            
+            // 2. Show loading
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            
+            // 3. API Call (Simulated Public Registration)
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                // If network fails (0/500)
+                if (!response.ok && response.status !== 400) {
+                     throw new Error('A network error occurred. Please check your connection.');
+                }
+                return response.json();
+            })
+            .then(resData => {
+                if (resData.error || resData.errors) {
+                    // Handle 400 (Validation/Business Logic) Errors from backend
+                    const errorMsg = resData.error || (resData.errors && resData.errors[0].msg) || 'Registration failed.';
+                    throw new Error(errorMsg);
+                }
                 
-                // Show success message
-                showSuccess('Account created successfully! Please sign in.');
+                showSuccess('Account created successfully!', resData.message || 'You can now sign in with your new credentials.');
                 
-                // Redirect to login after 2 seconds
+                // 4. Redirect after success
                 setTimeout(() => {
                     window.location.href = 'login.html';
                 }, 2000);
-            }, 2000);
-        });
+            })
+            .catch(err => {
+                showMessage(err.message, 'error');
+            })
+            .finally(() => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            });
+        });
 
-        // Show error message
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
-            errorDiv.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span>${message}</span>
-                </div>
-            `;
+        // Show generic message
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = ''; // Clear previous messages
+            const messageDiv = document.createElement('div');
             
-            const form = document.getElementById('registerForm');
-            form.insertBefore(errorDiv, form.firstChild);
+            if (type === 'error') {
+                messageDiv.className = 'error-message';
+                messageDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i><span>${message}</span>`;
+            } else if (type === 'success') {
+                messageDiv.className = 'success-message';
+                messageDiv.innerHTML = `<i class="fas fa-check-circle mr-2"></i><span>${message}</span>`;
+            }
             
-            // Remove error after 5 seconds
-            setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
-        }
+            messageArea.appendChild(messageDiv);
+        }
 
-        // Show success message
-        function showSuccess(message) {
+        // Show success message
+        function showSuccess(title, message) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = '';
             const successDiv = document.createElement('div');
-            successDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
+            successDiv.className = 'success-message';
             successDiv.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <span>${message}</span>
-                </div>
+                <div class="text-lg">${title}</div>
+                <div class="text-sm mt-1">${message}</div>
             `;
-            
-            const form = document.getElementById('registerForm');
-            form.insertBefore(successDiv, form.firstChild);
+            messageArea.appendChild(successDiv);
+        }
+        
+        function openTerms() {
+             showMessage('Viewing Terms of Service...', 'info');
+             // In a real app, open the public documentation module for Terms of Service content
         }
-    </script>
+        
+        function openPrivacy() {
+             showMessage('Viewing Privacy Policy...', 'info');
+             // In a real app, open the public documentation module for Privacy Policy content
+        }
+    </script>
 </body>
 </html>
