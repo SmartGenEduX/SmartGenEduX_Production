@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation & System Management Hub (Super Admin)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+        .container { max-width: 1200px; margin-top: 20px; }
+        .tab-button.active { background-color: #3f51b5 !important; color: white !important; }
+        .card-header { background-color: #3f51b5; color: white; font-weight: bold; border-radius: 0.5rem 0.5rem 0 0; }
+        .section-card { box-shadow: 0 4px 8px rgba(0,0,0,0.05); border-radius: 0.5rem; margin-bottom: 20px; }
+        .code-block { background-color: #2d3748; color: #fff; padding: 10px; border-radius: 5px; font-family: monospace; overflow-x: auto; }
+        .warning-tag { background-color: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+        .bargain-card { border: 1px solid #dc2626; background-color: #fef2f2; }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-extrabold text-center mb-6 text-gray-800 flex items-center justify-center">
+            <i class="fas fa-user-shield text-red-600 mr-3"></i>Super Admin: Documentation & Integrity Hub
+        </h1>
+        <p class="text-center text-sm text-red-700 mb-6 font-semibold">This tool is restricted to Super Admin for global policy and system configuration.</p>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="fixed top-4 right-4 z-50"></div>
+        
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-lg shadow-md mb-4">
+            <div class="flex border-b border-gray-200">
+                <button class="tab-button px-4 py-3 text-sm font-medium active flex-1 text-gray-700" onclick="switchTab('branding')" data-tab="branding">
+                    <i class="fas fa-palette mr-2"></i>Branding & Compliance
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('pricing')" data-tab="pricing">
+                    <i class="fas fa-money-check-alt mr-2"></i>Global Pricing & Billing
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('integrity')" data-tab="integrity">
+                    <i class="fas fa-cogs mr-2"></i>Critical System Integrity
+                </button>
+                <button class="tab-button px-4 py-3 text-sm font-medium flex-1 text-gray-700" onclick="switchTab('reference')" data-tab="reference">
+                    <i class="fas fa-file-alt mr-2"></i>Policy Editor
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContent">
+            
+            <!-- 1. Branding & Assets (COMPLIANCE & LOGO MANAGER) -->
+            <div data-tab-content="branding" class="tab-pane active">
+                <div class="section-card bg-white">
+                    <div class="card-header bg-indigo-600">Compliance & Module Branding Asset Manager</div>
+                    <form id="complianceForm" onsubmit="saveComplianceSettings(event)" class="p-6 space-y-6">
+                        
+                        <!-- Compliance IDs -->
+                        <h3 class="font-bold text-lg text-gray-700 mb-4 flex items-center border-b pb-2"><i class="fas fa-balance-scale mr-2 text-red-600"></i>Legal & Financial Compliance</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">MSME Registration No.</label>
+                                <input type="text" id="msmeRegNo" name="msme_reg_no" placeholder="UDYAM-TN-34-XXXXXXX" class="mt-1 block w-full p-2 border rounded-md">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">GST TIN (Tax ID)</label>
+                                <input type="text" id="gstTinNo" name="gst_tin_no" placeholder="GSTIN-XXXXXXXXXXXX" class="mt-1 block w-full p-2 border rounded-md">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Main Platform Logo (File Upload)</label>
+                                <input type="file" id="mainLogoFile" name="main_logo_file" accept="image/png, image/jpeg" class="mt-1 block w-full p-2 border rounded-md text-sm">
+                                <p class="text-xs text-gray-500">Upload new image to replace current logo.</p>
+                            </div>
+                        </div>
+
+                        <!-- Module Logos (Base64/Settings Keys) -->
+                        <h3 class="font-bold text-lg text-gray-700 mb-4 flex items-center border-b pb-2 pt-4"><i class="fas fa-image mr-2 text-indigo-600"></i>Module Icon Base64 Injection</h3>
+                        <p class="text-sm text-gray-600">The icons below are stored as Base64 strings in the database for non-breaking display in report cards/invoices.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="logoInputsContainer">
+                            <!-- Injected Logo Inputs will appear here -->
+                        </div>
+
+                        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700">
+                            <i class="fas fa-save mr-2"></i>Save All Compliance & Branding
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 2. Subscription & Pricing (Global Super Admin Control) -->
+            <div data-tab-content="pricing" class="tab-pane hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Plan Management (Super Admin Control) -->
+                    <div class="lg:col-span-1 section-card bg-white">
+                        <div class="card-header bg-purple-600">Global Pricing Plans</div>
+                        <div id="planList" class="p-4 space-y-4">
+                            <p class="text-gray-500">Loading plans...</p>
+                        </div>
+                        <div class="p-4 border-t">
+                            <button onclick="editGlobalPlans()" class="w-full bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i>Update Global Pricing (Super Admin)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Billing History & Negotiated Rate -->
+                    <div class="lg:col-span-2 section-card bg-white">
+                        <div class="card-header bg-blue-600">School Billing History & Pricing</div>
+                        <div class="p-6">
+                            
+                            <!-- NEGOTIATED PRICE CARD -->
+                            <div class="p-4 bargain-card rounded-lg mb-6">
+                                <h3 class="font-bold text-red-800 mb-2 flex items-center">
+                                    <i class="fas fa-handshake mr-2"></i>School-Specific Pricing Override
+                                </h3>
+                                <p class="text-sm text-gray-700 mb-3">Set the negotiated per-child/per-month rate for <span id="billingSchoolName" class="font-semibold text-red-800">Delhi Main Campus</span>.</p>
+                                <div class="flex space-x-3">
+                                    <div class="relative w-32">
+                                        <input type="number" id="negotiatedRate" value="10.00" step="0.01" class="w-full p-2 border border-red-400 rounded-md text-sm font-mono pl-6" min="0">
+                                        <span class="absolute left-2 top-2 text-sm font-bold text-red-600">₹</span>
+                                    </div>
+                                    <button onclick="saveNegotiatedPrice()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700">
+                                        <i class="fas fa-save mr-2"></i>Save Negotiated Rate
+                                    </button>
+                                </div>
+                                <p class="text-xs mt-2 text-red-600">Global Rate: ₹10.00. Override will apply to all future invoices.</p>
+                            </div>
+                            <!-- END NEGOTIATED PRICE CARD -->
+                            
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-bold text-gray-700">Invoice History</h3>
+                                <p class="text-sm text-gray-700">Total Platform Revenue: <span id="totalRevenue" class="font-bold text-green-600">₹0.00</span></p>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice ID / Date</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan / Term</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invoiceTableBody" class="bg-white divide-y divide-gray-200">
+                                        <tr class="text-gray-500"><td colspan="4" class="px-6 py-4 text-center">No invoices loaded.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 3. System Integrity (Super Admin Only) -->
+            <div data-tab-content="integrity" class="tab-pane hidden">
+                <div class="section-card bg-white">
+                    <div class="card-header bg-red-600 flex justify-between items-center">
+                        Critical System Integrity Check
+                        <button onclick="fetchSystemStatus()" class="bg-red-700 text-white px-4 py-1 rounded-full text-sm hover:bg-red-800">
+                            <i class="fas fa-sync mr-2"></i>Run Check Now
+                        </button>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <p class="text-red-700 font-semibold mb-4">This checks database security and operational readiness.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- RLS Status -->
+                            <div class="p-4 rounded-lg bg-gray-50 border">
+                                <h3 class="font-bold text-lg mb-2 flex items-center text-gray-700"><i class="fas fa-shield-alt mr-2"></i>Row Level Security (RLS) Enforcement</h3>
+                                <div id="rlsStatus" class="space-y-2 text-sm">
+                                    <p>Enforcement Status: <span class="font-bold" id="dbRlsStatus">---</span></p>
+                                    <p>Policies Count: <span class="font-bold" id="rlsPoliciesCount">---</span></p>
+                                    <p class="warning-tag mt-2">If RLS is not ON, data is NOT secure.</p>
+                                </div>
+                            </div>
+                            <!-- Backup Status -->
+                            <div class="p-4 rounded-lg bg-gray-50 border">
+                                <h3 class="font-bold text-lg mb-2 flex items-center text-gray-700"><i class="fas fa-database mr-2"></i>Database Maintenance</h3>
+                                <div id="backupStatus" class="space-y-2 text-sm">
+                                    <p>Last Full Backup: <span class="font-bold" id="lastBackupTime">---</span></p>
+                                    <p>Next Audit Due: <span class="font-bold" id="nextAuditDue">---</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Database Policy Display (for reference) -->
+                        <div class="border p-4 rounded-lg">
+                            <h3 class="font-bold mb-2 text-gray-700">Database Policy Reference</h3>
+                            <p class="text-sm text-gray-600 mb-2">RLS Security Rule for Student Record Access:</p>
+                            <div class="code-block">
+                                CREATE POLICY "Students: Select" ON public.students FOR SELECT TO authenticated USING (school_id = get_user_school_id() AND (get_user_role() IN ('super_admin', 'school_admin', 'teacher') OR parent_user_profile_id = get_user_id()));
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Policy Editor (Moved out of Branding tab) -->
+            <div data-tab-content="reference" class="tab-pane hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <div class="lg:col-span-1 section-card bg-white">
+                        <div class="card-header bg-green-600">Document Selection</div>
+                        <div class="p-4 space-y-2">
+                            <button class="w-full text-left p-3 bg-gray-100 rounded-md hover:bg-gray-200" onclick="viewDocument('terms_and_conditions')">
+                                <i class="fas fa-gavel mr-2 text-red-600"></i>Terms & Conditions (T&C)
+                            </button>
+                            <button class="w-full text-left p-3 bg-gray-100 rounded-md hover:bg-gray-200" onclick="viewDocument('privacy_policy')">
+                                <i class="fas fa-user-secret mr-2 text-blue-600"></i>Privacy Policy
+                            </button>
+                            <button class="w-full text-left p-3 bg-gray-100 rounded-md hover:bg-gray-200" onclick="viewDocument('user_manual')">
+                                <i class="fas fa-book-open mr-2 text-purple-600"></i>System User Manual
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 section-card bg-white">
+                        <div class="card-header">Document Viewer: <span id="currentDocTitle">Welcome Guide</span></div>
+                        <div class="p-6">
+                            <textarea id="documentContent" rows="15" readonly class="w-full border p-3 rounded-md text-sm bg-gray-50">
+Welcome to the SmartGenEduX Documentation Hub.
+                            </textarea>
+                            <div class="mt-4 flex justify-between">
+                                <p class="text-sm text-gray-600" id="docVersionInfo">Version: 1.0 | Last Updated: N/A</p>
+                                <div class="space-x-3">
+                                    <button id="editDocBtn" onclick="openDocumentEditModal(currentEditingDocKey)" class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700">
+                                        <i class="fas fa-edit mr-2"></i>Enable Edit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Editing Document Content -->
+    <div id="docEditModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-3xl shadow-2xl">
+            <h3 class="text-xl font-bold mb-4">Editing: <span id="modalDocTitle"></span></h3>
+            <textarea id="modalDocumentContent" rows="20" class="w-full border p-3 rounded-md text-sm"></textarea>
+            <div class="mt-4 flex justify-end space-x-3">
+                <button type="button" onclick="closeDocEditModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md">Cancel</button>
+                <button type="button" onclick="saveDocumentFromModal()" class="bg-green-600 text-white px-4 py-2 rounded-md">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = ''; 
+        let currentEditingDocKey = null; 
+        const MOCK_SCHOOL_ID = '00000000-0000-0000-0000-000000000001'; 
+        const MOCK_USER_ROLE = 'super_admin'; 
+
+        // List of all modules that require a dedicated logo/icon for the Super Admin's config panel
+        const MODULE_LOGOS = [
+            { key: 'logo_platform_main', name: 'Platform Main Logo' },
+            { key: 'logo_fee_management', name: 'Fee Management' },
+            { key: 'logo_attendance', name: 'Attendance System' },
+            { key: 'logo_whatsapp_alert', name: 'WhatsApp/Arattai' },
+            { key: 'logo_pdf_tools', name: 'PDF & Document Tools' },
+            { key: 'logo_admission', name: 'Admission Management' },
+            { key: 'logo_events', name: 'School Event Log' },
+            { key: 'logo_timetable', name: 'Timetable Management' },
+            { key: 'logo_substitution', name: 'Teacher Substitution' },
+            { key: 'logo_invigilation', name: 'Invigilation Duty' },
+            { key: 'logo_student_distribution', name: 'Student Distribution' },
+            { key: 'logo_report_tracker', name: 'Report Tracker' },
+            { key: 'logo_behavior_tracker', name: 'Behavior Tracker' },
+            { key: 'logo_qpaper_generator', name: 'Question Paper Gen' },
+            { key: 'logo_cbse_registration', name: 'CBSE Registration' }
+        ];
+
+
+        // --- Utility Functions ---
+
+        function showNotification(message, type = 'success') {
+            const colors = { success: 'bg-green-600', error: 'bg-red-600', info: 'bg-blue-600', warning: 'bg-yellow-600' };
+            const icons = { success: 'fas fa-check-circle', error: 'fas fa-exclamation-triangle', info: 'fas fa-info-circle', warning: 'fas fa-exclamation-triangle' };
+            const area = document.getElementById('notification-area');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-3 rounded-lg shadow-lg mb-2 text-white ${colors[type]}`;
+            messageDiv.innerHTML = `<i class="${icons[type]} mr-2"></i>${message}`;
+            area.appendChild(messageDiv);
+            setTimeout(() => messageDiv.remove(), 5000);
+        }
+
+        async function fetchAPI(endpoint, method = 'GET', body = null) {
+            const fullEndpoint = endpoint.replace(':schoolId', MOCK_SCHOOL_ID);
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+            };
+            if (body && method !== 'GET') { options.body = JSON.stringify(body); }
+
+            try {
+                const response = await fetch(`${API_BASE}${fullEndpoint}`, options);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showNotification(data.error || `API Error: ${response.status}`, 'error');
+                    throw new Error(data.error || 'API request failed');
+                }
+                return data;
+            } catch (error) {
+                console.error(`Fetch error on ${fullEndpoint}:`, error);
+                throw error; 
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+            });
+            document.querySelector(`[data-tab-content="${tabName}"]`).classList.remove('hidden');
+
+            if (tabName === 'reference') viewDocument('terms_and_conditions'); 
+            if (tabName === 'pricing') fetchPricingData();
+            if (tabName === 'integrity') fetchSystemStatus(); 
+            if (tabName === 'branding') initializeBrandingManager();
+        }
+        
+        // --- Branding Manager Functions ---
+
+        function initializeBrandingManager() {
+            const container = document.getElementById('logoInputsContainer');
+            const complianceForm = document.getElementById('complianceForm');
+            container.innerHTML = ''; // Clear previous inputs
+            
+            // 1. Populate Compliance/Branding fields (Simulated fetch of existing settings)
+            fetchAPI(`/:schoolId`).then(settingsData => {
+                 const settings = settingsData.settings || {};
+                 document.getElementById('msmeRegNo').value = settings.msme_reg_no || '';
+                 document.getElementById('gstTinNo').value = settings.gst_tin_no || '';
+                 
+                 // 2. Render logo inputs based on the module list
+                 MODULE_LOGOS.forEach(logo => {
+                    const existingValue = settings[logo.key] || '';
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <label class="block text-sm font-medium text-gray-700">${logo.name} Logo (Base64)</label>
+                        <textarea id="${logo.key}" data-key="${logo.key}" rows="1" placeholder="Paste Base64 data URI here..." class="mt-1 block w-full p-2 border rounded-md text-xs">${existingValue}</textarea>
+                    `;
+                    container.appendChild(div);
+                });
+            }).catch(() => {
+                // Render empty inputs if fetch fails
+                MODULE_LOGOS.forEach(logo => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<label class="block text-sm font-medium text-gray-700">${logo.name} Logo (Base64)</label><textarea id="${logo.key}" data-key="${logo.key}" rows="1" placeholder="Paste Base64 data URI here..." class="mt-1 block w-full p-2 border rounded-md text-xs"></textarea>`;
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        async function saveComplianceSettings(event) {
+            event.preventDefault();
+            const form = event.target;
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+
+            const msme = form.msmeRegNo.value.trim();
+            const gst = form.gstTinNo.value.trim();
+            
+            const payload = [
+                { settingKey: 'msme_reg_no', settingValue: msme },
+                { settingKey: 'gst_tin_no', settingValue: gst }
+            ];
+
+            // Gather all logo Base64 inputs
+            MODULE_LOGOS.forEach(logo => {
+                const input = document.getElementById(logo.key);
+                // NOTE: We trust the Super Admin to paste the full Base64 string. 
+                // The backend will truncate for audit logs.
+                payload.push({ 
+                    settingKey: logo.key, 
+                    settingValue: input.value.trim() 
+                });
+            });
+
+            showNotification('Saving compliance and branding details...', 'info');
+
+            try {
+                // Hitting POST /:schoolId for batch update (compliance and branding assets)
+                const data = await fetchAPI(`/:schoolId`, 'POST', payload);
+                showNotification(data.message, 'success');
+            } catch (error) {
+                showNotification('Failed to save compliance settings.', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // --- 1. Policy Editor Functions ---
+
+        async function viewDocument(docKey) {
+            currentEditingDocKey = docKey;
+            
+            document.getElementById('currentDocTitle').textContent = docKey.replace(/_/g, ' ').toUpperCase();
+            document.getElementById('documentContent').value = 'Loading...';
+            document.getElementById('documentContent').readOnly = true;
+
+            document.getElementById('editDocBtn').style.display = MOCK_USER_ROLE === 'super_admin' ? 'block' : 'none';
+
+            try {
+                const data = await fetchAPI(`/docs/content/${docKey}`);
+                const doc = data.doc;
+                
+                document.getElementById('documentContent').value = doc.content;
+                document.getElementById('docVersionInfo').textContent = `Version: ${doc.version} | Last Updated: ${new Date(doc.updated_at).toLocaleString()}`;
+                
+            } catch (error) {
+                document.getElementById('documentContent').value = `Error loading document: ${currentEditingDocKey}`;
+            }
+        }
+
+        function openDocumentEditModal(docKey) {
+            // Transfer current content to modal for editing
+            const content = document.getElementById('documentContent').value;
+            
+            document.getElementById('modalDocTitle').textContent = docKey.replace(/_/g, ' ').toUpperCase();
+            document.getElementById('modalDocumentContent').value = content;
+            document.getElementById('docEditModal').classList.remove('hidden');
+            document.getElementById('modalDocumentContent').focus();
+            showNotification('Document editing started in modal.', 'info');
+        }
+        
+        function closeDocEditModal() {
+            document.getElementById('docEditModal').classList.add('hidden');
+            showNotification('Editing session cancelled.', 'info');
+        }
+
+        async function saveDocumentFromModal() {
+            const content = document.getElementById('modalDocumentContent').value;
+            const modalBtn = document.querySelector('#docEditModal button[onclick="saveDocumentFromModal()"]');
+            modalBtn.disabled = true;
+            
+            try {
+                const data = await fetchAPI(`/docs/content/${currentEditingDocKey}`, 'PUT', { content });
+                showNotification(data.message, 'success');
+                document.getElementById('docEditModal').classList.add('hidden');
+                viewDocument(currentEditingDocKey); // Refresh main view with new content
+            } catch (error) {
+                // Error handled by fetchAPI
+            } finally {
+                modalBtn.disabled = false;
+            }
+        }
+        
+        // --- 2. Pricing & Billing Functions ---
+
+        async function saveNegotiatedPrice() {
+            const rateInput = document.getElementById('negotiatedRate');
+            const rate = parseFloat(rateInput.value);
+            
+            if (isNaN(rate) || rate < 0) {
+                return showNotification('Invalid price entered.', 'error');
+            }
+            
+            rateInput.disabled = true;
+
+            showNotification(`Setting negotiated rate to ₹${rate.toFixed(2)}...`, 'info');
+
+            const payload = {
+                 settingKey: 'academic_negotiated_rate',
+                 settingValue: rate
+            };
+
+            try {
+                const data = await fetchAPI(`/config/school-pricing/${MOCK_SCHOOL_ID}`, 'PUT', payload);
+                
+                showNotification(data.message, 'success');
+                document.getElementById('negotiatedRate').value = rate.toFixed(2);
+
+            } catch (error) {
+                showNotification('Failed to save negotiated price. Check Super Admin privileges.', 'error');
+            } finally {
+                 rateInput.disabled = false;
+            }
+        }
+
+
+        async function fetchPricingData() {
+            const schoolId = MOCK_SCHOOL_ID; 
+            const invoiceTableBody = document.getElementById('invoiceTableBody');
+            
+            try {
+                const [plansData, billingData] = await Promise.all([
+                    fetchAPI('/config/plans'),
+                    fetchAPI(`/billing/invoices/${schoolId}`)
+                ]);
+                
+                // Render Plans
+                const planList = document.getElementById('planList');
+                planList.innerHTML = plansData.plans.map(p => `
+                    <div class="p-3 ${p.isPremium ? 'bg-yellow-50 border-yellow-300' : 'bg-green-50 border-green-300'} border rounded-lg">
+                        <span class="font-bold">${p.planName}</span> - ₹${p.monthlyPrice.toFixed(2)}/mo
+                        <p class="text-xs text-gray-600">${p.features.join(', ')}</p>
+                        <button onclick="editPlan('${p.id}')" class="mt-2 text-blue-600 text-xs hover:underline">Edit Plan</button>
+                    </div>
+                `).join('');
+                
+                // Render Invoices
+                document.getElementById('totalRevenue').textContent = `₹${billingData.totalRevenue.toFixed(2)}`;
+                
+                invoiceTableBody.innerHTML = billingData.invoices.map(inv => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${inv.date} (ID: ${inv.id})</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${inv.plan}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹${inv.amount.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${inv.status}</span>
+                            <button onclick="downloadInvoice('${inv.id}', '${inv.downloadUrl}')" class="ml-2 text-blue-500 hover:text-blue-700"><i class="fas fa-download"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                invoiceTableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600">Failed to load billing data.</td></tr>';
+            }
+        }
+        
+        function editPlan(planId) {
+            showNotification(`Opening modal to edit plan ${planId}.`, 'info');
+        }
+        
+        function downloadInvoice(invoiceId, url) {
+             showNotification(`Simulating download for Invoice ${invoiceId} from ${url}...`, 'success');
+        }
+        
+        async function fetchSystemStatus() {
+            const rlsStatusDiv = document.getElementById('rlsStatus');
+            rlsStatusDiv.innerHTML = '<p class="text-gray-500"><i class="fas fa-spinner fa-spin"></i> Checking DB...</p>';
+
+            try {
+                const data = await fetchAPI('/system/status');
+                const integrity = data.integrityCheck;
+
+                const rlsStatus = integrity.databaseRls.toUpperCase();
+                
+                document.getElementById('dbRlsStatus').textContent = rlsStatus;
+                document.getElementById('dbRlsStatus').className = `font-bold ${rlsStatus === 'ON' ? 'text-green-600' : 'text-red-600'}`;
+                
+                document.getElementById('rlsPoliciesCount').textContent = integrity.rlsPoliciesCount;
+                document.getElementById('lastBackupTime').textContent = new Date(integrity.lastBackup).toLocaleString();
+                document.getElementById('nextAuditDue').textContent = integrity.nextAuditDue;
+
+                if (rlsStatus !== 'ON') {
+                    showNotification('CRITICAL ALERT: RLS is OFF. Database security compromised!', 'error');
+                }
+
+            } catch (error) {
+                 document.getElementById('rlsStatus').innerHTML = '<p class="text-red-600">Authentication Required / API Failed.</p>';
+            }
+        }
+
+        // --- Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeBrandingManager();
+            switchTab('branding');
+        });
+    </script>
+</body>
+</html>
