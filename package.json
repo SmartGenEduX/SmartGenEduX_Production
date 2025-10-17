@@ -1,5 +1,4 @@
-{
-  "name": "smartgenedux-comprehensive-erp",
+{"name": "smartgenedux-comprehensive-erp",
   "version": "2.4.1",
   "description": "Complete School Management ERP System with 19+ Core Modules, including Integrated Financial (Tally) and Communications (Arattai/WhatsApp).",
   "main": "API/index.js",
