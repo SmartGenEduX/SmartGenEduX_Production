@@ -1,362 +1,345 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartGenEduX - Complete School Management ERP</title>
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f5f5f5; }
-        .section-card { transition: all 0.3s ease; cursor: pointer; }
-        .section-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .module-card { transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; border: 1px solid #e5e7eb; }
-        .module-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
-        .premium-badge { position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
-        .nav-item { transition: all 0.3s ease; cursor: pointer; padding: 12px 20px; border-radius: 8px; margin: 4px 8px; }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.1); }
-        .nav-item.active { background: rgba(255, 255, 255, 0.2); border-left: 4px solid #fff; }
-        .dashboard-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .sidebar { background: linear-gradient(180deg, #2d3748 0%, #4a5568 100%); color: white; }
-        .access-denied { background-color: #fef2f2; color: #dc2626; border: 1px solid #f87171; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartGenEduX - Complete School Management ERP</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f5f5f5; }
+        .section-card { transition: all 0.3s ease; cursor: pointer; }
+        .section-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .module-card { transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; border: 1px solid #e5e7eb; }
+        .module-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        .premium-badge { position: absolute; top: 10px; right: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+        .nav-item { transition: all 0.3s ease; cursor: pointer; padding: 12px 20px; border-radius: 8px; margin: 4px 8px; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.1); }
+        .nav-item.active { background: rgba(255, 255, 255, 0.2); border-left: 4px solid #fff; }
+        .dashboard-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .sidebar { background: linear-gradient(180deg, #2d3748 0%, #4a5568 100%); color: white; }
+        .access-denied { background-color: #fef2f2; color: #dc2626; border: 1px solid #f87171; }
+    </style>
 </head>
 <body class="bg-gray-50">
-    <div id="loginScreen" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-        <div class="text-white text-center">
-            <h1 class="text-3xl mb-4"><i class="fas fa-lock mr-2"></i>Access Denied</h1>
-            <p class="text-lg mb-6">Please log in to continue.</p>
-            <button onclick="window.location.href = 'login.html'" class="bg-white text-purple-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition">
-                Go to Login
-            </button>
-        </div>
-    </div>
+    <div id="loginScreen" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+        <div class="text-white text-center">
+            <h1 class="text-3xl mb-4"><i class="fas fa-lock mr-2"></i>Access Denied</h1>
+            <p class="text-lg mb-6">Please log in to continue.</p>
+            <button onclick="window.location.href = 'login.html'" class="bg-white text-purple-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition">
+                Go to Login
+            </button>
+        </div>
+    </div>
 
-    <div class="flex h-screen hidden" id="dashboard">
-        <!-- Sidebar -->
-        <div class="fixed inset-y-0 left-0 w-64 sidebar z-30 shadow-2xl flex flex-col">
-            <!-- Logo -->
-            <div class="p-6 border-b border-gray-600">
-                <div class="flex items-center space-x-3">
-                    <img src="assets/SmartGenEduX_20250518_005919_0000.jpg" alt="SmartGenEduX Logo" class="w-10 h-10 rounded-lg object-cover">
-                    <div>
-                        <h1 class="text-xl font-bold">SmartGenEduX</h1>
-                        <p class="text-xs text-blue-200">School Management ERP</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- User Info -->
-            <div class="p-4 border-b border-gray-700">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white bg-opacity-30 rounded-full flex items-center justify-center text-sm font-bold" id="userAvatar">U</div>
-                    <div>
-                        <p class="text-base font-medium" id="userName">User Name</p>
-                        <p class="text-xs text-yellow-300" id="userRole">Role Loading...</p>
-                    </div>
-                </div>
-            </div>
+    <div class="flex h-screen hidden" id="dashboard">
+                <div class="fixed inset-y-0 left-0 w-64 sidebar z-30 shadow-2xl flex flex-col">
+                        <div class="p-6 border-b border-gray-600">
+                <div class="flex items-center space-x-3">
+                    <img src="assets/SmartGenEduX_20250518_005919_0000.jpg" alt="SmartGenEduX Logo" class="w-10 h-10 rounded-lg object-cover">
+                    <div>
+                        <h1 class="text-xl font-bold">SmartGenEduX</h1>
+                        <p class="text-xs text-blue-200">School Management ERP</p>
+                    </div>
+                </div>
+            </div>
+            
+                        <div class="p-4 border-b border-gray-700">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white bg-opacity-30 rounded-full flex items-center justify-center text-sm font-bold" id="userAvatar">U</div>
+                    <div>
+                        <p class="text-base font-medium" id="userName">User Name</p>
+                        <p class="text-xs text-yellow-300" id="userRole">Role Loading...</p>
+                    </div>
+                </div>
+            </div>
 
-            <!-- Navigation -->
-            <nav class="flex-1 p-4">
-                <div class="space-y-2">
-                    <div class="nav-item active" onclick="showSection('main')">
-                        <i class="fas fa-home mr-3"></i>Dashboard
-                    </div>
-                    <div class="nav-item" onclick="showSection('admin')">
-                        <i class="fas fa-cogs mr-3"></i>Admin Services
-                    </div>
-                    <div class="nav-item" onclick="showSection('academic')">
-                        <i class="fas fa-graduation-cap mr-3"></i>Academic Tools
-                    </div>
-                    <div class="nav-item" onclick="showSection('premium')">
-                        <i class="fas fa-crown mr-3"></i>Premium AI
-                    </div>
-                    <div class="nav-item" onclick="showSection('settings')">
-                        <i class="fas fa-cog mr-3"></i>System Settings
-                    </div>
-                </div>
-            </nav>
+                        <nav class="flex-1 p-4">
+                <div class="space-y-2">
+                    <div class="nav-item active" onclick="showSection('main')">
+                        <i class="fas fa-home mr-3"></i>Dashboard
+                    </div>
+                    <div class="nav-item" onclick="showSection('admin')">
+                        <i class="fas fa-cogs mr-3"></i>Admin Services
+                    </div>
+                    <div class="nav-item" onclick="showSection('academic')">
+                        <i class="fas fa-graduation-cap mr-3"></i>Academic Tools
+                    </div>
+                    <div class="nav-item" onclick="showSection('premium')">
+                        <i class="fas fa-crown mr-3"></i>Premium AI
+                    </div>
+                    <div class="nav-item" onclick="showSection('settings')">
+                        <i class="fas fa-cog mr-3"></i>System Settings
+                    </div>
+                </div>
+            </nav>
 
-            <!-- Logout -->
-            <div class="p-4 border-t border-gray-700">
-                <button onclick="logout()" class="w-full text-left text-red-300 hover:text-red-100 transition duration-150">
-                    <i class="fas fa-sign-out-alt mr-3"></i>Logout
-                </button>
-                <div class="text-xs text-blue-200 mt-2">
-                    <p>Version 2.1</p>
-                    <p>© 2025 SmartGenEduX</p>
-                </div>
-            </div>
-        </div>
+                        <div class="p-4 border-t border-gray-700">
+                <button onclick="logout()" class="w-full text-left text-red-300 hover:text-red-100 transition duration-150">
+                    <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                </button>
+                <div class="text-xs text-blue-200 mt-2">
+                    <p>Version 2.1</p>
+                    <p>© 2025 SmartGenEduX</p>
+                </div>
+            </div>
+        </div>
 
-        <!-- Main Content Area -->
-        <div class="ml-64 flex-1 overflow-auto">
-            <header class="dashboard-header shadow-md p-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold">ERP Control Center</h1>
-                        <p class="opacity-90" id="schoolName">Loading School Data...</p>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2">
-                            <select id="schoolSelect" class="bg-transparent text-white text-sm border-none outline-none">
-                                <option value="school_001" class="text-black">Delhi Public School</option>
-                            </select>
-                        </div>
-                        <button onclick="showToast('Notifications loading...')"><i class="fas fa-bell"></i></button>
-                    </div>
-                </div>
-            </header>
+                <div class="ml-64 flex-1 overflow-auto">
+            <header class="dashboard-header shadow-md p-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold">ERP Control Center</h1>
+                        <p class="opacity-90" id="schoolName">Loading School Data...</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2">
+                            <select id="schoolSelect" class="bg-transparent text-white text-sm border-none outline-none">
+                                <option value="school_001" class="text-black">Delhi Public School</option>
+                            </select>
+                        </div>
+                        <button onclick="showToast('Notifications loading...')"><i class="fas fa-bell"></i></button>
+                    </div>
+                </div>
+            </header>
 
-            <!-- Dashboard Content -->
-            <main class="p-6">
-                <div id="contentContainer">
-                    <!-- Main Welcome View -->
-                    <div class="mb-8" id="mainWelcome">
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome to SmartGenEduX!</h1>
-                        <p class="text-gray-600">Select a section in the sidebar to access modules or view your stats below.</p>
-                        
-                        <!-- Statistics Grid (Dynamic) -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6" id="statsGrid">
-                            <!-- Stats will be dynamically injected here -->
-                            <div class="p-4 rounded-lg bg-white shadow flex items-center space-x-3"><i class="fas fa-spinner fa-spin text-blue-600"></i><p class="text-gray-600">Loading Stats...</p></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Dynamic Module Sections -->
-                    <div id="moduleSections" class="space-y-8">
-                        <!-- Admin Section Details -->
-                        <div id="admin" class="section-content hidden">
-                            <h2 class="text-2xl font-bold mb-4 text-blue-700">Admin & Financial Services</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('fee-management')"><i class="fas fa-rupee-sign text-3xl text-yellow-600"></i><h4 class="font-bold mt-2">Fee Management</h4><p class="text-xs text-gray-600">Collection, Tally, Reminders.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('attendance')"><i class="fas fa-map-marker-alt text-3xl text-green-600"></i><h4 class="font-bold mt-2">Attendance (GPS/Barcode)</h4><p class="text-xs text-gray-600">Staff and Student Check-in.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('whatsapp')"><i class="fab fa-whatsapp text-3xl text-emerald-600"></i><h4 class="font-bold mt-2">WhatsApp Alerts</h4><p class="text-xs text-gray-600">Automated Parent Comms.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('admission')"><i class="fas fa-user-plus text-3xl text-blue-600"></i><h4 class="font-bold mt-2">Admission Management</h4><p class="text-xs text-gray-600">Workflow & Approvals.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('id-card-generator')"><i class="fas fa-id-card text-3xl text-cyan-600"></i><h4 class="font-bold mt-2">ID Card Generator</h4><p class="text-xs text-gray-600">Issue Staff/Student IDs.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('vipudev-ai')"><i class="fas fa-robot text-3xl text-purple-600"></i><h4 class="font-bold mt-2">VipuDev AI (DevOps)</h4><p class="text-xs text-gray-600">Code generation & audit.</p></div>
-                            </div>
-                        </div>
+                        <main class="p-6">
+                <div id="contentContainer">
+                                        <div class="mb-8" id="mainWelcome">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome to SmartGenEduX!</h1>
+                        <p class="text-gray-600">Select a section in the sidebar to access modules or view your stats below.</p>
+                        
+                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6" id="statsGrid">
+                                                        <div class="p-4 rounded-lg bg-white shadow flex items-center space-x-3"><i class="fas fa-spinner fa-spin text-blue-600"></i><p class="text-gray-600">Loading Stats...</p></div>
+                        </div>
+                    </div>
+                    
+                                        <div id="moduleSections" class="space-y-8">
+                                                <div id="admin" class="section-content hidden">
+                            <h2 class="text-2xl font-bold mb-4 text-blue-700">Admin & Financial Services</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('fee-management')"><i class="fas fa-rupee-sign text-3xl text-yellow-600"></i><h4 class="font-bold mt-2">Fee Management</h4><p class="text-xs text-gray-600">Collection, Tally, Reminders.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('attendance')"><i class="fas fa-map-marker-alt text-3xl text-green-600"></i><h4 class="font-bold mt-2">Attendance (GPS/Barcode)</h4><p class="text-xs text-gray-600">Staff and Student Check-in.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('whatsapp')"><i class="fab fa-whatsapp text-3xl text-emerald-600"></i><h4 class="font-bold mt-2">WhatsApp Alerts</h4><p class="text-xs text-gray-600">Automated Parent Comms.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('admission')"><i class="fas fa-user-plus text-3xl text-blue-600"></i><h4 class="font-bold mt-2">Admission Management</h4><p class="text-xs text-gray-600">Workflow & Approvals.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('id-card-generator')"><i class="fas fa-id-card text-3xl text-cyan-600"></i><h4 class="font-bold mt-2">ID Card Generator</h4><p class="text-xs text-gray-600">Issue Staff/Student IDs.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('vipudev-ai')"><i class="fas fa-robot text-3xl text-purple-600"></i><h4 class="font-bold mt-2">VipuDev AI (DevOps)</h4><p class="text-xs text-gray-600">Code generation & audit.</p></div>
+                            </div>
+                        </div>
 
-                        <!-- Academic Section Details -->
-                        <div id="academic" class="section-content hidden">
-                            <h2 class="text-2xl font-bold mb-4 text-green-700">Academic & Teaching Tools</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('timetable')"><i class="fas fa-calendar-alt text-3xl text-blue-600"></i><h4 class="font-bold mt-2">Timetable Management</h4><p class="text-xs text-gray-600">Scheduling & Conflict Resolution.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('substitution')"><i class="fas fa-exchange-alt text-3xl text-orange-600"></i><h4 class="font-bold mt-2">Teacher Substitution</h4><p class="text-xs text-gray-600">Auto-assign & Leave Mapping.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('invigilation')"><i class="fas fa-eye text-3xl text-indigo-600"></i><h4 class="font-bold mt-2">Invigilation Duty</h4><p class="text-xs text-gray-600">Exam Seating & Staff Allocation.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('reports')"><i class="fas fa-file-alt text-3xl text-red-600"></i><h4 class="font-bold mt-2">Report Tracker</h4><p class="text-xs text-gray-600">Marks Entry & Approval Gate.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('behavior')"><i class="fas fa-heart text-3xl text-purple-600"></i><h4 class="font-bold mt-2">Behavior Tracker</h4><p class="text-xs text-gray-600">Points, Interventions & Rewards.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('qpg')"><i class="fas fa-file-invoice text-3xl text-teal-600"></i><h4 class="font-bold mt-2">Question Paper Gen</h4><p class="text-xs text-gray-600">AI-based Exam Creation.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('qe')"><i class="fas fa-search text-3xl text-cyan-600"></i><h4 class="font-bold mt-2">Question Extractor</h4><p class="text-xs text-gray-600">PDF/DOCX to Question Bank.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('cbse')"><i class="fas fa-book text-3xl text-red-800"></i><h4 class="font-bold mt-2">CBSE Registration</h4><p class="text-xs text-gray-600">9th & 11th Grade Submission.</p></div>
-                            </div>
-                        </div>
+                                                <div id="academic" class="section-content hidden">
+                            <h2 class="text-2xl font-bold mb-4 text-green-700">Academic & Teaching Tools</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('timetable')"><i class="fas fa-calendar-alt text-3xl text-blue-600"></i><h4 class="font-bold mt-2">Timetable Management</h4><p class="text-xs text-gray-600">Scheduling & Conflict Resolution.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('substitution')"><i class="fas fa-exchange-alt text-3xl text-orange-600"></i><h4 class="font-bold mt-2">Teacher Substitution</h4><p class="text-xs text-gray-600">Auto-assign & Leave Mapping.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('invigilation')"><i class="fas fa-eye text-3xl text-indigo-600"></i><h4 class="font-bold mt-2">Invigilation Duty</h4><p class="text-xs text-gray-600">Exam Seating & Staff Allocation.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('reports')"><i class="fas fa-file-alt text-3xl text-red-600"></i><h4 class="font-bold mt-2">Report Tracker</h4><p class="text-xs text-gray-600">Marks Entry & Approval Gate.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('behavior')"><i class="fas fa-heart text-3xl text-purple-600"></i><h4 class="font-bold mt-2">Behavior Tracker</h4><p class="text-xs text-gray-600">Points, Interventions & Rewards.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('qpg')"><i class="fas fa-file-invoice text-3xl text-teal-600"></i><h4 class="font-bold mt-2">Question Paper Gen</h4><p class="text-xs text-gray-600">AI-based Exam Creation.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('qe')"><i class="fas fa-search text-3xl text-cyan-600"></i><h4 class="font-bold mt-2">Question Extractor</h4><p class="text-xs text-gray-600">PDF/DOCX to Question Bank.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('cbse')"><i class="fas fa-book text-3xl text-red-800"></i><h4 class="font-bold mt-2">CBSE Registration</h4><p class="text-xs text-gray-600">9th & 11th Grade Submission.</p></div>
+                            </div>
+                        </div>
 
-                        <!-- Premium Section Details -->
-                        <div id="premium" class="section-content hidden">
-                            <h2 class="text-2xl font-bold mb-4 text-purple-700">Premium AI & Financial Integrations</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div class="module-card bg-white rounded-lg shadow-lg p-8 relative access-denied"><div class="premium-badge">PREMIUM</div><h4 class="font-bold mt-2">Timesubbehave AI</h4><p class="text-xs text-gray-600">Advanced predictive behavior analytics.</p></div>
-                                <div class="module-card bg-white rounded-lg shadow-lg p-8 relative access-denied"><div class="premium-badge">PREMIUM</div><h4 class="font-bold mt-2">Tally Integration</h4><p class="text-xs text-gray-600">Enterprise accounting & reconciliation.</p></div>
-                            </div>
-                        </div>
+                                                <div id="premium" class="section-content hidden">
+                            <h2 class="text-2xl font-bold mb-4 text-purple-700">Premium AI & Financial Integrations</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="module-card bg-white rounded-lg shadow-lg p-8 relative access-denied"><div class="premium-badge">PREMIUM</div><h4 class="font-bold mt-2">Timesubbehave AI</h4><p class="text-xs text-gray-600">Advanced predictive behavior analytics.</p></div>
+                                <div class="module-card bg-white rounded-lg shadow-lg p-8 relative access-denied"><div class="premium-badge">PREMIUM</div><h4 class="font-bold mt-2">Tally Integration</h4><p class="text-xs text-gray-600">Enterprise accounting & reconciliation.</p></div>
+                            </div>
+                        </div>
 
-                        <!-- Settings Section -->
-                        <div id="settings" class="section-content hidden">
-                            <h2 class="text-2xl font-bold mb-4 text-gray-700">System Configuration</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('documentation-hub')"><i class="fas fa-book-open text-3xl text-gray-600"></i><h4 class="font-bold mt-2">Documentation Hub</h4><p class="text-xs text-gray-600">Policy Editing & Audit Readiness.</p></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
+                                                <div id="settings" class="section-content hidden">
+                            <h2 class="text-2xl font-bold mb-4 text-gray-700">System Configuration</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                <div class="module-card bg-white rounded-lg shadow-lg p-6" onclick="openModule('documentation-hub')"><i class="fas fa-book-open text-3xl text-gray-600"></i><h4 class="font-bold mt-2">Documentation Hub</h4><p class="text-xs text-gray-600">Policy Editing & Audit Readiness.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
 
-    <script>
-        const API_BASE_V1 = '/api/v1';
+    <script>
+        const API_BASE_V1 = '/api/v1';
 
-        // --- Authentication and User State ---
-        let userContext = null;
+        // --- Authentication and User State ---
+        let userContext = null;
 
-        function checkAuthentication() {
-            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            const userInfo = sessionStorage.getItem('currentUserInfo');
+        function checkAuthentication() {
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            const userInfo = sessionStorage.getItem('currentUserInfo');
 
-            if (!token || !userInfo) {
-                document.getElementById('loginScreen').classList.remove('hidden');
-                document.getElementById('dashboard').classList.add('hidden');
-                return;
-            }
+            if (!token || !userInfo) {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('dashboard').classList.add('hidden');
+                return;
+            }
 
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            
-            userContext = JSON.parse(userInfo);
-            updateUserInfo();
-            loadDashboardStats();
-            showSection('main'); 
-        }
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            
+            userContext = JSON.parse(userInfo);
+            updateUserInfo();
+            loadDashboardStats();
+            showSection('main'); 
+        }
 
-        function getRoleDisplayName(role) {
-            const roleNames = {
-                'super_admin': 'Super Administrator',
-                'school_admin': 'School Administrator',
-                'teacher': 'Teacher'
-            };
-            return roleNames[role] || role.split('_').join(' ');
-        }
+        function getRoleDisplayName(role) {
+            const roleNames = {
+                'super_admin': 'Super Administrator',
+                'school_admin': 'School Administrator',
+                'teacher': 'Teacher'
+            };
+            return roleNames[role] || role.split('_').join(' ');
+        }
 
-        function updateUserInfo() {
-            if (userContext) {
-                document.getElementById('userName').textContent = userContext.fullName || 'Administrator';
-                document.getElementById('userRole').textContent = getRoleDisplayName(userContext.role);
-                document.getElementById('userEmail').textContent = userContext.email;
-                document.getElementById('userAvatar').textContent = userContext.fullName ? userContext.fullName.charAt(0) : 'U';
-                document.getElementById('schoolName').textContent = userContext.tenant || 'Global HQ';
-            }
-        }
+        function updateUserInfo() {
+            if (userContext) {
+                document.getElementById('userName').textContent = userContext.fullName || 'Administrator';
+                document.getElementById('userRole').textContent = getRoleDisplayName(userContext.role);
+                document.getElementById('userEmail').textContent = userContext.email;
+                document.getElementById('userAvatar').textContent = userContext.fullName ? userContext.fullName.charAt(0) : 'U';
+                document.getElementById('schoolName').textContent = userContext.tenant || 'Global HQ';
+            }
+        }
 
-        async function loadDashboardStats() {
-            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            if (!token) return;
+        async function loadDashboardStats() {
+            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+            if (!token) return;
 
-            const statsGrid = document.getElementById('statsGrid');
-            statsGrid.innerHTML = '<div class="p-4 rounded-lg bg-white shadow flex items-center space-x-3"><i class="fas fa-spinner fa-spin text-blue-600"></i><p class="text-gray-600">Loading Stats...</p></div>';
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = '<div class="p-4 rounded-lg bg-white shadow flex items-center space-x-3"><i class="fas fa-spinner fa-spin text-blue-600"></i><p class="text-gray-600">Loading Stats...</p></div>';
 
-            try {
-                const response = await fetch(`${API_BASE_V1}/dashboard-stats`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const stats = await response.json();
-                
-                if (response.ok) {
-                    const statsData = [
-                        { icon: '🏫', value: stats.totalSchools || '0', label: 'Total Schools' },
-                        { icon: '👨‍🏫', value: stats.totalTeachers || '0', label: 'Teaching Staff' },
-                        { icon: '👥', value: stats.totalStudents || '0', label: 'Total Students' },
-                        { icon: '💰', value: stats.feeCollection || '₹0', label: 'Monthly Collection' }
-                    ];
+            try {
+                const response = await fetch(`${API_BASE_V1}/dashboard-stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const stats = await response.json();
+                
+                if (response.ok) {
+                    const statsData = [
+                        { icon: '🏫', value: stats.totalSchools || '0', label: 'Total Schools' },
+                        { icon: '👨‍🏫', value: stats.totalTeachers || '0', label: 'Teaching Staff' },
+                        { icon: '👥', value: stats.totalStudents || '0', label: 'Total Students' },
+                        { icon: '💰', value: stats.feeCollection || '₹0', label: 'Monthly Collection' }
+                    ];
 
-                    statsGrid.innerHTML = statsData.map(stat => `
-                        <div class="p-4 rounded-lg bg-white shadow flex items-center space-x-3">
-                            <div class="text-2xl text-purple-600">${stat.icon}</div>
-                            <div>
-                                <div class="text-lg font-bold">${stat.value}</div>
-                                <div class="text-xs text-gray-500">${stat.label}</div>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) {
-                statsGrid.innerHTML = '<div class="p-4 rounded-lg bg-white shadow access-denied"><i class="fas fa-exclamation-circle"></i> Error loading stats.</div>';
-            }
-        }
+                    statsGrid.innerHTML = statsData.map(stat => `
+                        <div class="p-4 rounded-lg bg-white shadow flex items-center space-x-3">
+                            <div class="text-2xl text-purple-600">${stat.icon}</div>
+                            <div>
+                                <div class="text-lg font-bold">${stat.value}</div>
+                                <div class="text-xs text-gray-500">${stat.label}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                statsGrid.innerHTML = '<div class="p-4 rounded-lg bg-white shadow access-denied"><i class="fas fa-exclamation-circle"></i> Error loading stats.</div>';
+            }
+        }
 
-        // --- Module Access and Navigation ---
-        
-        const moduleAccess = {
-            'super_admin': ['all'], 
-            'school_admin': [
-                'fee-management', 'attendance', 'whatsapp', 'pdf-tools', 'admission', 'events',
-                'timetable', 'substitution', 'invigilation', 'distribution', 'reports', 'behavior',
-                'question-paper', 'question-extractor', 'vipu-ai', 'tally-integration', 'id-card-generator'
-            ],
-            'teacher': [
-                'attendance', 'timetable', 'substitution', 'reports', 'behavior',
-                'question-paper', 'question-extractor', 'vipu-ai'
-            ]
-        };
+        // --- Module Access and Navigation ---
+        
+        const moduleAccess = {
+            'super_admin': ['all'], 
+            'school_admin': [
+                'fee-management', 'attendance', 'whatsapp', 'pdf-tools', 'admission', 'events',
+                'timetable', 'substitution', 'invigilation', 'distribution', 'reports', 'behavior',
+                'question-paper', 'question-extractor', 'vipu-ai', 'tally-integration', 'id-card-generator'
+            ],
+            'teacher': [
+                'attendance', 'timetable', 'substitution', 'reports', 'behavior',
+                'question-paper', 'question-extractor', 'vipu-ai'
+            ]
+        };
 
-        function hasModuleAccess(moduleName) {
-            if (!userContext) return false;
-            const role = userContext.role;
-            const accessList = moduleAccess[role] || [];
-            return accessList.includes('all') || accessList.includes(moduleName);
-        }
+        function hasModuleAccess(moduleName) {
+            if (!userContext) return false;
+            const role = userContext.role;
+            const accessList = moduleAccess[role] || [];
+            return accessList.includes('all') || accessList.includes(moduleName);
+        }
 
-        function showSection(sectionId) {
-            // Logic to switch the sidebar nav item
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            // NOTE: Using a simple workaround since event.target is not available here:
-            const targetElement = document.querySelector(`.nav-item[onclick*="'${sectionId}'"]`);
-            if (targetElement) targetElement.classList.add('active');
+        function showSection(sectionId) {
+            // Logic to switch the sidebar nav item
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            // NOTE: Using a simple workaround since event.target is not available here:
+            const targetElement = document.querySelector(`.nav-item[onclick*="'${sectionId}'"]`);
+            if (targetElement) targetElement.classList.add('active');
 
-            // Logic to switch content views
-            document.querySelectorAll('.section-content').forEach(content => content.classList.add('hidden'));
+            // Logic to switch content views
+            document.querySelectorAll('.section-content').forEach(content => content.classList.add('hidden'));
 
-            if (sectionId === 'main') {
-                 document.getElementById('mainWelcome').classList.remove('hidden');
-                 document.getElementById('moduleSections').classList.add('hidden');
-            } else {
-                 document.getElementById('mainWelcome').classList.add('hidden');
-                 document.getElementById('moduleSections').classList.remove('hidden');
-                 document.getElementById(sectionId).classList.remove('hidden');
-            }
-        }
-        
-        function openModule(moduleName) {
-            const moduleUrls = {
-                'timetable': 'modules/timetable.html',
-                'attendance': 'modules/attendance.html',
-                'fee-management': 'modules/fee-management.html',
-                'behavior': 'modules/student-behavior.html',
-                'substitution': 'modules/substitution.html',
-                'reports': 'modules/report-tracker.html',
-                'events': 'modules/school-events.html',
-                'whatsapp': 'modules/whatsapp-alerts.html',
-                'vipu-ai': 'modules/vipu-ai.html',
-                'pdf-tools': 'modules/pdf-tools.html',
-                'admission': 'modules/admission-management.html',
-                'invigilation': 'modules/invigilation-duty.html',
-                'distribution': 'modules/student-distribution.html',
-                'question-paper': 'modules/question-paper.html',
-                'question-extractor': 'modules/question-extractor.html',
-                'voice-to-text': 'modules/voice-to-text.html',
-                'ai-premium': 'modules/timesubbehave-ai.html',
-                'tally-integration': 'modules/fee-tally-integration.html',
-                'vipudev-ai': 'modules/vipudev-ai.html',
-                'id-card-generator': 'modules/id-card-generator.html',
-                'documentation-hub': 'modules/documentation-hub.html'
-            };
+            if (sectionId === 'main') {
+                 document.getElementById('mainWelcome').classList.remove('hidden');
+                 document.getElementById('moduleSections').classList.add('hidden');
+            } else {
+                 document.getElementById('mainWelcome').classList.add('hidden');
+                 document.getElementById('moduleSections').classList.remove('hidden');
+                 document.getElementById(sectionId).classList.remove('hidden');
+            }
+        }
+        
+        function openModule(moduleName) {
+            const moduleUrls = {
+                'timetable': 'modules/timetable.html',
+                'attendance': 'modules/attendance.html',
+                'fee-management': 'modules/fee-management.html',
+                'behavior': 'modules/student-behavior.html',
+                'substitution': 'modules/substitution.html',
+                'reports': 'modules/report-tracker.html',
+                'events': 'modules/school-events.html',
+                'whatsapp': 'modules/whatsapp-alerts.html',
+                'vipu-ai': 'modules/vipu-ai.html',
+                'pdf-tools': 'modules/pdf-tools.html',
+                'admission': 'modules/admission-management.html',
+                'invigilation': 'modules/invigilation-duty.html',
+                'distribution': 'modules/student-distribution.html',
+                'question-paper': 'modules/question-paper.html',
+                'question-extractor': 'modules/question-extractor.html',
+                'voice-to-text': 'modules/voice-to-text.html',
+                'ai-premium': 'modules/timesubbehave-ai.html',
+                'tally-integration': 'modules/fee-tally-integration.html',
+                'vipudev-ai': 'modules/vipudev-ai.html',
+                'id-card-generator': 'modules/id-card-generator.html',
+                'documentation-hub': 'modules/documentation-hub.html'
+            };
 
-            if (!hasModuleAccess(moduleName)) {
-                showAccessDenied(moduleName);
-                return;
-            }
+            if (!hasModuleAccess(moduleName)) {
+                showAccessDenied(moduleName);
+                return;
+            }
 
-            if (moduleUrls[moduleName]) {
-                window.open(moduleUrls[moduleName], '_blank');
-            } else {
-                 showToast(`${moduleName} module opening...`, 'info');
-            }
-        }
-        
-        function showAccessDenied(moduleName) {
-            const role = userContext.role;
-            alert(`ACCESS DENIED: Your role (${getRoleDisplayName(role)}) cannot access the ${moduleName} module.`);
-        }
-        
-        function showToast(message, type = 'info') {
-            // Simple toast simulation
-            console.log(`[TOAST] ${type.toUpperCase()}: ${message}`);
-        }
+            if (moduleUrls[moduleName]) {
+                window.open(moduleUrls[moduleName], '_blank');
+            } else {
+                 showToast(`${moduleName} module opening...`, 'info');
+            }
+        }
+        
+        function showAccessDenied(moduleName) {
+            const role = userContext.role;
+            alert(`ACCESS DENIED: Your role (${getRoleDisplayName(role)}) cannot access the ${moduleName} module.`);
+        }
+        
+        function showToast(message, type = 'info') {
+            // Simple toast simulation
+            console.log(`[TOAST] ${type.toUpperCase()}: ${message}`);
+        }
 
-        function logout() {
-            localStorage.removeItem('authToken');
-            sessionStorage.clear();
-            window.location.href = 'login.html';
-        }
+        function logout() {
+            localStorage.removeItem('authToken');
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
 
-        // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-             checkAuthentication();
-        });
-    </script>
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+             checkAuthentication();
+        });
+    </script>
 </body>
 </html>
