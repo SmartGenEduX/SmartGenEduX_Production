@@ -1,214 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SmartGenX Login</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-
-  <style>
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Inter', sans-serif;
-    }
-    .login-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    .input-group {
-      position: relative;
-      margin-bottom: 1.5rem;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      outline: none;
-      font-size: 1rem;
-      transition: border-color 0.3s ease;
-    }
-    .input-group input:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px #c3dafe;
-    }
-    .input-group label {
-      position: absolute;
-      top: 50%;
-      left: 1rem;
-      transform: translateY(-50%);
-      color: #9ca3af;
-      pointer-events: none;
-      transition: all 0.2s ease;
-      background: white;
-      padding: 0 0.25rem;
-    }
-    .input-group input:focus + label,
-    .input-group input:not(:placeholder-shown) + label {
-      top: -0.6rem;
-      font-size: 0.75rem;
-      color: #667eea;
-    }
-    button.login-btn {
-      width: 100%;
-      padding: 0.75rem;
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    button.login-btn:hover {
-      background: linear-gradient(90deg, #5661b3, #613b81);
-    }
-    .logo-img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      margin: 0 auto 1.5rem;
-      display: block;
-      object-fit: cover;
-    }
-    .error-message {
-      color: #dc2626;
-      margin-bottom: 1rem;
-      text-align: center;
-      font-weight: 600;
-    }
-    #loadingOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #loadingOverlay.hidden {
-      display: none;
-    }
-    .spinner {
-      border-top-color: #667eea;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e5e7eb;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartGenEduX - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .login-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            transform: translateY(-1.5rem) scale(0.8);
+            color: #667eea;
+        }
+        .input-group label {
+            transition: all 0.3s ease;
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            pointer-events: none;
+            color: #9ca3af;
+        }
+    </style>
 </head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
+        <div class="absolute top-1/2 left-1/4 w-60 h-60 bg-white opacity-5 rounded-full"></div>
+    </div>
 
-<body>
-  <div class="login-card">
-    <img src="assets/SmartGenEduX_20250518_005919_0000.jpg" alt="SmartGenEduX Logo" class="logo-img" />
-    <h2 class="text-center text-2xl font-bold mb-4">Welcome Back</h2>
-    <p class="text-center mb-6 text-gray-600">Sign in to your account</p>
-    <div id="errorMsg" class="error-message"></div>
+    <div class="relative z-10 w-full max-w-md">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4 overflow-hidden">
+                <img src="assets/smartgenedux-main-logo.jpg" alt="SmartGenEduX" class="w-full h-full object-cover">
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-2">SmartGenEduX</h1>
+            <p class="text-blue-100">Complete School Management ERP</p>
+        </div>
 
-    <form id="loginForm" novalidate>
-      <div class="input-group">
-        <input type="email" id="email" name="email" placeholder=" " required />
-        <label for="email">Email Address</label>
-      </div>
+        <!-- Login Card -->
+        <div class="login-card rounded-2xl shadow-2xl p-8">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+                <p class="text-gray-600">Sign in to access your dashboard</p>
+            </div>
 
-      <div class="input-group">
-        <input type="password" id="password" name="password" placeholder=" " required minlength="6" />
-        <label for="password">Password</label>
-      </div>
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-6">
+                <!-- Email Input -->
+                <div class="input-group">
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        required
+                    >
+                    <label for="email">Email Address</label>
+                </div>
 
-      <div class="mb-4 flex items-center justify-between">
-        <label class="text-sm text-gray-600"><input type="checkbox" id="rememberMe" class="mr-2" /> Remember me</label>
-        <a href="#" class="text-blue-600 hover:underline text-sm">Forgot password?</a>
-      </div>
+                <!-- Password Input -->
+                <div class="input-group">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        placeholder=" "
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        required
+                    >
+                    <label for="password">Password</label>
+                </div>
 
-      <button type="submit" class="login-btn">Sign In <i class="fas fa-sign-in-alt ml-2"></i></button>
-    </form>
-  </div>
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="rememberMe" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
+                </div>
 
-  <div id="loadingOverlay" class="hidden">
-    <div class="spinner"></div>
-  </div>
+                <!-- Login Button -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                >
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Sign In
+                </button>
+            </form>
 
-  <script>
-    // Redirect if already logged in
-    if (localStorage.getItem("authToken") || sessionStorage.getItem("authToken")) {
-      window.location.href = "index.html";
-    }
+            <!-- Footer -->
+            <div class="text-center mt-6 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-600">
+                    Don't have an account? 
+                    <a href="register.html" class="text-blue-600 hover:text-blue-800 font-medium">Create Account</a>
+                </p>
+                <p class="text-xs text-gray-500 mt-2">
+                    Or <a href="#" class="text-blue-600 hover:text-blue-800">Contact Administrator</a> for enterprise setup
+                </p>
+            </div>
+        </div>
 
-    const loginForm = document.getElementById("loginForm");
-    const errorMsg = document.getElementById("errorMsg");
-    const loadingOverlay = document.getElementById("loadingOverlay");
+        <!-- Footer -->
+        <div class="text-center mt-8 text-white text-sm">
+            <p>© 2024 SmartGenEduX. All rights reserved.</p>
+            <p class="mt-2 text-blue-200">Powered by Advanced School Management Technology</p>
+        </div>
+    </div>
 
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errorMsg.textContent = "";
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 text-center">
+            <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p class="text-gray-600">Signing you in...</p>
+        </div>
+    </div>
 
-      const email = loginForm.email.value.trim();
-      const password = loginForm.password.value;
-      const rememberMe = loginForm.rememberMe.checked;
+    <script>
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const rememberMe = document.getElementById('rememberMe').checked;
 
-      if (!email || !password) {
-        errorMsg.textContent = "Please enter email and password.";
-        return;
-      }
+            document.getElementById('loadingOverlay').classList.remove('hidden');
 
-      loadingOverlay.classList.remove("hidden");
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                });
+                const data = await response.json();
 
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
+                if (!response.ok) {
+                    throw new Error(data.error || "Invalid email or password.");
+                }
 
-        const data = await res.json();
-        
-        if (!res.ok) {
-          const errorMessage = data.error || (data.errors ? data.errors[0].msg : "Login failed. Check server status.");
-          throw new Error(errorMessage);
-        }
+                // Store token
+                if (rememberMe) {
+                    localStorage.setItem('authToken', data.token);
+                } else {
+                    sessionStorage.setItem('authToken', data.token);
+                }
+                sessionStorage.setItem('currentUserInfo', JSON.stringify(data.user));
 
-        const token = data.token;
+                window.location.href = 'index.html';
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        });
 
-        // Store token based on 'Remember Me' preference
-        if (rememberMe) {
-          localStorage.setItem("authToken", token);
-        } else {
-          sessionStorage.setItem("authToken", token);
-        }
-        
-        // Store minimal user info for faster dashboard loading (name/role/tenant)
-        sessionStorage.setItem("currentUserInfo", JSON.stringify(data.user));
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+            errorDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            const form = document.getElementById('loginForm');
+            form.insertBefore(errorDiv, form.firstChild);
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
 
-        // Redirect to main dashboard
-        window.location.href = "index.html";
-      } catch (err) {
-        // Display error message
-        errorMsg.textContent = err.message;
-      } finally {
-        // Hide loading regardless of result
-        loadingOverlay.classList.add("hidden");
-      }
-    });
-  </script>
+        // Redirect if already logged in
+        if (localStorage.getItem("authToken") || sessionStorage.getItem("authToken")) {
+            window.location.href = "index.html";
+        }
+    </script>
 </body>
 </html>
