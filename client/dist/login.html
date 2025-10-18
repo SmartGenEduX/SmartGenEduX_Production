@@ -1,195 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartGenEduX - Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .login-card {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .input-group {
-            position: relative;
-        }
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label {
-            transform: translateY(-1.5rem) scale(0.8);
-            color: #667eea;
-        }
-        .input-group label {
-            transition: all 0.3s ease;
-            position: absolute;
-            left: 1rem;
-            top: 1rem;
-            pointer-events: none;
-            color: #9ca3af;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>SmartGenEduX Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a237e 0%, #6a1b9a 100%);
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+    }
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url('data:image/svg+xml;utf8,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><g opacity="0.07"><rect x="20" y="20" width="80" height="80" rx="18" fill="none" stroke="white" stroke-width="2"/><circle cx="60" cy="60" r="12" fill="none" stroke="white" stroke-width="2"/><path d="M60 20v20M60 80v20M20 60h20M80 60h20" stroke="white" stroke-width="2" fill="none"/></g></svg>');
+      background-repeat: repeat;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .blur-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.32;
+      z-index: 1;
+    }
+    .blur1 { width: 320px; height: 320px; background: #7c4dff; top: 8%; left: 4%; }
+    .blur2 { width: 180px; height: 180px; background: #3949ab; bottom: 8%; right: 8%; }
+    .blur3 { width: 120px; height: 120px; background: #6a1b9a; top: 60%; left: 70%; }
+    .login-container {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      background: rgba(30, 32, 60, 0.68);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(18px);
+      border-radius: 32px;
+      padding: 48px 36px 32px 36px;
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1.5px solid rgba(255,255,255,0.13);
+      margin: 32px 0;
+    }
+    .logo-container {
+      background: rgba(60, 60, 120, 0.7);
+      border-radius: 50%;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 24px 0 #7c4dff55, 0 0 0 8px rgba(124,77,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-container img {
+      width: 64px;
+      height: 64px;
+      display: block;
+    }
+    .login-card h2 {
+      margin: 0 0 8px 0;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+    .login-card .tagline {
+      font-size: 1rem;
+      color: #b39ddb;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .login-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .input-group {
+      position: relative;
+      width: 100%;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 18px 16px 18px 48px;
+      background: rgba(255,255,255,0.09);
+      border: 1.5px solid rgba(255,255,255,0.18);
+      border-radius: 16px;
+      color: #fff;
+      font-size: 1.08rem;
+      outline: none;
+      transition: border 0.2s;
+      font-family: inherit;
+    }
+    .input-group input:focus {
+      border-color: #7c4dff;
+    }
+    .input-group label {
+      position: absolute;
+      left: 48px;
+      top: 18px;
+      color: #b39ddb;
+      font-size: 1.08rem;
+      pointer-events: none;
+      transition: 0.2s;
+      background: transparent;
+    }
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label {
+      top: -12px;
+      left: 40px;
+      font-size: 0.88rem;
+      color: #7c4dff;
+      background: rgba(30,32,60,0.7);
+      padding: 0 6px;
+      border-radius: 4px;
+    }
+    .input-group .icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #b39ddb;
+      font-size: 1.3rem;
+      pointer-events: none;
+    }
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+    .form-options label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .form-options input[type="checkbox"] {
+      accent-color: #7c4dff;
+      width: 16px;
+      height: 16px;
+    }
+    .form-options .forgot {
+      color: #7c4dff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: text-decoration 0.2s;
+    }
+    .form-options .forgot:hover {
+      text-decoration: underline;
+    }
+    .sign-in-btn {
+      width: 100%;
+      padding: 15px 0;
+      background: linear-gradient(90deg, #7c4dff 0%, #3949ab 100%);
+      color: #fff;
+      font-size: 1.13rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px 0 #7c4dff33;
+      cursor: pointer;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .sign-in-btn:hover, .sign-in-btn:focus {
+      transform: scale(1.03);
+      box-shadow: 0 4px 24px 0 #7c4dff55;
+    }
+    .login-footer {
+      margin-top: 28px;
+      width: 100%;
+      text-align: center;
+      font-size: 1rem;
+      color: #b39ddb;
+    }
+    .login-footer a {
+      color: #7c4dff;
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+    .microtext {
+      display: block;
+      font-size: 0.87rem;
+      color: #8e99f3;
+      margin-top: 6px;
+    }
+    .page-footer {
+      position: fixed;
+      bottom: 16px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-size: 0.95rem;
+      color: #b39ddb;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .powered-by {
+      font-size: 0.85rem;
+      color: #8e99f3;
+      margin-top: 2px;
+    }
+    .watermark {
+      position: fixed;
+      bottom: 12px;
+      right: 18px;
+      opacity: 0.09;
+      z-index: 1;
+      width: 100px;
+      height: 100px;
+      pointer-events: none;
+    }
+    @media (max-width: 600px) {
+      .login-card {
+        padding: 28px 8px 18px 8px;
+        border-radius: 18px;
+      }
+      .logo-container {
+        padding: 12px;
+      }
+      .watermark {
+        width: 48px;
+        height: 48px;
+      }
+      .blur1, .blur2, .blur3 {
+        display: none;
+      }
+    }
+  </style>
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full"></div>
-        <div class="absolute top-1/2 left-1/4 w-60 h-60 bg-white opacity-5 rounded-full"></div>
+<body>
+  <div class="blur-shape blur1"></div>
+  <div class="blur-shape blur2"></div>
+  <div class="blur-shape blur3"></div>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo-container">
+        <!-- Replace src with your final logo file -->
+        <img src="smartgenedux-logo.png" alt="SmartGenEduX Logo">
+      </div>
+      <h2>Welcome Back</h2>
+      <div class="tagline">Complete School Management ERP</div>
+      <form class="login-form" autocomplete="off">
+        <div class="input-group">
+          <span class="icon">&#128100;</span>
+          <input type="email" id="email" name="email" required placeholder=" " autocomplete="username">
+          <label for="email">Email Address</label>
+        </div>
+        <div class="input-group">
+          <span class="icon">&#128274;</span>
+          <input type="password" id="password" name="password" required placeholder=" " autocomplete="current-password">
+          <label for="password">Password</label>
+        </div>
+        <div class="form-options">
+          <label>
+            <input type="checkbox" name="remember">
+            Remember me
+          </label>
+          <a href="#" class="forgot">Forgot password?</a>
+        </div>
+        <button type="submit" class="sign-in-btn">
+          <span>&#10148;</span> Sign In
+        </button>
+      </form>
+      <div class="login-footer">
+        Don’t have an account?
+        <a href="#">Create Account</a>
+        <span class="microtext">Contact administrator for enterprise setup</span>
+      </div>
     </div>
-
-    <div class="relative z-10 w-full max-w-md">
-        <!-- Logo and Title -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4 overflow-hidden">
-                <img src="assets/smartgenedux-main-logo.jpg" alt="SmartGenEduX" class="w-full h-full object-cover">
-            </div>
-            <h1 class="text-4xl font-bold text-white mb-2">SmartGenEduX</h1>
-            <p class="text-blue-100">Complete School Management ERP</p>
-        </div>
-
-        <!-- Login Card -->
-        <div class="login-card rounded-2xl shadow-2xl p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-                <p class="text-gray-600">Sign in to access your dashboard</p>
-            </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" class="space-y-6">
-                <!-- Email Input -->
-                <div class="input-group">
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="email">Email Address</label>
-                </div>
-
-                <!-- Password Input -->
-                <div class="input-group">
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password"
-                        placeholder=" "
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        required
-                    >
-                    <label for="password">Password</label>
-                </div>
-
-                <!-- Remember Me & Forgot Password -->
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center">
-                        <input type="checkbox" id="rememberMe" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                    </label>
-                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
-                </div>
-
-                <!-- Login Button -->
-                <button 
-                    type="submit" 
-                    class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
-                >
-                    <i class="fas fa-sign-in-alt mr-2"></i>
-                    Sign In
-                </button>
-            </form>
-
-            <!-- Footer -->
-            <div class="text-center mt-6 pt-6 border-t border-gray-200">
-                <p class="text-sm text-gray-600">
-                    Don't have an account? 
-                    <a href="register.html" class="text-blue-600 hover:text-blue-800 font-medium">Create Account</a>
-                </p>
-                <p class="text-xs text-gray-500 mt-2">
-                    Or <a href="#" class="text-blue-600 hover:text-blue-800">Contact Administrator</a> for enterprise setup
-                </p>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="text-center mt-8 text-white text-sm">
-            <p>© 2024 SmartGenEduX. All rights reserved.</p>
-            <p class="mt-2 text-blue-200">Powered by Advanced School Management Technology</p>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg p-6 text-center">
-            <div class="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p class="text-gray-600">Signing you in...</p>
-        </div>
-    </div>
-
-    <script>
-        // Handle form submission
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const rememberMe = document.getElementById('rememberMe').checked;
-
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password }),
-                });
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || "Invalid email or password.");
-                }
-
-                // Store token
-                if (rememberMe) {
-                    localStorage.setItem('authToken', data.token);
-                } else {
-                    sessionStorage.setItem('authToken', data.token);
-                }
-                sessionStorage.setItem('currentUserInfo', JSON.stringify(data.user));
-
-                window.location.href = 'index.html';
-            } catch (err) {
-                showError(err.message);
-            } finally {
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }
-        });
-
-        // Show error message
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
-            errorDiv.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            const form = document.getElementById('loginForm');
-            form.insertBefore(errorDiv, form.firstChild);
-            setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
-        }
-
-        // Redirect if already logged in
-        if (localStorage.getItem("authToken") || sessionStorage.getItem("authToken")) {
-            window.location.href = "index.html";
-        }
-    </script>
+  </div>
+  <div class="page-footer">
+    © 2025 SmartGenEduX. All rights reserved.
+    <div class="powered-by">Powered by Advanced School Management Technology</div>
+  </div>
+  <!-- Watermark logo (replace src) -->
+  <img src="smartgenedux-logo.png" alt="SmartGenEduX Watermark" class="watermark">
 </body>
 </html>
