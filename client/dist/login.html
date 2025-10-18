@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>SmartGenEduX Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    /* Your existing styles */
     body {
       min-height: 100vh;
       margin: 0;
@@ -18,8 +19,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: url('data:image/svg+xml;utf8,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><g opacity="0.07"><rect x="20" y="20" width="80" height="80" rx="18" fill="none" stroke="white" stroke-width="2"/><circle cx="60" cy="60" r="12" fill="none" stroke="white" stroke-width="2"/><path d="M60 20v20M60 80v20M20 60h20M80 60h20" stroke="white" stroke-width="2" fill="none"/></g></svg>');
-      background-repeat: repeat;
+      background: url('data:image/svg+xml;utf8,<svg width="120" height="120" xmlns="http://www.w3.org/2000/svg"><g opacity="0.07"><rect x="20" y="20" width="80" height="80" rx="18" fill="none" stroke="white" stroke-width="2"/><circle cx="60" cy="60" r="12" fill="none" stroke="white" stroke-width="2"/><path d="M60 20v20M60 80v20M20 60h20M80 60h20" stroke="white" stroke-width="2" fill="none"/></g></svg>') repeat;
       z-index: 0;
       pointer-events: none;
     }
@@ -265,26 +265,26 @@
       </div>
       <h2>Welcome Back</h2>
       <div class="tagline">Complete School Management ERP</div>
-      <form class="login-form" autocomplete="off">
+      <form class="login-form" autocomplete="off" id="loginForm">
         <div class="input-group">
-          <span class="icon">&#128100;</span>
-          <input type="email" id="email" name="email" required placeholder=" " autocomplete="username">
+          <span class="icon">👤</span>
+          <input type="email" id="email" name="email" required placeholder=" " autocomplete="username" />
           <label for="email">Email Address</label>
         </div>
         <div class="input-group">
-          <span class="icon">&#128274;</span>
-          <input type="password" id="password" name="password" required placeholder=" " autocomplete="current-password">
+          <span class="icon">🔒</span>
+          <input type="password" id="password" name="password" required placeholder=" " autocomplete="current-password" />
           <label for="password">Password</label>
         </div>
         <div class="form-options">
           <label>
-            <input type="checkbox" name="remember">
+            <input type="checkbox" name="remember" />
             Remember me
           </label>
           <a href="#" class="forgot">Forgot password?</a>
         </div>
         <button type="submit" class="sign-in-btn">
-          <span>&#10148;</span> Sign In
+          <span>➤</span> Sign In
         </button>
       </form>
       <div class="login-footer">
@@ -299,6 +299,35 @@
     <div class="powered-by">Powered by Advanced School Management Technology</div>
   </div>
   <!-- Watermark logo (replace src) -->
-  <img src="smartgenedux-logo.png" alt="SmartGenEduX Watermark" class="watermark">
+  <img src="smartgenedux-logo.png" alt="SmartGenEduX Watermark" class="watermark" />
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+
+  <script>
+    const SUPABASE_URL = 'https://waqttehjaifdkcbovund.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhcXR0ZWhqYWlmZGtjYm92dW5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2Mjk1ODIsImV4cCI6MjA2NTIwNTU4Mn0.nv1_UIuXl-wSfkfTMvwCUsJTGO65TwZ2D8a571ELKJ0';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = loginForm.email.value;
+      const password = loginForm.password.value;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          alert('Login failed: ' + error.message);
+          return;
+        }
+        alert('Login successful! Redirecting...');
+        window.location.href = '/dashboard';
+      } catch (err) {
+        alert('Unexpected error: ' + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
