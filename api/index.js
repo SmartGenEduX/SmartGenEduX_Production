@@ -9,6 +9,10 @@ const { performance } = require('perf_hooks');
 const helmet = require('helmet'); 
 const { v4: uuidv4 } = require('uuid'); // For generating trace IDs
 
+// Add Supabase SDK and initialize client using env keys
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -103,7 +107,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // --- 3. MODULE IMPORTS (All 15+ Modules) ---
-const authRoutes = require('./modules/auth'); 
+// Pass the supabase client to these modules if needed
+const authRoutes = require('./modules/auth')(supabase); 
 const settingsManager = require('./modules/system_settings_api');
 const timetableRoutes = require('./modules/timetable');
 const attendanceRoutes = require('./modules/attendance');
@@ -121,7 +126,7 @@ const leaveConfig = require('./modules/leave-config');
 const vipuAi = require('./modules/vipu-ai');
 const arattaiManager = require('./modules/arattai-manager'); 
 const schoolEventLogRoutes = require('./modules/school-event-log'); 
-const userManagementRoutes = require('./modules/adminUsers');
+const userManagementRoutes = require('./modules/adminUsers')(supabase); 
 
 // --- 4. API ROUTES (Authenticated & Public) ---
 // PUBLIC / UNPROTECTED AUTH ROUTES
