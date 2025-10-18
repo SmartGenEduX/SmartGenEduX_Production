@@ -47,7 +47,6 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Additional animations & styles as needed */
     </style>
 </head>
 <body class="min-h-full bg-slate-900 text-white circuit-pattern relative overflow-x-hidden">
@@ -69,6 +68,7 @@
                 <!-- Logo -->
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                        <!-- Replace this svg with your logo SVG file if you have one -->
                         <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/>
                             <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -224,8 +224,8 @@
 
     <script>
         // Initialize Supabase client
-        const SUPABASE_URL = 'https://waqttehjaifdkcbovund.supabase.co' // Replace with your Supabase project URL
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhcXR0ZWhqYWlmZGtjYm92dW5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2Mjk1ODIsImV4cCI6MjA2NTIwNTU4Mn0.nv1_UIuXl-wSfkfTMvwCUsJTGO65TwZ2D8a571ELKJ0' // Replace with your Supabase anon key
+        const SUPABASE_URL = 'https://waqttehjaifdkcbovund.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhcXR0ZWhqYWlmZGtjYm92dW5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2Mjk1ODIsImV4cCI6MjA2NTIwNTU4Mn0.nv1_UIuXl-wSfkfTMvwCUsJTGO65TwZ2D8a571ELKJ0';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // DOM elements
@@ -246,15 +246,13 @@
         const recentActivityPreview = document.getElementById('recentActivityPreview');
         const redirectMessage = document.getElementById('redirectMessage');
 
-        // Initialize UI state
+        // UI reset function
         function resetUI() {
             userStatus.classList.add('hidden');
             sessionInfo.classList.add('hidden');
             authBtn.textContent = 'Login';
             authBtn.classList.remove('bg-red-500/80');
-            authBtn.classList.add('bg-gradient-to-r');
-            authBtn.classList.add('from-blue-500');
-            authBtn.classList.add('to-purple-600');
+            authBtn.classList.add('bg-gradient-to-r', 'from-blue-500', 'to-purple-600');
             loadingState.classList.remove('hidden');
             accessDeniedState.classList.add('hidden');
             dashboardRedirectState.classList.add('hidden');
@@ -263,7 +261,7 @@
             redirectMessage.textContent = 'Redirecting to dashboard...';
         }
 
-        // Show notification
+        // Show notification helper
         function showNotification(type, title, message) {
             notificationTitle.textContent = title;
             notificationMessage.textContent = message;
@@ -284,23 +282,22 @@
             }, 6000);
         }
 
-        // Load user information and update UI
+        // Load user info and update UI
         async function loadUser() {
             resetUI();
             loadingState.classList.remove('hidden');
 
-            const session = supabase.auth.getSession();
-            const { data: { session: currentSession }, error } = await session;
-            if (error || !currentSession) {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) {
                 loadingState.classList.add('hidden');
                 accessDeniedState.classList.remove('hidden');
                 showNotification('error', 'Access Denied', 'Please log in to continue.');
                 return;
             }
 
-            const user = currentSession.user;
+            const user = session.user;
             userNameEl.textContent = user.email || 'User';
-            userRoleEl.textContent = ''; // Fetch user role from your user metadata table if stored
+            userRoleEl.textContent = ''; // Add role logic if implemented
             userAvatar.textContent = user.email?.slice(0, 2).toUpperCase() || 'U';
 
             userStatus.classList.remove('hidden');
@@ -311,13 +308,12 @@
             loadingState.classList.add('hidden');
             dashboardRedirectState.classList.remove('hidden');
 
-            // Redirect logic - adjust URLs for your actual frontend routing for roles
             setTimeout(() => {
-                window.location.href = '/dashboard'; // Or role-specific routing
+                window.location.href = '/dashboard'; // Adjust as per your routing setup
             }, 4000);
         }
 
-        // Auth button handler
+        // Auth button event
         authBtn.addEventListener('click', async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
@@ -326,17 +322,14 @@
                 resetUI();
                 accessDeniedState.classList.remove('hidden');
             } else {
-                // Redirect to login page or show login modal
-                window.location.href = '/login'; // Your login page path
+                window.location.href = '/login'; // Login page path
             }
         });
 
-        // Initial load - check user session
         document.addEventListener('DOMContentLoaded', () => {
             loadUser();
         });
 
-        // Hide notification function
         function hideNotification() {
             notificationArea.classList.add('hidden');
         }
