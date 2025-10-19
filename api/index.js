@@ -22,13 +22,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ============================================
-// CORS CONFIGURATION - UPDATE WITH YOUR DOMAIN
+// CORS CONFIGURATION - Vercel-friendly
 // ============================================
 const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5000',
-    'https://smart-gen-edu-x-production.vercel.app', // ⚠️ REPLACE WITH YOUR ACTUAL VERCEL DOMAIN
-    // Add more domains if needed
+    'https://smart-gen-edu-x-production.vercel.app',
 ];
 
 // ============================================
@@ -73,18 +72,29 @@ app.use(helmet({
     }
 }));
 
-// CORS Configuration
+// Dynamic CORS - Works with all Vercel deployments
 app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, Postman, etc.)
         if (!origin) return callback(null, true);
         
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.warn(`🚫 CORS blocked origin: ${origin}`);
-            callback(new Error('CORS policy violation: Origin not allowed'), false);
+        // Allow localhost for development
+        if (origin.startsWith('http://localhost')) {
+            return callback(null, true);
         }
+        
+        // Allow all Vercel deployments for your project
+        if (origin.endsWith('.vercel.app') && origin.includes('smart-gen-edu-x')) {
+            return callback(null, true);
+        }
+        
+        // Check static whitelist
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            return callback(null, true);
+        }
+        
+        console.warn(`🚫 CORS blocked origin: ${origin}`);
+        callback(new Error('CORS policy violation: Origin not allowed'), false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -108,7 +118,7 @@ app.use(globalLimiter);
 // Sensitive Endpoint Limiter (for auth, payments, etc.)
 const sensitiveLimiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
-    max: 20, // More restrictive
+    max: 20,
     message: { 
         success: false, 
         code: 'SEC_RATE_002', 
@@ -248,7 +258,7 @@ app.get('/api/v1/dashboard-stats', async (req, res) => {
                 totalSchools: parseInt(schoolsResult.rows[0]?.total || 0),
                 totalTeachers: parseInt(teachersResult.rows[0]?.total || 0),
                 totalStudents: parseInt(studentsResult.rows[0]?.total || 0),
-                feeCollection: '₹0' // Implement real fee calculation
+                feeCollection: '₹0'
             };
         } else if (userRole === 'school_admin') {
             // School admin sees their school data
@@ -425,4 +435,4 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('💥 UNHANDLED REJECTION at:', promise, 'reason:', reason);
 });
 
-module.exports = app; // Export for testing
+module.exports = app;
