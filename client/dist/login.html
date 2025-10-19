@@ -186,6 +186,10 @@
       transform: scale(1.03);
       box-shadow: 0 4px 24px 0 #7c4dff55;
     }
+    .sign-in-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     .login-footer {
       margin-top: 28px;
       width: 100%;
@@ -208,6 +212,16 @@
       color: #8e99f3;
       margin-top: 6px;
     }
+    .error-message {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+      text-align: center;
+    }
     .page-footer {
       position: fixed;
       bottom: 16px;
@@ -224,30 +238,13 @@
       color: #8e99f3;
       margin-top: 2px;
     }
-    .watermark {
-      position: fixed;
-      bottom: 12px;
-      right: 18px;
-      opacity: 0.09;
-      z-index: 1;
-      width: 100px;
-      height: 100px;
-      pointer-events: none;
-    }
     @media (max-width: 600px) {
       .login-card {
-        padding: 28px 8px 18px 8px;
+        padding: 28px 18px 18px 18px;
         border-radius: 18px;
       }
       .logo-container {
         padding: 12px;
-      }
-      .watermark {
-        width: 48px;
-        height: 48px;
-      }
-      .blur1, .blur2, .blur3 {
-        display: none;
       }
     }
   </style>
@@ -259,11 +256,14 @@
   <div class="login-container">
     <div class="login-card">
       <div class="logo-container">
-        <img src="smartgenedux-logo.png" alt="SmartGenEduX Logo">
+        <img src="Module%20Assets%20%26%20Logos/smartgenedux-logo.svg" alt="SmartGenEduX Logo" onerror="this.style.display='none'">
       </div>
       <h2>Welcome Back</h2>
       <div class="tagline">Complete School Management ERP</div>
-      <form class="login-form" autocomplete="off" id="loginForm">
+      
+      <div id="errorMessage" class="error-message" style="display: none;"></div>
+      
+      <form class="login-form" id="loginForm" autocomplete="off">
         <div class="input-group">
           <span class="icon">👤</span>
           <input type="email" id="email" name="email" required placeholder=" " autocomplete="username" />
@@ -281,13 +281,14 @@
           </label>
           <a href="#" class="forgot">Forgot password?</a>
         </div>
-        <button type="submit" class="sign-in-btn">
-          <span>➤</span> Sign In
+        <button type="submit" class="sign-in-btn" id="loginBtn">
+          <span id="loginText">➤ Sign In</span>
+          <span id="loginLoading" style="display: none;">⏳ Signing in...</span>
         </button>
       </form>
       <div class="login-footer">
-        Don’t have an account?
-        <a href="#">Create Account</a>
+        Don't have an account?
+        <a href="register.html">Create Account</a>
         <span class="microtext">Contact administrator for enterprise setup</span>
       </div>
     </div>
@@ -296,30 +297,71 @@
     © 2025 SmartGenEduX. All rights reserved.
     <div class="powered-by">Powered by Advanced School Management Technology</div>
   </div>
-  <img src="smartgenedux-logo.png" alt="SmartGenEduX Watermark" class="watermark" />
-  
-  <!-- Supabase SDK **must** be before your JS code -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
-    const SUPABASE_URL = 'https://waqttehjaifdkcbovund.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhcXR0ZWhqYWlmZGtjYm92dW5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2Mjk1ODIsImV4cCI6MjA2NTIwNTU4Mn0.nv1_UIuXl-wSfkfTMvwCUsJTGO65TwZ2D8a571ELKJ0';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const loginForm = document.getElementById('loginForm');
-    loginForm.addEventListener('submit', async (e) => {
+  <script>
+    // Dynamic API URL detection
+    function getApiBaseUrl() {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000/api';
+      }
+      return `${window.location.protocol}//${window.location.host}/api`;
+    }
+
+    const API_BASE = getApiBaseUrl();
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = loginForm.email.value;
-      const password = loginForm.password.value;
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const loginBtn = document.getElementById('loginBtn');
+      const loginText = document.getElementById('loginText');
+      const loginLoading = document.getElementById('loginLoading');
+      const errorMessage = document.getElementById('errorMessage');
+
+      // Hide previous errors
+      errorMessage.style.display = 'none';
+
+      // Disable button and show loading
+      loginBtn.disabled = true;
+      loginText.style.display = 'none';
+      loginLoading.style.display = 'inline';
+
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          alert('Login failed: ' + error.message);
-          return;
+        console.log('Attempting login to:', `${API_BASE}/auth/login`);
+        
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+        console.log('Login response:', data);
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Login failed');
         }
-        alert('Login successful! Redirecting...');
-        window.location.href = '/dashboard';
+
+        // Store authentication data
+        localStorage.setItem('smartgenedux_token', data.token);
+        localStorage.setItem('smartgenedux_user', JSON.stringify(data.user));
+        localStorage.setItem('smartgenedux_role', data.user.role);
+
+        // Redirect to dashboard
+        window.location.href = '/dashboard.new.html';
+        
       } catch (err) {
-        alert('Unexpected error: ' + err.message);
+        console.error('Login error:', err);
+        errorMessage.textContent = err.message || 'Login failed. Please try again.';
+        errorMessage.style.display = 'block';
+        
+        // Re-enable button
+        loginBtn.disabled = false;
+        loginText.style.display = 'inline';
+        loginLoading.style.display = 'none';
       }
     });
   </script>
