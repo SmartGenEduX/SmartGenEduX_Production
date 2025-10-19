@@ -8,13 +8,13 @@ class SmartGenEduXApp {
     this.init();
   }
 
-  // Dynamic API base URL detection
+  // Dynamic API base URL detection - Works on all Vercel deployments
   getApiBaseUrl() {
-    // Check if running locally or on production
+    // Check if running locally
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:3000/api';
     }
-    // Production: Use same domain as frontend
+    // Production: Use same domain as frontend (works for all Vercel deployments)
     return `${window.location.protocol}//${window.location.host}/api`;
   }
 
@@ -161,12 +161,12 @@ class SmartGenEduXApp {
 
   updateUserInfo() {
     if (this.currentUser) {
-      document.getElementById('userName').textContent = this.currentUser.name || this.currentUser.first_name + ' ' + this.currentUser.last_name;
+      const fullName = this.currentUser.name || `${this.currentUser.first_name || ''} ${this.currentUser.last_name || ''}`.trim();
+      document.getElementById('userName').textContent = fullName || 'User';
       document.getElementById('userRole').textContent = this.getRoleDisplayName(this.currentRole);
       
       // Generate avatar initials
-      const name = this.currentUser.name || `${this.currentUser.first_name} ${this.currentUser.last_name}`;
-      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+      const initials = fullName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'U';
       document.getElementById('userAvatar').textContent = initials;
     }
   }
@@ -186,7 +186,7 @@ class SmartGenEduXApp {
     const buttons = document.querySelectorAll('.role-btn');
     buttons.forEach((btn) => {
       btn.classList.remove('active');
-      const btnRole = btn.textContent.toLowerCase().replace(' ', '_');
+      const btnRole = btn.textContent.toLowerCase().replace(/\s+/g, '_');
       if (btnRole === this.currentRole) {
         btn.classList.add('active');
       }
@@ -209,6 +209,8 @@ class SmartGenEduXApp {
   // Load real dashboard stats from API
   async loadDashboardStats() {
     const statsGrid = document.getElementById('statsGrid');
+    if (!statsGrid) return;
+    
     statsGrid.innerHTML = '<div class="loading">Loading statistics...</div>';
 
     try {
@@ -233,6 +235,8 @@ class SmartGenEduXApp {
 
   renderStats(stats) {
     const statsGrid = document.getElementById('statsGrid');
+    if (!statsGrid) return;
+    
     const statCards = [];
 
     // Render based on role
@@ -422,27 +426,15 @@ class SmartGenEduXApp {
 
   async launchModule(moduleId) {
     try {
-      // Check if module exists and user has access
-      const response = await fetch(`${this.apiBase}/v1/${moduleId}/check-access`, {
-        headers: {
-          'Authorization': `Bearer ${this.authToken}`
-        }
-      });
-
-      if (response.ok) {
-        window.location.href = `/${moduleId}.html`;
-      } else {
-        alert('You do not have access to this module or it is not available.');
-      }
+      // Try to navigate to module page
+      window.location.href = `/${moduleId}.html`;
     } catch (err) {
       console.error('Module launch error:', err);
-      // Fallback: try to navigate anyway
-      window.location.href = `/${moduleId}.html`;
+      alert('Unable to launch module. Please try again.');
     }
   }
 
   openModuleDetails(moduleId) {
-    // Show module details modal
     console.log('Opening details for module:', moduleId);
     // You can implement a modal here to show more details
   }
@@ -493,11 +485,6 @@ class SmartGenEduXApp {
       console.error('Arattai send error:', err);
       alert('Failed to send message: ' + err.message);
     }
-  }
-
-  // Utility function for delays (if needed)
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
