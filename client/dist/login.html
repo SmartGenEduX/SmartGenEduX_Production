@@ -5,7 +5,6 @@
   <title>SmartGenEduX Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* Your existing styles */
     body {
       min-height: 100vh;
       margin: 0;
@@ -260,7 +259,6 @@
   <div class="login-container">
     <div class="login-card">
       <div class="logo-container">
-        <!-- Replace src with your final logo file -->
         <img src="smartgenedux-logo.png" alt="SmartGenEduX Logo">
       </div>
       <h2>Welcome Back</h2>
@@ -298,25 +296,20 @@
     © 2025 SmartGenEduX. All rights reserved.
     <div class="powered-by">Powered by Advanced School Management Technology</div>
   </div>
-  <!-- Watermark logo (replace src) -->
   <img src="smartgenedux-logo.png" alt="SmartGenEduX Watermark" class="watermark" />
-
-  <!-- Supabase SDK -->
+  
+  <!-- Supabase SDK **must** be before your JS code -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-
   <script>
     const SUPABASE_URL = 'https://waqttehjaifdkcbovund.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhcXR0ZWhqYWlmZGtjYm92dW5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2Mjk1ODIsImV4cCI6MjA2NTIwNTU4Mn0.nv1_UIuXl-wSfkfTMvwCUsJTGO65TwZ2D8a571ELKJ0';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const loginForm = document.getElementById('loginForm');
-
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = loginForm.email.value;
       const password = loginForm.password.value;
-
       try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
