@@ -1,10 +1,21 @@
 class SmartGenEduXApp {
   constructor() {
     this.currentUser = null;
-    this.currentRole = 'school_admin';
-    this.apiBase = '/api';
+    this.currentRole = null;
+    this.apiBase = this.getApiBaseUrl();
+    this.authToken = null;
     this.templateVariablesMap = {};
     this.init();
+  }
+
+  // Dynamic API base URL detection
+  getApiBaseUrl() {
+    // Check if running locally or on production
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:3000/api';
+    }
+    // Production: Use same domain as frontend
+    return `${window.location.protocol}//${window.location.host}/api`;
   }
 
   init() {
@@ -17,6 +28,14 @@ class SmartGenEduXApp {
     if (loginForm) {
       loginForm.addEventListener('submit', (e) => this.handleLogin(e));
     }
+
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => this.handleLogout());
+    }
+
+    // Modal close handlers
     window.addEventListener('click', (e) => {
       if (e.target.classList.contains('modal')) this.closeModal();
     });
@@ -31,6 +50,7 @@ class SmartGenEduXApp {
     }
   }
 
+  // REAL LOGIN - Calls backend API
   async handleLogin(event) {
     event.preventDefault();
     const loginText = document.getElementById('loginText');
@@ -38,71 +58,96 @@ class SmartGenEduXApp {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
+    if (!email || !password) {
+      alert('Please enter both email and password');
+      return;
+    }
+
     loginText.style.display = 'none';
     loginLoading.style.display = 'inline-block';
 
     try {
-      await this.delay(1500); // Simulate API call delay
-      const user = this.getUserByEmail(email);
+      const response = await fetch(`${this.apiBase}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-      if (!user) throw new Error('Invalid credentials');
+      const data = await response.json();
 
-      this.currentUser = user;
-      this.currentRole = user.role;
-      localStorage.setItem('smartgenedux_user', JSON.stringify(user));
-      localStorage.setItem('smartgenedux_role', user.role);
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Store authentication data
+      this.authToken = data.token;
+      this.currentUser = data.user;
+      this.currentRole = data.user.role;
+
+      localStorage.setItem('smartgenedux_token', data.token);
+      localStorage.setItem('smartgenedux_user', JSON.stringify(data.user));
+      localStorage.setItem('smartgenedux_role', data.user.role);
+
       this.showDashboard();
     } catch (err) {
+      console.error('Login error:', err);
       alert('Login failed: ' + err.message);
+    } finally {
       loginText.style.display = 'inline';
       loginLoading.style.display = 'none';
     }
   }
 
-  getUserByEmail(email) {
-    const users = {
-      'super@smartgenedux.org': {
-        id: 'super_001',
-        name: 'Super Administrator',
-        email: 'super@smartgenedux.org',
-        role: 'super_admin',
-        avatar: 'SA',
-        permissions: ['all'],
-      },
-      'admin@dps.edu': {
-        id: 'admin_001',
-        name: 'Dr. Rajesh Kumar',
-        email: 'admin@dps.edu',
-        role: 'school_admin',
-        school: 'Delhi Public School',
-        schoolId: 'school_001',
-        avatar: 'RK',
-        permissions: ['school_management', 'student_management', 'teacher_management'],
-      },
-      'priya@dps.edu': {
-        id: 'teacher_001',
-        name: 'Ms. Priya Sharma',
-        email: 'priya@dps.edu',
-        role: 'teacher',
-        school: 'Delhi Public School',
-        schoolId: 'school_001',
-        subjects: ['Mathematics', 'Science'],
-        classes: ['Class 1-A', 'Class 2-A'],
-        avatar: 'PS',
-        permissions: ['attendance', 'student_records', 'assignments'],
-      },
-    };
-    return users[email.toLowerCase()] || null;
-  }
-
+  // Check if user is already logged in
   checkAuthStatus() {
+    const savedToken = localStorage.getItem('smartgenedux_token');
     const savedUser = localStorage.getItem('smartgenedux_user');
     const savedRole = localStorage.getItem('smartgenedux_role');
-    if (savedUser && savedRole) {
+
+    if (savedToken && savedUser && savedRole) {
+      this.authToken = savedToken;
       this.currentUser = JSON.parse(savedUser);
       this.currentRole = savedRole;
-      this.showDashboard();
+      
+      // Verify token is still valid
+      this.verifyToken().then(isValid => {
+        if (isValid) {
+          this.showDashboard();
+        } else {
+          this.handleLogout();
+        }
+      });
     }
+  }
+
+  // Verify token validity with backend
+  async verifyToken() {
+    try {
+      const response = await fetch(`${this.apiBase}/v1/dashboard-stats`, {
+        headers: {
+          'Authorization': `Bearer ${this.authToken}`
+        }
+      });
+      return response.ok;
+    } catch (err) {
+      console.error('Token verification failed:', err);
+      return false;
+    }
+  }
+
+  // Logout handler
+  handleLogout() {
+    this.authToken = null;
+    this.currentUser = null;
+    this.currentRole = null;
+    localStorage.removeItem('smartgenedux_token');
+    localStorage.removeItem('smartgenedux_user');
+    localStorage.removeItem('smartgenedux_role');
+    
+    document.getElementById('dashboard').classList.remove('active');
+    document.getElementById('loginScreen').style.display = 'flex';
   }
 
   showDashboard() {
@@ -116,9 +161,13 @@ class SmartGenEduXApp {
 
   updateUserInfo() {
     if (this.currentUser) {
-      document.getElementById('userName').textContent = this.currentUser.name;
+      document.getElementById('userName').textContent = this.currentUser.name || this.currentUser.first_name + ' ' + this.currentUser.last_name;
       document.getElementById('userRole').textContent = this.getRoleDisplayName(this.currentRole);
-      document.getElementById('userAvatar').textContent = this.currentUser.avatar;
+      
+      // Generate avatar initials
+      const name = this.currentUser.name || `${this.currentUser.first_name} ${this.currentUser.last_name}`;
+      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+      document.getElementById('userAvatar').textContent = initials;
     }
   }
 
@@ -127,6 +176,8 @@ class SmartGenEduXApp {
       super_admin: 'Super Administrator',
       school_admin: 'School Administrator',
       teacher: 'Teacher',
+      parent: 'Parent',
+      student: 'Student'
     };
     return roleNames[role] || role;
   }
@@ -135,76 +186,98 @@ class SmartGenEduXApp {
     const buttons = document.querySelectorAll('.role-btn');
     buttons.forEach((btn) => {
       btn.classList.remove('active');
-      if (btn.textContent.toLowerCase().replace(' ', '_') === this.currentRole) {
+      const btnRole = btn.textContent.toLowerCase().replace(' ', '_');
+      if (btnRole === this.currentRole) {
         btn.classList.add('active');
       }
     });
   }
 
   switchRole(role) {
-    this.currentRole = role;
-    localStorage.setItem('smartgenedux_role', role);
-    this.updateUserInfo();
-    this.loadDashboardStats();
-    this.updateRoleButtons();
-  }
-
-  async loadDashboardStats() {
-    const statsGrid = document.getElementById('statsGrid');
-    try {
-      const stats = await this.getStatsForRole(this.currentRole);
-      statsGrid.innerHTML = stats
-        .map(
-          (stat) => `
-          <div class="stat-card">
-            <div class="stat-icon">${stat.icon}</div>
-            <div class="stat-number">${stat.value}</div>
-            <div class="stat-label">${stat.label}</div>
-          </div>
-          `
-        )
-        .join('');
-    } catch (error) {
-      console.error('Failed to load stats:', error);
+    // Only allow role switching if user has permissions
+    if (this.currentUser && this.currentUser.permissions && this.currentUser.permissions.includes('all')) {
+      this.currentRole = role;
+      localStorage.setItem('smartgenedux_role', role);
+      this.updateUserInfo();
+      this.loadDashboardStats();
+      this.updateRoleButtons();
+    } else {
+      alert('You do not have permission to switch roles');
     }
   }
 
-  async getStatsForRole(role) {
-    await this.delay(500);
-    const statsData = {
-      super_admin: [
-        { icon: '🏫', value: '247', label: 'Total Schools' },
-        { icon: '👥', value: '15,432', label: 'Total Students' },
-        { icon: '👨‍🏫', value: '2,186', label: 'Total Teachers' },
-        { icon: '💰', value: '₹24.7L', label: 'Monthly Revenue' },
-        { icon: '📊', value: '94%', label: 'System Uptime' },
-        { icon: '🎯', value: '98.2%', label: 'Client Satisfaction' },
-      ],
-      school_admin: [
-        { icon: '👥', value: '1,247', label: 'Total Students' },
-        { icon: '👨‍🏫', value: '89', label: 'Teaching Staff' },
-        { icon: '📚', value: '47', label: 'Active Classes' },
-        { icon: '💰', value: '₹89,500', label: 'Fee Collection' },
-        { icon: '📅', value: '95%', label: 'Attendance Rate' },
-        { icon: '🏆', value: '87%', label: 'Academic Performance' },
-      ],
-      teacher: [
-        { icon: '👥', value: '156', label: 'My Students' },
-        { icon: '📚', value: '6', label: 'Classes Assigned' },
-        { icon: '📝', value: '23', label: 'Pending Assessments' },
-        { icon: '📅', value: '98%', label: 'Class Attendance' },
-        { icon: '🎯', value: '92%', label: 'Assignment Completion' },
-        { icon: '⭐', value: '4.8/5', label: 'Student Rating' },
-      ],
-    };
-    return statsData[role] || [];
+  // Load real dashboard stats from API
+  async loadDashboardStats() {
+    const statsGrid = document.getElementById('statsGrid');
+    statsGrid.innerHTML = '<div class="loading">Loading statistics...</div>';
+
+    try {
+      const response = await fetch(`${this.apiBase}/v1/dashboard-stats`, {
+        headers: {
+          'Authorization': `Bearer ${this.authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load stats');
+      }
+
+      const stats = await response.json();
+      this.renderStats(stats);
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+      statsGrid.innerHTML = '<div class="error">Failed to load statistics. Please refresh.</div>';
+    }
+  }
+
+  renderStats(stats) {
+    const statsGrid = document.getElementById('statsGrid');
+    const statCards = [];
+
+    // Render based on role
+    if (this.currentRole === 'super_admin') {
+      statCards.push(
+        { icon: '🏫', value: stats.totalSchools || '0', label: 'Total Schools' },
+        { icon: '👥', value: stats.totalStudents || '0', label: 'Total Students' },
+        { icon: '👨‍🏫', value: stats.totalTeachers || '0', label: 'Total Teachers' },
+        { icon: '💰', value: stats.feeCollection || '₹0', label: 'Fee Collection' }
+      );
+    } else if (this.currentRole === 'school_admin') {
+      statCards.push(
+        { icon: '👥', value: stats.totalStudents || '0', label: 'Total Students' },
+        { icon: '👨‍🏫', value: stats.totalTeachers || '0', label: 'Teaching Staff' },
+        { icon: '📚', value: stats.totalClasses || '0', label: 'Active Classes' },
+        { icon: '💰', value: stats.feeCollection || '₹0', label: 'Fee Collection' }
+      );
+    } else if (this.currentRole === 'teacher') {
+      statCards.push(
+        { icon: '👥', value: stats.myStudents || '0', label: 'My Students' },
+        { icon: '📚', value: stats.myClasses || '0', label: 'Classes Assigned' },
+        { icon: '📝', value: stats.pendingAssessments || '0', label: 'Pending Assessments' },
+        { icon: '📅', value: stats.attendanceRate || '0%', label: 'Class Attendance' }
+      );
+    }
+
+    statsGrid.innerHTML = statCards.map(stat => `
+      <div class="stat-card">
+        <div class="stat-icon">${stat.icon}</div>
+        <div class="stat-number">${stat.value}</div>
+        <div class="stat-label">${stat.label}</div>
+      </div>
+    `).join('');
   }
 
   loadModules() {
     const academicModules = document.getElementById('academicModules');
     const premiumModules = document.getElementById('premiumModules');
-    academicModules.innerHTML = this.generateModuleCards(this.getAcademicModules());
-    premiumModules.innerHTML = this.generateModuleCards(this.getPremiumModules());
+    
+    if (academicModules) {
+      academicModules.innerHTML = this.generateModuleCards(this.getAcademicModules());
+    }
+    if (premiumModules) {
+      premiumModules.innerHTML = this.generateModuleCards(this.getPremiumModules());
+    }
   }
 
   generateModuleCards(modules) {
@@ -220,7 +293,7 @@ class SmartGenEduXApp {
           ${module.features.slice(0, 3).map((feature) => `<li>${feature}</li>`).join('')}
         </ul>
         <div class="module-status">
-          <span class="status-badge">${module.status}</span>
+          <span class="status-badge ${module.status.toLowerCase()}">${module.status}</span>
           <button class="module-btn" onclick="event.stopPropagation(); app.launchModule('${module.id}')">Launch</button>
         </div>
       </div>
@@ -231,234 +304,206 @@ class SmartGenEduXApp {
 
   getAcademicModules() {
     return [
-      // Example academic modules — replace with your real data
       {
         id: 'attendance',
-        icon: 'attendance.png',
+        icon: 'attendance.svg',
         name: 'Attendance Management',
-        description: 'Track daily attendance of students and staff.',
-        features: ['Daily attendance', 'Reports', 'Alerts'],
+        description: 'Track daily attendance of students and staff with real-time sync.',
+        features: ['Daily attendance marking', 'Attendance reports', 'SMS/Email alerts'],
         status: 'Active',
         isPremium: false,
       },
       {
-        id: 'academic-performance',
-        icon: 'performance.png',
-        name: 'Academic Performance',
-        description: 'Manage student assessments and grading.',
-        features: ['Grades', 'Assessments', 'Reports'],
+        id: 'timetable',
+        icon: 'timetable.svg',
+        name: 'Timetable Management',
+        description: 'Create and manage class timetables efficiently.',
+        features: ['Drag-drop interface', 'Conflict detection', 'Teacher allocation'],
         status: 'Active',
         isPremium: false,
       },
+      {
+        id: 'admission',
+        icon: 'admission.svg',
+        name: 'Admission Management',
+        description: 'Streamline student admission and enrollment process.',
+        features: ['Online applications', 'Document verification', 'Fee processing'],
+        status: 'Active',
+        isPremium: false,
+      },
+      {
+        id: 'fee-management',
+        icon: 'fee.svg',
+        name: 'Fee Management',
+        description: 'Complete fee collection and tracking system.',
+        features: ['Fee structure setup', 'Payment tracking', 'Receipt generation'],
+        status: 'Active',
+        isPremium: false,
+      },
+      {
+        id: 'reports',
+        icon: 'reports.svg',
+        name: 'Report Tracker',
+        description: 'Generate and track academic reports and report cards.',
+        features: ['Custom report templates', 'Bulk generation', 'Parent access'],
+        status: 'Active',
+        isPremium: false,
+      },
+      {
+        id: 'substitution',
+        icon: 'substitution.svg',
+        name: 'Substitution Log',
+        description: 'Manage teacher substitutions and leave tracking.',
+        features: ['Auto-substitute allocation', 'Leave requests', 'Coverage tracking'],
+        status: 'Active',
+        isPremium: false,
+      }
     ];
   }
 
   getPremiumModules() {
     return [
-      // Example premium modules — replace with your real data
       {
-        id: 'sms-integration',
-        icon: 'sms.png',
-        name: 'SMS/WhatsApp Integration',
-        description: 'Send automated alerts through SMS and WhatsApp.',
-        features: ['Automatic alerts', 'Bulk messaging', 'Templates'],
+        id: 'vipu-ai',
+        icon: 'ai.svg',
+        name: 'VIPU AI Assistant',
+        description: 'AI-powered educational assistant for smart insights.',
+        features: ['Student performance prediction', 'Smart recommendations', 'Automated insights'],
         status: 'Premium',
         isPremium: true,
       },
       {
-        id: 'fee-management',
-        icon: 'fees.png',
-        name: 'Fee Management',
-        description: 'Automate fee collection and reminders.',
-        features: ['Fee tracking', 'Payment reminders', 'Reports'],
+        id: 'arattai',
+        icon: 'whatsapp.svg',
+        name: 'Arattai WhatsApp Manager',
+        description: 'WhatsApp communication automation for parents and staff.',
+        features: ['Broadcast messages', 'Automated alerts', 'Template management'],
         status: 'Premium',
         isPremium: true,
       },
+      {
+        id: 'qpg',
+        icon: 'question-paper.svg',
+        name: 'Question Paper Generator',
+        description: 'AI-powered question paper generation from question bank.',
+        features: ['Auto-generate papers', 'Difficulty balancing', 'Blueprint compliance'],
+        status: 'Premium',
+        isPremium: true,
+      },
+      {
+        id: 'id-card',
+        icon: 'id-card.svg',
+        name: 'ID Card Generator',
+        description: 'Generate professional student and staff ID cards.',
+        features: ['Custom templates', 'Bulk generation', 'QR code integration'],
+        status: 'Premium',
+        isPremium: true,
+      },
+      {
+        id: 'library',
+        icon: 'library.svg',
+        name: 'Library Manager',
+        description: 'Complete library management with issue/return tracking.',
+        features: ['Book catalog', 'Issue tracking', 'Fine calculation'],
+        status: 'Premium',
+        isPremium: true,
+      },
+      {
+        id: 'transport',
+        icon: 'transport.svg',
+        name: 'Transport Manager',
+        description: 'School transport and route management system.',
+        features: ['Route planning', 'GPS tracking', 'Student allocation'],
+        status: 'Premium',
+        isPremium: true,
+      }
     ];
   }
 
-  openModuleDetails(moduleId) {
-    // Show modal with module details
-    // You can implement this modal logic as needed
-    alert(`Open details for module: ${moduleId}`);
+  async launchModule(moduleId) {
+    try {
+      // Check if module exists and user has access
+      const response = await fetch(`${this.apiBase}/v1/${moduleId}/check-access`, {
+        headers: {
+          'Authorization': `Bearer ${this.authToken}`
+        }
+      });
+
+      if (response.ok) {
+        window.location.href = `/${moduleId}.html`;
+      } else {
+        alert('You do not have access to this module or it is not available.');
+      }
+    } catch (err) {
+      console.error('Module launch error:', err);
+      // Fallback: try to navigate anyway
+      window.location.href = `/${moduleId}.html`;
+    }
   }
 
-  launchModule(moduleId) {
-    // Implement your module launch logic here, e.g. navigate to module page
-    alert(`Launching module: ${moduleId}`);
+  openModuleDetails(moduleId) {
+    // Show module details modal
+    console.log('Opening details for module:', moduleId);
+    // You can implement a modal here to show more details
   }
 
   closeModal() {
-    const modal = document.getElementById('moduleModal');
-    if (modal) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
       modal.style.display = 'none';
-    }
-  }
-
-  logout() {
-    localStorage.removeItem('smartgenedux_user');
-    localStorage.removeItem('smartgenedux_role');
-
-    this.currentUser = null;
-    this.currentRole = 'school_admin';
-
-    document.getElementById('dashboard').classList.remove('active');
-    document.getElementById('loginScreen').style.display = 'flex';
-
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) loginForm.reset();
-  }
-
-  delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  // === Arattai Integration === //
-
-  async fetchArattaiTemplates() {
-    const res = await fetch(`${this.apiBase}/arattai-alert/templates`);
-    if (!res.ok) throw new Error('Failed to fetch templates');
-    return await res.json();
-  }
-
-  async fetchArattaiContacts() {
-    const res = await fetch(`${this.apiBase}/arattai-alert/contacts`);
-    if (!res.ok) throw new Error('Failed to fetch contacts');
-    return await res.json();
-  }
-
-  async fetchRecentArattaiMessages() {
-    const res = await fetch(`${this.apiBase}/arattai-alert/scheduled`);
-    if (!res.ok) throw new Error('Failed to fetch recent messages');
-    return await res.json();
-  }
-
-  async sendArattaiMessage(payload) {
-    const res = await fetch(`${this.apiBase}/arattai-alert/send`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
     });
-    return await res.json();
   }
 
-  async setupArattaiPage() {
-    if (!window.location.pathname.includes('arattai.html')) return;
-
-    try {
-      const recipientSelect = document.getElementById('recipientSelect');
-      const templateSelect = document.getElementById('templateSelect');
-      const variablesContainer = document.getElementById('templateVariablesContainer');
-      const recentMessagesBody = document.getElementById('recentMessagesBody');
-
-      const contacts = await this.fetchArattaiContacts();
-      recipientSelect.innerHTML =
-        '<option value="">Select a recipient</option>' +
-        contacts.map(
-          (c) =>
-            `<option value="${c.phoneNumber}">${c.parentName} (${c.studentName})</option>`
-        ).join('');
-
-      const templates = await this.fetchArattaiTemplates();
-      this.templateVariablesMap = {};
-      templateSelect.innerHTML =
-        '<option value="">Select a template</option>' +
-        templates.map((t) => {
-          this.templateVariablesMap[t.id] = t.variables || [];
-          return `<option value="${t.id}">${t.name}</option>`;
-        }).join('');
-
-      templateSelect.addEventListener('change', (e) => {
-        variablesContainer.innerHTML = '';
-        const selectedId = e.target.value;
-        if (!selectedId || !this.templateVariablesMap[selectedId]) return;
-        this.templateVariablesMap[selectedId].forEach((variableName) => {
-          const label = document.createElement('label');
-          label.textContent = `${variableName.charAt(0).toUpperCase() + variableName.slice(1)}:`;
-          label.className = 'block text-sm font-medium mb-1';
-
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.id = `var_${variableName}`;
-          input.className = 'w-full border rounded px-3 py-2 mb-3';
-
-          variablesContainer.appendChild(label);
-          variablesContainer.appendChild(input);
-        });
-      });
-
-      const recentMessages = await this.fetchRecentArattaiMessages();
-      recentMessagesBody.innerHTML = recentMessages.map((msg) => `
-        <tr class="border-t">
-          <td class="px-4 py-2">${new Date(msg.scheduledFor || msg.sentAt).toLocaleString()}</td>
-          <td class="px-4 py-2">${msg.category || 'N/A'}</td>
-          <td class="px-4 py-2">${msg.recipientNumber}</td>
-          <td class="px-4 py-2">${msg.message}</td>
-          <td class="px-4 py-2">
-            <span class="${msg.status === 'sent' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} px-2 py-1 rounded text-xs">
-              ${msg.status || 'pending'}
-            </span>
-          </td>
-        </tr>
-      `).join('');
-    } catch (error) {
-      console.error('Error loading Arattai data:', error);
-    }
-  }
-
+  // Arattai WhatsApp functionality
   async handleArattaiSend() {
-    const recipientNumber = document.getElementById('recipientSelect').value;
-    const templateId = document.getElementById('templateSelect').value;
-    const messageContent = document.getElementById('messageContent').value.trim();
+    const messageInput = document.getElementById('arattaiMessage');
+    const recipientSelect = document.getElementById('arattaiRecipient');
+    
+    if (!messageInput || !recipientSelect) return;
 
-    if (!recipientNumber) {
-      alert('Please select a recipient');
-      return;
-    }
-    if (!templateId) {
-      alert('Please select a template');
-      return;
-    }
-    if (!messageContent) {
-      alert('Message cannot be empty');
-      return;
-    }
+    const message = messageInput.value.trim();
+    const recipient = recipientSelect.value;
 
-    const variables = {};
-    (this.templateVariablesMap[templateId] || []).forEach((variableName) => {
-      const input = document.getElementById(`var_${variableName}`);
-      if (input) variables[variableName] = input.value.trim();
-    });
+    if (!message) {
+      alert('Please enter a message');
+      return;
+    }
 
     try {
-      const response = await this.sendArattaiMessage({
-        recipientNumber,
-        templateId,
-        variables,
-        message: messageContent,
+      const response = await fetch(`${this.apiBase}/v1/arattai/send`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.authToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message,
+          recipient,
+          type: 'manual'
+        })
       });
-      if (response.success) {
-        alert('Message sent successfully');
-        document.getElementById('messageContent').value = '';
-        document.getElementById('charCount').textContent = 'Characters: 0/1000';
-        // Optionally reload recent messages here
+
+      if (response.ok) {
+        alert('Message sent successfully!');
+        messageInput.value = '';
       } else {
-        alert('Failed to send message');
+        throw new Error('Failed to send message');
       }
-    } catch (error) {
-      alert('Error sending message');
-      console.error(error);
+    } catch (err) {
+      console.error('Arattai send error:', err);
+      alert('Failed to send message: ' + err.message);
     }
+  }
+
+  // Utility function for delays (if needed)
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
-// Initialize app and setup Arattai page on DOMContentLoaded
-const app = new SmartGenEduXApp();
-window.app = app;
-window.switchRole = (role) => app.switchRole(role);
-window.logout = () => app.logout();
-window.closeModal = () => app.closeModal();
-
+// Initialize the app when DOM is ready
+let app;
 document.addEventListener('DOMContentLoaded', () => {
-  app.setupArattaiPage();
+  app = new SmartGenEduXApp();
+  window.app = app; // Make it globally accessible
 });
